@@ -8,6 +8,7 @@ export interface Message {
   id: string; role: 'user' | 'assistant'; content: string; status: string;
   error_code: string | null; created_at: string;
   reply_to_message_id: string | null; client_request_id: string | null;
+  provider: string | null;
 }
 interface Page<T> { items: T[]; next_cursor: string | null }
 export const activeConversation = ref<Conversation | null>(null);
@@ -19,6 +20,8 @@ export const chatError = ref('');
 export const historyError = ref('');
 export const olderCursor = ref<string | null>(null);
 export const conversationCursor = ref<string | null>(null);
+export const modelMode = ref('checking');
+export const modelConfigured = ref(false);
 let epoch = 0;
 let pending: { content: string; key: string } | null = null;
 
@@ -46,6 +49,9 @@ export async function loadChat(id?: string, fresh = false) {
   messages.value = []; activeConversation.value = null; pending = null;
   chatError.value = ''; loading.value = true; olderCursor.value = null;
   try {
+    const mode = await request<{ provider: string; configured: boolean }>('/model-status');
+    if (started !== epoch) return;
+    modelMode.value = mode.provider; modelConfigured.value = mode.configured;
     if (fresh) return;
     const chosen = id
       ? await request<Conversation>(`/conversations/${id}`)
@@ -74,15 +80,17 @@ export async function sendText(content = draft.value, key?: string) {
   busy.value = true; chatError.value = '';
   const token = key ?? (pending?.content === content ? pending.key : requestId());
   pending = { content, key: token };
+  const localId = `sending-${token}`;
   try {
     if (!activeConversation.value) {
       const created = await request<Conversation>('/conversations', 'POST');
       if (started !== epoch) return;
       activeConversation.value = created;
     }
+    if (!messages.value.some(message => message.client_request_id === token)) messages.value.push({ id: localId, role: 'user', content, status: 'sending', error_code: null, created_at: new Date().toISOString(), reply_to_message_id: null, client_request_id: token, provider: null });
     const result = await request<{ user_message: Message; assistant_message: Message }>(`/conversations/${activeConversation.value.id}/messages`, 'POST', { content, client_request_id: token });
     if (started !== epoch) return;
-    const combined = new Map(messages.value.map(item => [item.id, item]));
+    const combined = new Map(messages.value.filter(item => item.id !== localId).map(item => [item.id, item]));
     combined.set(result.user_message.id, result.user_message);
     combined.set(result.assistant_message.id, result.assistant_message);
     messages.value = [...combined.values()];
@@ -90,7 +98,7 @@ export async function sendText(content = draft.value, key?: string) {
     pending = null;
     return true;
   } catch (error) {
-    if (started === epoch) chatError.value = error instanceof Error ? error.message : '发送失败，输入已保留，请重试';
+    if (started === epoch) { messages.value = messages.value.filter(item => item.id !== localId); chatError.value = error instanceof Error ? error.message : '发送失败，输入已保留，请重试'; }
     return false;
   } finally { if (started === epoch) busy.value = false; }
 }

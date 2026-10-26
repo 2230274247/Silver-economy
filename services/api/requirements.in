@@ -9,3 +9,4 @@ alembic>=1.16,<2
 PyMySQL[rsa]>=1.1,<2
 pydantic-settings>=2.10,<3
 argon2-cffi>=25,<26
+tzdata>=2026,<2027

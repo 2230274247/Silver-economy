@@ -1,7 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL, make_url
 from sqlalchemy.exc import ArgumentError
@@ -39,6 +40,20 @@ class Settings(BaseSettings):
     test_database_url: SecretStr = SecretStr("")
     session_ttl_seconds: int = 43200
     cookie_secure: bool = False
+    llm_provider: Literal["mock", "deepseek"] = "mock"
+    deepseek_api_key: SecretStr = SecretStr("")
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-flash"
+    deepseek_max_output_tokens: int = Field(256, ge=16, le=1024)
+    deepseek_daily_request_limit: int = Field(10, ge=0, le=100)
+    deepseek_daily_token_limit: int = Field(20000, ge=0, le=200000)
+
+    @field_validator("deepseek_base_url")
+    @classmethod
+    def official_endpoint(cls, value):
+        if value.rstrip("/") not in {"https://api.deepseek.com", "https://api.deepseek.com/v1"}:
+            raise ValueError("Only the official DeepSeek HTTPS endpoint is allowed")
+        return value.rstrip("/")
 
 
 @lru_cache

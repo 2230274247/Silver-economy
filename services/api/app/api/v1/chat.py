@@ -10,6 +10,7 @@ from app.core.errors import ApiError
 from app.core.security import CurrentUser, DatabaseSession, utc_now
 from app.models.entities import Conversation, Message
 from app.schemas.chat import ConversationOut, ConversationPage, MessagePage, SendResult
+from app.services.model_chat import generate_reply
 
 router = APIRouter(prefix="/api/v1")
 
@@ -37,6 +38,7 @@ def message_data(item: Message):
         "created_at": timestamp(item.created_at),
         "reply_to_message_id": item.reply_to_message_id,
         "client_request_id": item.client_request_id,
+        "provider": item.provider,
     }
 
 
@@ -148,8 +150,20 @@ def saved_result(db, user_message, *, replayed=False):
         "user_message": message_data(user_message),
         "assistant_message": message_data(assistant),
         "replayed": replayed,
-        "provider": "not_configured",
+        "provider": assistant.provider or "not_configured",
     }
+
+
+def retry_if_not_called(db, item):
+    assistant = db.scalar(
+        select(Message).where(
+            Message.user_id == item.user_id,
+            Message.reply_to_message_id == item.id,
+        )
+    )
+    if assistant.error_code in {"MODEL_NOT_CONFIGURED", "MODEL_BUDGET_EXCEEDED"}:
+        assistant.status, assistant.error_code = "pending", None
+        generate_reply(db, item, assistant)
 
 
 @router.post("/conversations/{conversation_id}/messages", response_model=SendResult)
@@ -164,6 +178,7 @@ def send_message(
     if existing:
         if existing.conversation_id != conversation_id or existing.content != payload.content:
             raise ApiError(409, "IDEMPOTENCY_CONFLICT", "同一发送编号对应的内容不同，请勿重复提交")
+        retry_if_not_called(db, existing)
         return saved_result(db, existing, replayed=True)
     now = utc_now()
     if conversation.last_message_at and now <= conversation.last_message_at:
@@ -180,15 +195,13 @@ def send_message(
     try:
         db.add(item)
         db.flush()
-        # T05 persists the failure truthfully; T06 supplies the actual provider.
         assistant = Message(
             user_id=user.id,
             conversation_id=conversation_id,
             role="assistant",
             content="",
             reply_to_message_id=item.id,
-            status="failed",
-            error_code="MODEL_NOT_CONFIGURED",
+            status="pending",
             created_at=now + timedelta(microseconds=1),
         )
         db.add(assistant)
@@ -210,4 +223,5 @@ def send_message(
         ):
             return saved_result(db, existing, replayed=True)
         raise ApiError(409, "IDEMPOTENCY_CONFLICT", "发送编号冲突，请重新确认后发送") from None
+    generate_reply(db, item, assistant)
     return saved_result(db, item)

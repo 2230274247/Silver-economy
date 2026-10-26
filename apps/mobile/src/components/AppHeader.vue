@@ -3,10 +3,11 @@ import AccessibleButton from './AccessibleButton.vue';
 import AppIcon from './AppIcon.vue';
 import CompanionAvatar from './CompanionAvatar.vue';
 
-withDefaults(defineProps<{ title?: string; companion?: boolean; showSettings?: boolean }>(), {
+withDefaults(defineProps<{ title?: string; companion?: boolean; showSettings?: boolean; thinking?: boolean }>(), {
   title: '',
   companion: false,
   showSettings: true,
+  thinking: false,
 });
 
 function openHistory() {
@@ -46,7 +47,7 @@ function goBack() {
       v-if="companion"
       class="identity"
     >
-      <CompanionAvatar />
+      <CompanionAvatar :state="thinking ? 'thinking' : 'waiting'" />
       <text class="companion-name">
         小忆 <text class="identity-caption">
           AI 伙伴

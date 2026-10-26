@@ -11,7 +11,7 @@ import { bindComposer } from '../../platform/composer';
 import { requestId } from '../../platform/ids';
 import { currentUser, restoreSession, sessionError } from '../../stores/session';
 import { draft } from '../../stores/ui';
-import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, type Message } from '../../stores/chat';
+import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, modelMode, modelConfigured, type Message } from '../../stores/chat';
 const scrollTarget = ref('');
 const composerId = `chat-draft-${requestId()}`;
 let freshRequested = false;
@@ -54,10 +54,13 @@ onLoad(async options => {
 <template>
   <MobileShell>
     <template #header>
-      <AppHeader companion />
+      <AppHeader
+        companion
+        :thinking="busy"
+      />
     </template>
     <view class="mode-note">
-      消息真实保存 · 模型回复尚未接入
+      {{ modelMode === 'mock' ? 'Mock 测试模式 · 消息真实保存' : modelMode === 'deepseek' ? (modelConfigured ? 'DeepSeek · 消息真实保存' : 'DeepSeek 尚未配置 · 消息仍可保存') : '正在检查模型服务…' }}
     </view>
     <scroll-view
       class="chat-scroll"
@@ -129,7 +132,9 @@ onLoad(async options => {
             class="reply-error"
             role="status"
           >
-            <text>{{ message.error_code === 'MODEL_NOT_CONFIGURED' ? '你的消息已保存，模型回复尚未接入。' : '回复失败，你的消息已保留。' }}</text><AccessibleButton
+            <text>{{ message.error_code === 'MODEL_NOT_CONFIGURED' ? '消息已保存，需管理员配置模型服务。' : message.error_code === 'MODEL_BUDGET_EXCEEDED' ? '消息已保存，今日模型预算不足，未调用模型。' : '消息已保存，模型回复失败或结果不明。为避免重复计费，不会自动重试。' }}</text>
+            <AccessibleButton
+              v-if="['MODEL_NOT_CONFIGURED', 'MODEL_BUDGET_EXCEEDED'].includes(message.error_code || '')"
               class="retry-button"
               :loading="busy"
               @click="retry(message)"
@@ -137,9 +142,23 @@ onLoad(async options => {
               重试回复
             </AccessibleButton>
           </view>
+          <view
+            v-if="message.role === 'assistant' && message.status === 'pending'"
+            class="reply-error"
+            role="status"
+          >
+            回复仍在处理中，或服务曾中断；可重新读取历史查看状态，不会重复调用模型。
+          </view>
           <text class="message-time">
-            {{ new Date(message.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
+            {{ message.status === 'sending' ? '发送中，尚未确认保存' : new Date(message.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
           </text>
+        </view>
+        <view
+          v-if="busy"
+          class="quiet-state"
+          role="status"
+        >
+          正在保存消息并生成回复…
         </view>
         <view
           id="chat-tail"

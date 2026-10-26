@@ -64,6 +64,7 @@ class Message(Identity, Updated, Owned, Base):
     reply_to_message_id: Mapped[str | None] = mapped_column(String(36))
     status: Mapped[str] = mapped_column(String(24), default="saved")
     error_code: Mapped[str | None] = mapped_column(String(64))
+    provider: Mapped[str | None] = mapped_column(String(32))
 
 
 class MemoryFact(Identity, Updated, Owned, Base):
@@ -120,6 +121,7 @@ class Reminder(Identity, Updated, Owned, Base):
 
 class ModelUsage(Identity, Owned, Base):
     __tablename__ = "model_usage"
+    __table_args__ = (UniqueConstraint("user_id", "request_id", "purpose"),)
     provider: Mapped[str] = mapped_column(String(32))
     model: Mapped[str] = mapped_column(String(80))
     purpose: Mapped[str] = mapped_column(String(32))
@@ -128,3 +130,15 @@ class ModelUsage(Identity, Owned, Base):
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     latency_ms: Mapped[int] = mapped_column(Integer, default=0)
     estimated_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 8))
+    status: Mapped[str] = mapped_column(String(24), default="reserved")
+    reserved_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+
+
+class ModelBudget(Base):
+    """Operator account-wide limit, shared by all users and API processes."""
+
+    __tablename__ = "model_budget"
+    day: Mapped[str] = mapped_column(String(10), primary_key=True)
+    requests: Mapped[int] = mapped_column(Integer, default=0)
+    reserved_tokens: Mapped[int] = mapped_column(Integer, default=0)

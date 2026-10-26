@@ -20,6 +20,7 @@ class MessageOut(BaseModel):
     created_at: datetime
     reply_to_message_id: str | None
     client_request_id: str | None
+    provider: str | None
 
 
 class ConversationPage(BaseModel):

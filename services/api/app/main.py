@@ -11,10 +11,20 @@ from starlette.exceptions import HTTPException
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
+from app.core.config import get_settings
 from app.core.database import get_engine
 from app.core.errors import ApiError
 
 app = FastAPI(title="银发记忆 Demo", version="0.1.0-alpha")
+silver_logger = logging.getLogger("silver")
+silver_logger.setLevel(logging.INFO)
+silver_logger.propagate = False
+if not silver_logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s UTC %(levelname)s %(name)s %(message)s")
+    formatter.converter = time.gmtime
+    handler.setFormatter(formatter)
+    silver_logger.addHandler(handler)
 logger = logging.getLogger("silver.api")
 app.include_router(auth_router)
 app.include_router(chat_router)
@@ -32,6 +42,7 @@ async def request_metadata(request: Request, call_next):
             "http://127.0.0.1:5173",
             "http://localhost:5173",
             "http://127.0.0.1:8000",
+            "http://127.0.0.1:5174",
         }
     ):
         response = error_response(request, 403, "ORIGIN_DENIED", "请求来源不允许")
@@ -81,7 +92,21 @@ async def database_error(request: Request, exc: SQLAlchemyError):
 
 @app.get("/")
 def index() -> dict[str, str]:
-    return {"service": "silver-memory-api", "stage": "scaffold", "provider": "not-configured"}
+    return {
+        "service": "silver-memory-api",
+        "stage": "chat",
+        "provider": get_settings().llm_provider,
+    }
+
+
+@app.get("/api/v1/model-status")
+def model_status():
+    settings = get_settings()
+    return {
+        "provider": settings.llm_provider,
+        "configured": settings.llm_provider == "mock"
+        or bool(settings.deepseek_api_key.get_secret_value().strip()),
+    }
 
 
 @app.get("/api/v1/healthz")

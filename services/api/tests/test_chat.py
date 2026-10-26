@@ -1,21 +1,9 @@
 import uuid
 
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-from tests.test_auth import sign_in
 
 
-@pytest.fixture
-def clients(accounts):
-    a, b = TestClient(app), TestClient(app)
-    sign_in(a, accounts[0])
-    sign_in(b, accounts[1])
-    return a, b
-
-
-def test_persistent_messages_and_failure_are_linked(clients):
+def test_persistent_messages_and_mock_reply_are_linked(clients):
     a, _ = clients
     conversation = a.post("/api/v1/conversations").json()["id"]
     payload = {"content": "合成测试：你好\n第二行", "client_request_id": str(uuid.uuid4())}
@@ -24,8 +12,9 @@ def test_persistent_messages_and_failure_are_linked(clients):
     result = response.json()
     assert result["user_message"]["content"] == payload["content"]
     assert result["assistant_message"]["reply_to_message_id"] == result["user_message"]["id"]
-    assert result["assistant_message"]["status"] == "failed"
-    assert result["assistant_message"]["error_code"] == "MODEL_NOT_CONFIGURED"
+    assert result["assistant_message"]["status"] == "completed"
+    assert result["assistant_message"]["provider"] == "mock"
+    assert result["assistant_message"]["content"].startswith("【Mock")
     history = a.get(f"/api/v1/conversations/{conversation}/messages").json()["items"]
     assert [item["role"] for item in history] == ["user", "assistant"]
     assert history[0]["content"] == payload["content"]

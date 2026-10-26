@@ -5,13 +5,13 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_scaffold_reports_actual_stage_without_credentials():
+def test_service_reports_actual_stage_without_credentials():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {
         "service": "silver-memory-api",
-        "stage": "scaffold",
-        "provider": "not-configured",
+        "stage": "chat",
+        "provider": "mock",
     }
 
 

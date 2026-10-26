@@ -1,0 +1,19 @@
+{
+  "live_requests": 1,
+  "refresh_persisted": true,
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "status": "completed",
+  "input_tokens": 97,
+  "output_tokens": 13,
+  "latency_ms": 1343,
+  "estimated_usd_peak_cache_miss": "0.00004470",
+  "reserved_tokens": 1104,
+  "budget": [
+    {
+      "day": "2026-10-26",
+      "requests": 1,
+      "reserved_tokens": 1104
+    }
+  ]
+}

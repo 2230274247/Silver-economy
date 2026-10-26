@@ -21,6 +21,8 @@
 - GitHub 日志必须详实：每次提交正文记录香港时间、完成的功能、修复的问题、实际测试命令/结果、未完成项与下一步；更新 CHANGELOG、专项记录及 docs/progress/COMMIT_LOG.md。已推送历史不 amend/重写，失败与修复分别保留。
 - CR-001 原件副本和冻结基线不得改写；后续调整另建变更或 ADR。
 - 只做当前范围内必要改动；不引入微服务、向量库或多 Agent。
+- 正式最终验收目标已保真归档 docs/changes/V01-final-goal.source.md，差距审计见 docs/progress/V01_FINAL_AUDIT.md。T10 后追加 T10E1/E2：可配置 Synthetic 生成/导入 100/1000/10000、固定至少 200 题、客观指标/HTML+JSON/并发与资源报告；不能用入库条数替代记忆有效性。
+- 所有真实 DeepSeek 请求必须经过共享 MySQL 日预算/幂等登记；自动测试强制 Mock 且禁真实 HTTP。首次 live 已用一条短请求验证，重复测试不再扣费；未知/超时不自动重试。未来抽取/意图同样计入总预算。
 - 冻结 V1.0 基线原件不得改写；未提供时记录缺失。
 
 常规检查：python scripts/check.py；只测试后端时进入 services/api 使用项目 .venv 的 pytest/ruff。

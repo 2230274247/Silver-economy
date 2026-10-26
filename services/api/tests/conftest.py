@@ -2,8 +2,10 @@ import os
 import secrets
 import uuid
 
+import httpx
 import pytest
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from alembic import command
@@ -12,6 +14,19 @@ from app.core.database import build_engine, get_session
 from app.core.security import hasher
 from app.main import app
 from app.models.entities import User
+
+
+@pytest.fixture(autouse=True)
+def model_test_mode(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "mock")
+    get_settings.cache_clear()
+
+    def deny_network(*args, **kwargs):
+        raise AssertionError("Automated tests cannot call a real network provider")
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", deny_network)
+    yield
+    get_settings.cache_clear()
 
 
 def migration_config(url: str) -> Config:
@@ -55,3 +70,18 @@ def accounts(db):
     app.dependency_overrides[get_session] = lambda: db
     yield result
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def clients(accounts):
+    result = []
+    for user, password in accounts:
+        client = TestClient(app)
+        assert (
+            client.post(
+                "/api/v1/auth/login", json={"login_name": user.login_name, "password": password}
+            ).status_code
+            == 200
+        )
+        result.append(client)
+    return tuple(result)

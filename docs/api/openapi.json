@@ -317,6 +317,22 @@
         }
       }
     },
+    "/api/v1/model-status": {
+      "get": {
+        "summary": "Model Status",
+        "operationId": "model_status_api_v1_model_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/healthz": {
       "get": {
         "summary": "Health",
@@ -514,6 +530,17 @@
               }
             ],
             "title": "Client Request Id"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
           }
         },
         "type": "object",
@@ -525,7 +552,8 @@
           "error_code",
           "created_at",
           "reply_to_message_id",
-          "client_request_id"
+          "client_request_id",
+          "provider"
         ],
         "title": "MessageOut"
       },

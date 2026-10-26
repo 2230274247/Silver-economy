@@ -12,8 +12,10 @@
 | 2026-10-26 16:04:25 +08:00 | CR-001 正式需求登记 | cde000795374b63c9d6a93cb89ca2077b2e3d517 | 原件保真归档、Android 真机最终验收、T11A–E、数据/API/持久调度设计、13 项验收、详细日志规范；属于设计登记而非功能接通 | 原件/暂存哈希、任务覆盖、安全/YAML/5 扫描测试/3 API 测试 PASS；push/SHA PASS；CI 40289773428 全部 PASS |
 | 2026-10-26 16:32:46 +08:00 | T03 数据库/API 基础 | 3aa87eee69790e7fc1cbce46fda8eb8f7315cdb3 | 独立 MySQL 双库、八表 Alembic、归属约束、health/ready、脱敏日志；修复唯一键重名和回退索引问题 | 12 后端/真实库测试、5 扫描器及前端门禁 PASS；HTTP 200；push/SHA PASS；CI 40293010288 PASS |
 | 2026-10-26 16:49:25 +08:00 | T04 鉴权与真实登录 | e967f4535b7222bf4d1c7051dd42c22eedaf8bcd | Argon2id、会话哈希/撤销/过期、HttpOnly Cookie、H5 登录/退出/换号；准备运营 Key 本地入口但未调用 | 20 后端/15 真实 UI/全门禁 PASS；push/SHA PASS；CI 40294959392 PASS |
+| 2026-10-26 17:13:25 +08:00 | T05 持久化聊天 | 2252da21c02510ced73d7061badb9418a6187ca3 | 实际会话/消息/API/历史分页、原文保存与幂等、刷新定位/越权保护；模型当时未接入 | 28 后端、18 UI 和全门禁 PASS；push/SHA PASS；CI 40297897977 PASS |
+| 2026-10-26 17:37:21 +08:00 | UI-FIX-01 输入交互 | 2a3d4e1d533bd792c0ba733781608b031790c83a | 建议草稿、紧凑多行、IME/去重、同步原文、独立页面绑定和按钮状态；保留 T02 历史 | 27 UI、28 后端与全门禁 PASS；push/SHA PASS；CI 40300983242 PASS |
 
-最新核验时间：2026-10-26 16:06:04 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
+最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。
 
 ## T00–T02 当前能力边界
@@ -32,5 +34,3 @@
 4. 记录 SHA、分支、push/SHA 核验、CI run URL/结果、未完成项和下一步。
 5. 当次 commit 的最终 SHA/推送/CI 只能事后核验，在后续提交补记，不预先填成功；Git 本身提供实际提交时间。
 6. 不记录真实私密对话、地点、密钥、设备标识和未脱敏供应商日志。
-
-| 2026-10-26 17:13:25 +08:00 | T05 持久化聊天 | 2252da21c02510ced73d7061badb9418a6187ca3 | 实际会话/消息/API/历史分页、原文保存与幂等、刷新定位/越权保护；模型当时未接入 | 28 后端、18 UI 和全门禁 PASS；push/SHA PASS；CI 40297897977 PASS |

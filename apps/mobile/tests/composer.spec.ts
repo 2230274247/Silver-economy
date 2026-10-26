@@ -28,6 +28,8 @@ test('suggestions only fill draft; IME Enter never sends; Shift Enter preserves 
   const saved = page.waitForResponse(response => response.request().method() === 'POST' && /\/messages$/.test(response.url()));
   await input.press('Enter');
   await expect(page.getByRole('button', { name: '发送消息', exact: true })).toBeDisabled();
+  await expect(page.locator('.message-row.user .message')).toBeVisible();
+  await expect(page.getByText('发送中，尚未确认保存', { exact: true })).toBeVisible();
   await input.press('Enter');
   expect((await (await saved).json()).user_message.content).toBe('合成输入法测试\n第二行');
   await expect(page.locator('.message-row.user .message')).toBeVisible();
@@ -52,7 +54,8 @@ test('network failure retains input and request ID for safe retry', async ({ pag
   await expect(page.getByRole('button', { name: '重试发送', exact: true })).toBeVisible();
   await expect(input).toHaveValue(text);
   await page.getByRole('button', { name: '重试发送', exact: true }).click();
-  await expect(page.getByText(text, { exact: true })).toBeVisible();
+  await expect(input).toHaveValue('');
+  await expect(page.locator('.message-row.user .message')).toHaveText(text);
   expect(ids).toHaveLength(2); expect(ids[0]).toBe(ids[1]);
 });
 
@@ -61,7 +64,8 @@ test('long messages and keyboard-sized viewport retain readable composer and lat
   const input = page.getByRole('textbox', { name: '想对小忆说的话' });
   const long = '合成长消息，用于测试排版。'.repeat(60);
   await input.fill(long); await page.getByRole('button', { name: '发送消息', exact: true }).click();
-  await expect(page.getByText(long, { exact: true })).toBeVisible();
+  await expect(input).toHaveValue('');
+  await expect(page.locator('.message-row.user .message')).toHaveText(long);
   await expect(page.locator('#chat-tail')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await input.focus();

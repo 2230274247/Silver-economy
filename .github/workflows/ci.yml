@@ -61,8 +61,6 @@ jobs:
         working-directory: services/api
       - run: python scripts/seed-demo-users.py
         working-directory: .
-      - run: mkdir -p ../../logs && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log > ../../logs/api-ci.log 2>&1 &
-        working-directory: services/api
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
