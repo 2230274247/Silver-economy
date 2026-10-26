@@ -113,6 +113,13 @@ npm run test:ui
 - 本任务提交的最终远端与 CI 结果在下一次提交中记录，不预先标记完成。
 
 后续隐私界面会明确聊天原文与长期记忆的保管、纠错及删除边界。
-V0.1 仅内部演示；语音、照片/生成影像、手机离开网页后的通知和复杂向量检索均延后。
-用户已将电脑浏览器后台通知、真实路线/天气查询纳入首版 T11 扩展验收，
-详见 [ADR-002](docs/decisions/ADR-002-assistant-and-ui.md)。当前尚未实现，不能据预览页认为已具备提醒能力。
+V0.1 仅内部演示；语音、照片/生成影像、iOS/小程序后台通知和复杂向量检索均延后。
+正式 [CR-001](docs/changes/CR-001.source.md) 将主动出行助理与长期记忆并列为 P0：
+聊天识别/追问、可编辑确认卡、高德路线天气、确定性出门时间、持久化调度及通知。
+T11 已拆为 T11A–T11E；最终至少一台 Android 真机后台通知通过，浏览器只作中间验证。
+这覆盖此前 [ADR-002](docs/decisions/ADR-002-assistant-and-ui.md) 的 PC-only 决定，
+详见 [影响与依赖](docs/changes/CR-001-impact.md)、[ADR-003](docs/decisions/ADR-003-cr001-delivery.md)、
+[数据库设计](docs/data/CR-001-database-design.md) 与 [扩展验收](docs/demos/CR-001-ACCEPTANCE.md)。
+当前均为待实施需求，不能据预览页认为已具备提醒能力；缺密钥可先 Mock，真实服务/真机状态单独记录。
+
+开发、修复、时间与验证历史见 [GitHub 开发日志](docs/progress/COMMIT_LOG.md)。

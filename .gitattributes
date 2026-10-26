@@ -2,3 +2,4 @@
 *.png binary
 *.jpg binary
 *.woff2 binary
+docs/changes/*.source.md -text whitespace=-blank-at-eol
