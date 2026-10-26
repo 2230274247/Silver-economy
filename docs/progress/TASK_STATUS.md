@@ -2,14 +2,14 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T00
-- Last remote-confirmed SHA: 初始化 main `9f43350cbc23932e17de459729fca3f07b446e54`
+- Current task: T01
+- Last remote-confirmed SHA: T00 `291777e16c7848c5d50ba23a2e9ebf9f45fec720`
 - Last verified CI: N/A（T01 创建）
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
 |---|---|---|---|---|---|---|
-| T00 | TESTING | 环境/权限/fetch/分支检查通过 | 本次提交后记录 | 待执行 | N/A | 推送核验后才开始 T01 |
-| T01 | TODO | - | - | - | - | 仓库底座 |
+| T00 | DONE_PUSHED | 环境/权限/fetch/分支检查通过 | 291777e16c7848c5d50ba23a2e9ebf9f45fec720 | SHA 一致 | N/A | main 初始化历史保留 |
+| T01 | TESTING | 本地全部核心检查通过，详见 T01_SCAFFOLD.md | 本次提交后记录 | 待执行 | 待远端运行 | 依赖审计 KNOWN_ISSUES |
 | T02 | TODO | - | - | - | - | H5 页面与视觉基建 |
 | T03 | TODO | - | - | - | - | 独立 MySQL 与迁移 |
 | T04 | TODO | - | - | - | - | 用户与权限 |

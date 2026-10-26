@@ -1,0 +1,49 @@
+name: V0.1 validation
+'on':
+  push:
+    branches: [dev/v0.1]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/security_scan.py
+      - run: python -m unittest discover -s scripts -p 'test_*.py'
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: services/api/requirements.lock
+      - run: pip install -r services/api/requirements.lock
+      - run: python scripts/validate_workflow.py
+      - run: ruff check services/api/app services/api/tests scripts
+      - run: ruff format --check services/api/app services/api/tests scripts
+      - run: pytest -q
+        working-directory: services/api
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build:h5
