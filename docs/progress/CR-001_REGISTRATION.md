@@ -36,3 +36,12 @@
 
 本次安全提交、推送并核对 SHA/CI 后进入 T03 独立 MySQL 与迁移基础。
 本次最终 SHA 与远端结果通过后续日志提交固化，不预写成功。
+
+## 事后核验（通过后续日志提交固化）
+
+- 实际提交时间：2026-10-26 16:04:25 +08:00；正文准备时间 16:03:52 +08:00。
+- Commit：cde000795374b63c9d6a93cb89ca2077b2e3d517。
+- Git push origin/dev/v0.1：成功；git ls-remote 与 HEAD 一致。
+- CI：run 40289773428，security/api/mobile 全部 PASS。
+- 2026-10-26 16:06:04 +08:00 再次读取 GitHub Commit API 与 Actions 核验：PASS。
+- CR-001 需求登记任务状态：DONE_PUSHED；实际功能仍按 T03–T14/T11A–E 实施。

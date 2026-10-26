@@ -9,6 +9,10 @@
 | 2026-10-26 15:27:49 +08:00 | T01 工程底座 | 9b512ac283eea4f8fc2e99ae2beb4d4bf2145691 | uni-app H5/FastAPI 可运行骨架、锁依赖、安全/测试/构建 CI、安装启动脚本；无聊天/记忆业务 | 3 API + 5 扫描测试、lint/type/build PASS；push/SHA PASS；CI 40285949407 PASS；依赖风险另记 KNOWN_ISSUES |
 | 2026-10-26 15:51:21 +08:00 | T02 移动页面 | 1a6920794eda17b9065353d3bb07734c7a7245db | Muse 参考聊天、原创伙伴、3 主导航/设置/登录/历史页壳、字号持久化、草稿、约 60px 单行输入；补语义按钮和输入标签 | 12 浏览器测试及全门禁本地 PASS；push/SHA PASS；首轮 CI 40288362756 mobile FAIL，未当成功 |
 | 2026-10-26 15:53:40 +08:00 | T02 CI 修复 | 89c82eb4066a5416f75c1645c7b0a279e6625130 | 修复 ubuntu-latest 26.04 不受锁定 Playwright 支持；仅固定 mobile runner 为 Ubuntu 24.04 | YAML/安全检查 PASS；push/SHA PASS；CI 40288604220 全部 PASS；保留失败历史 |
+| 2026-10-26 16:04:25 +08:00 | CR-001 正式需求登记 | cde000795374b63c9d6a93cb89ca2077b2e3d517 | 原件保真归档、Android 真机最终验收、T11A–E、数据/API/持久调度设计、13 项验收、详细日志规范；属于设计登记而非功能接通 | 原件/暂存哈希、任务覆盖、安全/YAML/5 扫描测试/3 API 测试 PASS；push/SHA PASS；CI 40289773428 全部 PASS |
+
+最新核验时间：2026-10-26 16:06:04 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
+远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。
 
 ## T00–T02 当前能力边界
 
