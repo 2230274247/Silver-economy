@@ -1,0 +1,502 @@
+{
+  "version": "memory-eval/1",
+  "label": "pilot-v3b",
+  "synthetic": true,
+  "provider": "mock",
+  "real_model_calls": 0,
+  "created_at_hk": "2026-10-27T05:48:52+08:00",
+  "suite_sha256": "a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4",
+  "suite_questions": 310,
+  "unique_question_texts": 246,
+  "pilot_limit": 12,
+  "status": "measured",
+  "parent_commit": "423ff6cf37cc12a82eb7027c939b487874d7a5d4",
+  "code_sha256_utf8_lf": {
+    "services/api/app/memory/retriever.py": "279dcd4b04208b75808cb89512caa38913276fc5a963e171d093efab42afdc04",
+    "services/api/app/memory/context.py": "20381d12259346da625c46cc1e99d797c22f87743249ffb58daaa210e26453fe",
+    "services/api/app/services/model_chat.py": "4bb0304a9f16ac0c113bf3688b0461ae5b68cfcdc16f3bafc98aee392eb6e1bc"
+  },
+  "definitions": {
+    "recall": "All required source memories must occur in top 5; denominator is positive cases only.",
+    "top1": "First retrieved source must be one of the independently expected sources.",
+    "answer": "Closed answer groups plus persisted source references; unknown questions require explicit uncertainty.",
+    "hallucination_proxy": "Unknown/unsupported questions answered without explicit uncertainty; conservative Mock proxy, not LLM semantic grading.",
+    "resources": "Python allocation peak is incremental evaluation allocation. RSS/peak RSS covers process lifetime, including preparation.",
+    "live": "This batch performs no real DeepSeek calls. Earlier live samples are separate evidence."
+  },
+  "scales": [
+    {
+      "scale": 100,
+      "per_user_memories_before": 50,
+      "preparation_seconds": 0.333,
+      "suite_sha256": "a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4",
+      "initial_snapshot": {
+        "sha256": "940ba8b01c74c509bc4fb00983ff9b4609d2499fb9332aabe6714de098aa5e5b",
+        "memories": 100
+      },
+      "final_snapshot": {
+        "sha256": "940ba8b01c74c509bc4fb00983ff9b4609d2499fb9332aabe6714de098aa5e5b",
+        "memories": 100
+      },
+      "metrics": {
+        "recall_at_5": 1.0,
+        "top1_accuracy": 1.0,
+        "answer_accuracy_mock": 1.0,
+        "unsupported_answer_rate_mock": null,
+        "unsupported_answer_denominator": 0,
+        "conflict_accuracy_mock": null,
+        "cross_user_leakage": 0,
+        "deleted_memory_recall": 0,
+        "retrieval_p50_ms": 78.751,
+        "retrieval_p95_ms": 154.356,
+        "chat_api_p95_ms_mock": 296.511,
+        "sql_queries": 84,
+        "sql_total_ms": 262.194,
+        "errors": 0,
+        "real_model_calls": 0,
+        "max_prompt_bytes": 3148,
+        "max_evidence_items": 5
+      },
+      "gates": {
+        "recall": true,
+        "top1": true,
+        "conflict": false,
+        "isolation": true,
+        "deleted": true,
+        "latency": true,
+        "no_bulk_paid_calls": true,
+        "context_bound": true,
+        "no_data_drift": true,
+        "complete_suite": false,
+        "no_errors": true
+      },
+      "groups": {
+        "cross_session": {
+          "cases": 3,
+          "answer_accuracy_mock": 1.0
+        },
+        "exact": {
+          "cases": 3,
+          "answer_accuracy_mock": 1.0
+        },
+        "performance": {
+          "cases": 3,
+          "answer_accuracy_mock": 1.0
+        },
+        "semantic": {
+          "cases": 3,
+          "answer_accuracy_mock": 1.0
+        }
+      },
+      "resources": {
+        "evaluation_wall_seconds": 9.839,
+        "python_cpu_seconds": 9.656,
+        "python_allocated_current_bytes": 4652732,
+        "python_allocated_peak_bytes": 5829427,
+        "fact_text_bytes": 6557,
+        "rss_bytes": 112848896,
+        "peak_rss_lifetime_bytes": 173314048
+      },
+      "concurrency": {
+        "workers": 4,
+        "requests": 80,
+        "wall_seconds": 4.147,
+        "retrieval_p95_ms": 303.044,
+        "cross_user_leakage": 0
+      },
+      "cases": [
+        {
+          "id": "Q001",
+          "actor": "A",
+          "group": "exact",
+          "question": "陪小禾去苏州旅游是哪一年？",
+          "expected": [
+            "A.trip"
+          ],
+          "retrieved": [
+            "A.trip",
+            "A.sea",
+            "A.sister",
+            "A.color"
+          ],
+          "used": [
+            "A.trip"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 154.356,
+          "sql_queries": 10,
+          "sql_ms": 30.191,
+          "chat_api_ms_mock": 296.511,
+          "prompt_bytes": 2812,
+          "evidence_items": 4,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2019年我陪孙女小禾去苏州旅游。记录时间范围：2019年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q002",
+          "actor": "A",
+          "group": "semantic",
+          "question": "和小禾逛苏州的那趟是几几年？",
+          "expected": [
+            "A.trip"
+          ],
+          "retrieved": [
+            "A.trip",
+            "A.color"
+          ],
+          "used": [
+            "A.trip"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 88.429,
+          "sql_queries": 6,
+          "sql_ms": 22.727,
+          "chat_api_ms_mock": 190.505,
+          "prompt_bytes": 2387,
+          "evidence_items": 2,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2019年我陪孙女小禾去苏州旅游。记录时间范围：2019年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q003",
+          "actor": "A",
+          "group": "cross_session",
+          "question": "你还记得我带小禾游苏州的年份吗？",
+          "expected": [
+            "A.trip"
+          ],
+          "retrieved": [
+            "A.trip",
+            "A.color",
+            "A.checkup",
+            "A.edited_retire"
+          ],
+          "used": [
+            "A.trip"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 100.735,
+          "sql_queries": 10,
+          "sql_ms": 26.793,
+          "chat_api_ms_mock": 214.878,
+          "prompt_bytes": 2849,
+          "evidence_items": 4,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2019年我陪孙女小禾去苏州旅游。记录时间范围：2019年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q004",
+          "actor": "A",
+          "group": "performance",
+          "question": "回想一下，小禾同行的苏州之旅发生在哪年？",
+          "expected": [
+            "A.trip"
+          ],
+          "retrieved": [
+            "A.trip",
+            "A.color"
+          ],
+          "used": [
+            "A.trip"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 78.751,
+          "sql_queries": 6,
+          "sql_ms": 16.985,
+          "chat_api_ms_mock": 195.342,
+          "prompt_bytes": 2405,
+          "evidence_items": 2,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2019年我陪孙女小禾去苏州旅游。记录时间范围：2019年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q005",
+          "actor": "A",
+          "group": "exact",
+          "question": "我和周敏去厦门是哪天？",
+          "expected": [
+            "A.sea"
+          ],
+          "retrieved": [
+            "A.sea",
+            "A.sister"
+          ],
+          "used": [
+            "A.sea"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 76.444,
+          "sql_queries": 6,
+          "sql_ms": 17.203,
+          "chat_api_ms_mock": 189.106,
+          "prompt_bytes": 2388,
+          "evidence_items": 2,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2021年5月4日我和老同学周敏去了厦门。记录时间范围：2021年05月04日。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q006",
+          "actor": "A",
+          "group": "semantic",
+          "question": "与老同学周敏同游厦门的日期是什么？",
+          "expected": [
+            "A.sea"
+          ],
+          "retrieved": [
+            "A.sea"
+          ],
+          "used": [
+            "A.sea"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 90.409,
+          "sql_queries": 4,
+          "sql_ms": 14.319,
+          "chat_api_ms_mock": 200.291,
+          "prompt_bytes": 2202,
+          "evidence_items": 1,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2021年5月4日我和老同学周敏去了厦门。记录时间范围：2021年05月04日。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q007",
+          "actor": "A",
+          "group": "cross_session",
+          "question": "帮我找找周敏一起去厦门的日子？",
+          "expected": [
+            "A.sea"
+          ],
+          "retrieved": [
+            "A.sea"
+          ],
+          "used": [
+            "A.sea"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 41.657,
+          "sql_queries": 4,
+          "sql_ms": 15.726,
+          "chat_api_ms_mock": 199.187,
+          "prompt_bytes": 2196,
+          "evidence_items": 1,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2021年5月4日我和老同学周敏去了厦门。记录时间范围：2021年05月04日。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q008",
+          "actor": "A",
+          "group": "performance",
+          "question": "那次与周敏结伴到厦门具体是哪天？",
+          "expected": [
+            "A.sea"
+          ],
+          "retrieved": [
+            "A.sea",
+            "A.recovered_4",
+            "A.recovered_3",
+            "A.recovered_2",
+            "A.recovered_1"
+          ],
+          "used": [
+            "A.sea"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 80.454,
+          "sql_queries": 12,
+          "sql_ms": 38.248,
+          "chat_api_ms_mock": 203.69,
+          "prompt_bytes": 3148,
+          "evidence_items": 5,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2021年5月4日我和老同学周敏去了厦门。记录时间范围：2021年05月04日。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q009",
+          "actor": "A",
+          "group": "exact",
+          "question": "与姐姐林兰去青岛是哪年？",
+          "expected": [
+            "A.sister"
+          ],
+          "retrieved": [
+            "A.sister"
+          ],
+          "used": [
+            "A.sister"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 43.343,
+          "sql_queries": 4,
+          "sql_ms": 14.339,
+          "chat_api_ms_mock": 195.134,
+          "prompt_bytes": 2167,
+          "evidence_items": 1,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2008年我和姐姐林兰去过青岛。记录时间范围：2008年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q010",
+          "actor": "A",
+          "group": "semantic",
+          "question": "我陪林兰游青岛在几几年？",
+          "expected": [
+            "A.sister"
+          ],
+          "retrieved": [
+            "A.sister",
+            "A.trip"
+          ],
+          "used": [
+            "A.sister"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 50.543,
+          "sql_queries": 6,
+          "sql_ms": 18.28,
+          "chat_api_ms_mock": 196.403,
+          "prompt_bytes": 2374,
+          "evidence_items": 2,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2008年我和姐姐林兰去过青岛。记录时间范围：2008年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q011",
+          "actor": "A",
+          "group": "cross_session",
+          "question": "姐姐林兰同去青岛的年份你还记得吗？",
+          "expected": [
+            "A.sister"
+          ],
+          "retrieved": [
+            "A.sister",
+            "A.checkup",
+            "A.edited_retire"
+          ],
+          "used": [
+            "A.sister"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 54.99,
+          "sql_queries": 8,
+          "sql_ms": 21.721,
+          "chat_api_ms_mock": 205.305,
+          "prompt_bytes": 2638,
+          "evidence_items": 3,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2008年我和姐姐林兰去过青岛。记录时间范围：2008年。这是有来源的历史表述，不代表目前状态已核实。"
+        },
+        {
+          "id": "Q012",
+          "actor": "A",
+          "group": "performance",
+          "question": "翻翻旧事，林兰同行的青岛旅行发生在哪年？",
+          "expected": [
+            "A.sister"
+          ],
+          "retrieved": [
+            "A.sister",
+            "A.sea",
+            "A.trip"
+          ],
+          "used": [
+            "A.sister"
+          ],
+          "recall_at_5": true,
+          "top1_correct": true,
+          "answer_correct": true,
+          "unsupported_answer": false,
+          "conflict_correct": null,
+          "cross_user_leakage": false,
+          "deleted_recall": false,
+          "forbidden_recall": false,
+          "retrieval_ms": 96.186,
+          "sql_queries": 8,
+          "sql_ms": 25.662,
+          "chat_api_ms_mock": 205.756,
+          "prompt_bytes": 2622,
+          "evidence_items": 3,
+          "error": null,
+          "reply": "【Mock 检索测试】你曾说：【Synthetic】2008年我和姐姐林兰去过青岛。记录时间范围：2008年。这是有来源的历史表述，不代表目前状态已核实。"
+        }
+      ]
+    }
+  ],
+  "targets_passed": false
+}

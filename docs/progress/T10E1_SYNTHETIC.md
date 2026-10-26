@@ -1,6 +1,7 @@
 # T10E1：参数化Synthetic生成、三档导入与保护验证
 
-日期：2026-10-27，Asia/Hong_Kong。当前本地已验证，commit/push/SHA/CI提交后确认。
+日期：2026-10-27，Asia/Hong_Kong。远端已确认：`423ff6cf37cc12a82eb7027c939b487874d7a5d4`，
+提交时间05:00:51 +08:00；origin/dev/v0.1一致；CI40400713021的api/security/mobile全部success。
 前项T10：`d7572f9b6f0f2b1c71e5db507bec126ebdc22fb8`，04:18:47 +08:00；远端一致；CI40394518915全部success。
 
 ## 实现文件、方案和数据库影响

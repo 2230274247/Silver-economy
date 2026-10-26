@@ -64,6 +64,14 @@ class MemoryExtractor:
                     for clause in clauses
                     if item.source_excerpt.rstrip("。！？!?，,；; ") in clause
                 ]
+                if not matching_raw:
+                    # A proposed excerpt can span commas. Validate its full sentence
+                    # instead of skipping question detection when no single clause fits.
+                    matching_raw = [
+                        sentence
+                        for sentence in re.findall(r"[^。！？!?]+[。！？!?]?", source)
+                        if item.source_excerpt.rstrip("。！？!? ") in sentence
+                    ]
                 if matching_raw and all(
                     clause.rstrip().endswith(("？", "?"))
                     or clause.rstrip("。！？!?，,；; ").endswith(("吗", "么"))

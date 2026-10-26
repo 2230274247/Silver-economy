@@ -162,6 +162,30 @@ def test_specific_unknown_meal_does_not_reuse_habits_or_unrelated_date(db, accou
     assert MemoryRetriever().retrieve(db, user.id, "我去年6月18日中午吃了什么？") == []
 
 
+def test_named_travel_companion_is_required_before_ranking_common_destination(db, accounts):
+    user = accounts[0][0]
+    correct, _, _ = remember(
+        db, user, kind="travel", key="秋云", value="2007年我和秋云去过丽江", expression="2007年"
+    )
+    for i in range(10):
+        remember(
+            db,
+            user,
+            kind="travel",
+            key="丽江",
+            value=f"2025年我第{i}次去丽江旅游，和建平游览古城",
+            expression="2025年",
+        )
+    found = MemoryRetriever().retrieve(db, user.id, "翻旧事，秋云同行的丽江旅行是哪年？")
+    assert [memory.fact.id for memory in found] == [correct.id]
+
+
+def test_coworker_alone_does_not_establish_neighbor_relationship(db, accounts):
+    user = accounts[0][0]
+    remember(db, user, kind="relationship", key="宋安", value="我的同事宋安在广州任职")
+    assert MemoryRetriever().retrieve(db, user.id, "哪位同事住在我隔壁？") == []
+
+
 def test_context_selects_at_most_five_and_reserves_full_unicode_input(db, accounts):
     user = accounts[0][0]
     for i in range(8):

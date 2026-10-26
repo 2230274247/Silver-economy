@@ -1,0 +1,9 @@
+{
+  "ready": true,
+  "provider_configured": true,
+  "existing_reply_persisted": true,
+  "current_source_reference_retained": true,
+  "consent_unchanged": true,
+  "messages_sent": 0,
+  "real_model_calls_new": 0
+}

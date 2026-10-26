@@ -1,0 +1,77 @@
+{
+  "suite_sha256": "a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4",
+  "new_real_model_calls": 0,
+  "runs": [
+    {
+      "file": "pilot-v3.json",
+      "sha256": "a6d2a08d217849417357826f97198faa0437797e9521482b01db75973fd05299",
+      "recorded_status": "running",
+      "measured_scales": [],
+      "note": "Harness failed before a scale result: empty conflict group compared with None; partial evidence only"
+    },
+    {
+      "file": "pilot-v3b.json",
+      "sha256": "73d2dac41fd7934b4f2c25219f9b0840c23ae3d4b771c4859401d39aadb334a7",
+      "recorded_status": "measured",
+      "measured_scales": [
+        100
+      ],
+      "note": "12-case pilot only, complete-suite gate intentionally false"
+    },
+    {
+      "file": "baseline-v3.json",
+      "sha256": "a69cccbe3f181e9d3d24b2ce8c1bd44b1d2763d7ac9ad3e9d6c0419c96639bac",
+      "recorded_status": "measured",
+      "measured_scales": [
+        100,
+        1000,
+        10000,
+        20000
+      ],
+      "note": "Full four-scale baseline; targets failed; raw results retained"
+    },
+    {
+      "file": "rules-v1.json",
+      "sha256": "20ff7a43e058226f462db4a21b232e3634931c4fdaa37580842cff2a034bdc3e",
+      "recorded_status": "running",
+      "measured_scales": [
+        100
+      ],
+      "note": "Stopped after first-scale failures; legacy running field is not a live process or a pass"
+    },
+    {
+      "file": "rules-v2.json",
+      "sha256": "55689e6affd92a640dcb88fecedfb4caa8865cd4a7a8b1a13c7bc199335c90af",
+      "recorded_status": "running",
+      "measured_scales": [
+        100,
+        1000
+      ],
+      "note": "Stopped after second-scale failures; interrupted status retained"
+    },
+    {
+      "file": "rules-v3.json",
+      "sha256": "b55a40380741dd3a6eb4a3427f7d413c39acd8d7bfab9ae3038a9f12c76336b8",
+      "recorded_status": "measured",
+      "measured_scales": [
+        100,
+        1000,
+        10000,
+        20000
+      ],
+      "note": "Full four-scale measured run; all declared gates passed; legacy population field is mean"
+    },
+    {
+      "file": "rules-v3-verified.json",
+      "sha256": "5a7dc2924e8809d6d2dbab7f0fb106e83ad0e7449b37cf2ba04fbed730a573bd",
+      "recorded_status": "measured",
+      "measured_scales": [
+        100,
+        1000,
+        10000,
+        20000
+      ],
+      "note": "Same measured metrics, with independent SQL population and source snapshot verification"
+    }
+  ]
+}

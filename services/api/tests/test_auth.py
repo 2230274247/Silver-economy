@@ -46,7 +46,9 @@ def test_login_cookie_hash_and_identity(accounts, db):
     assert "password" not in response.text
     assert "token" not in response.json()
     token = client.cookies.get(COOKIE_NAME)
-    assert db.scalar(select(AuthSession.token_hash)) == hash_token(token)
+    assert db.scalar(
+        select(AuthSession.token_hash).where(AuthSession.user_id == accounts[0][0].id)
+    ) == hash_token(token)
     assert client.get("/api/v1/me").json()["id"] == accounts[0][0].id
 
 
@@ -66,7 +68,7 @@ def test_incorrect_and_nonexistent_login_have_same_error(accounts):
 def test_expired_and_forged_sessions_rejected(accounts, db):
     client = TestClient(app)
     sign_in(client, accounts[0])
-    session = db.scalar(select(AuthSession))
+    session = db.scalar(select(AuthSession).where(AuthSession.user_id == accounts[0][0].id))
     session.expires_at = utc_now() - timedelta(seconds=1)
     db.flush()
     assert client.get("/api/v1/me").status_code == 401

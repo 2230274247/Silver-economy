@@ -1,0 +1,9 @@
+{
+  "checked_at_hk": "2026-10-27T06:24:58+08:00",
+  "scope": "Existing development ledger, read only; not a new model request or supplier bill",
+  "deepseek_requests_existing": 6,
+  "input_tokens_existing": 2291,
+  "output_tokens_existing": 261,
+  "bulk_evaluation_real_calls": 0,
+  "bulk_evaluation_guard": "Mock forced; external httpx transport blocked"
+}

@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import and_, case, func, literal, or_, select
 
 from app.memory.extractor import event_time
+from app.memory.query import RELATIVES, evidence_constraints, expanded_terms
 from app.models.entities import MemoryFact, MemorySource, Message, User
 
 ALIASES = {
@@ -43,6 +44,33 @@ STOP_TERMS = {
     "在哪",
     "座城",
     "城市",
+    "我在",
+    "我和",
+    "我去",
+    "你还",
+    "还记",
+    "得我",
+    "帮我",
+    "找找",
+    "找回",
+    "说过",
+    "过的",
+    "哪种",
+    "哪天",
+    "是哪",
+    "那种",
+    "哪位",
+    "哪家",
+    "多久",
+    "了什",
+    "时我",
+    "过哪",
+    "一条",
+    "关于",
+    "目前",
+    "当前",
+    "最新",
+    "那次",
 }
 
 
@@ -76,11 +104,11 @@ def query_terms(query):
     if "work" not in kinds and re.search(r"上.{0,6}班", compact):
         kinds.append("work")
     words = re.findall(r"[a-z]{2,}|[0-9]{4}|[\u4e00-\u9fff]+", compact)
-    terms = []
+    terms = expanded_terms(compact)
     for word in words:
         candidates = (
             [word]
-            if word.isascii() or len(word) <= 6
+            if word.isascii() or len(word) <= 2
             else [word[i : i + 2] for i in range(len(word) - 1)]
         )
         for term in candidates:
@@ -98,11 +126,11 @@ def query_terms(query):
                 terms.append(term)
     if not words and compact:
         terms.append(compact)  # Literal punctuation search remains parameterized/escaped.
-    return compact, terms[:20], kinds
+    return compact, terms[:40], kinds
 
 
 def historical_query(query):
-    return not any(word in query for word in ("现在", "目前", "当前")) and any(
+    return not any(word in query for word in ("现在", "目前", "当前", "最新")) and any(
         word in query for word in ("以前", "当时", "上次", "那次", "曾经", "发生过", "之前")
     )
 
@@ -136,14 +164,24 @@ class MemoryRetriever:
             return []
         now = datetime.now(UTC).replace(tzinfo=None)
         exact_key = func.instr(literal(compact), MemoryFact.key) > 0
-        matches = [exact_key, *[MemoryFact.value.contains(term, autoescape=True) for term in terms]]
+        name_key = func.regexp_replace(MemoryFact.key, rf"^(?:我的)?(?:{RELATIVES})", "")
+        partial_name = and_(
+            name_key != MemoryFact.key,
+            func.length(name_key) >= 2,
+            func.instr(literal(compact), name_key) > 0,
+        )
+        matches = [
+            exact_key,
+            partial_name,
+            *[MemoryFact.value.contains(term, autoescape=True) for term in terms],
+        ]
         if kinds:
             matches.append(MemoryFact.kind.in_(kinds))
-        score = case((exact_key, 20), else_=0)
+        score = case((exact_key, 20), (partial_name, 16), else_=0)
         for term in terms:
             score += case((MemoryFact.value.contains(term, autoescape=True), 1), else_=0)
         if kinds:
-            score += case((MemoryFact.kind.in_(kinds), 4), else_=0)
+            score += case((MemoryFact.kind.in_(kinds), 8), else_=0)
         statement = select(MemoryFact, score.label("score")).where(
             MemoryFact.user_id == user_id,
             MemoryFact.deleted_at.is_(None),
@@ -163,6 +201,14 @@ class MemoryRetriever:
             )
             .exists(),
         )
+        if for_context:
+            # Necessary field/subject evidence prevents a broad kind match from
+            # substituting another person's birthday or a trip for its unknown hotel.
+            patterns, scopes = evidence_constraints(compact)
+            for pattern in patterns:
+                statement = statement.where(MemoryFact.value.regexp_match(pattern))
+            for scope in scopes:
+                statement = statement.where(MemoryFact.value.contains(scope, autoescape=True))
         if date_query := re.search(r"(?:\d{4}年|去年|今年|前年)\d{1,2}月\d{1,2}[日号]", compact):
             day, precision = event_time(date_query[0], now)
             if precision != "day":
@@ -172,14 +218,22 @@ class MemoryRetriever:
                 MemoryFact.event_at >= day,
                 MemoryFact.event_at < day + timedelta(days=1),
             )
-        if any(
-            word in compact for word in ("吃了什么", "吃过什么", "午饭", "午餐", "晚饭", "早饭")
-        ):
+        if re.search(r"吃.{0,5}(?:什么|哪道|哪种)|主菜|[早午晚](?:饭|餐)", compact):
             statement = statement.where(
                 or_(
                     *[
                         MemoryFact.value.contains(word)
-                        for word in ("吃", "餐", "饭", "粥", "菜", "面", "奶")
+                        for word in (
+                            "吃",
+                            "用餐",
+                            "午餐",
+                            "晚餐",
+                            "早餐",
+                            "午饭",
+                            "晚饭",
+                            "早饭",
+                            "喝粥",
+                        )
                     ]
                 )
             )

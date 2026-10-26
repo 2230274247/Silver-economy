@@ -3,3 +3,5 @@
 *.jpg binary
 *.woff2 binary
 docs/changes/*.source.md -text whitespace=-blank-at-eol
+# Keep measured report byte hashes intact across Windows/Linux checkouts.
+docs/testing/memory-eval-v1/*.json -text whitespace=cr-at-eol,blank-at-eol,blank-at-eof,space-before-tab

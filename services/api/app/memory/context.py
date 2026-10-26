@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from pydantic import Field
 
 from app.memory.extractor import MemoryEnvelope, mock_envelope
+from app.memory.query import supports_requested_fields
 
 MAX_CONTEXT_BYTES = 12000
 CONTEXT_MARKER = "\nMEMORY_CONTEXT_JSON="
@@ -61,6 +62,7 @@ def mock_memory_answer(messages):
     source = messages[-1]["content"]
     result = json.loads(mock_envelope(source))
     memories = json.loads(messages[0]["content"].split(CONTEXT_MARKER, 1)[1])
+    memories = [m for m in memories if supports_requested_fields(source, m["text"])]
     result["memory_refs"] = []
     if memories:
         first = memories[0]
