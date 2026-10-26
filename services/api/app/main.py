@@ -1,8 +1,87 @@
-from fastapi import FastAPI
+import logging
+import time
+import uuid
+
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException
+
+from app.core.database import get_engine
+from app.core.errors import ApiError
 
 app = FastAPI(title="银发记忆 Demo", version="0.1.0-alpha")
+logger = logging.getLogger("silver.api")
+
+
+@app.middleware("http")
+async def request_metadata(request: Request, call_next):
+    request.state.request_id = str(uuid.uuid4())
+    start = time.monotonic()
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request.state.request_id
+    logger.info(
+        "request_id=%s method=%s status=%s latency_ms=%s",
+        request.state.request_id,
+        request.method,
+        response.status_code,
+        int((time.monotonic() - start) * 1000),
+    )
+    return response
+
+
+def error_response(request: Request, status: int, code: str, message: str):
+    return JSONResponse(
+        status_code=status,
+        content={
+            "error": {"code": code, "message": message, "request_id": request.state.request_id}
+        },
+    )
+
+
+@app.exception_handler(ApiError)
+async def api_error(request: Request, exc: ApiError):
+    return error_response(request, exc.status, exc.code, exc.message)
+
+
+@app.exception_handler(HTTPException)
+async def http_error(request: Request, exc: HTTPException):
+    return error_response(request, exc.status_code, f"HTTP_{exc.status_code}", "请求未完成")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError):
+    return error_response(request, 422, "VALIDATION_ERROR", "请检查提交内容的格式")
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_error(request: Request, exc: SQLAlchemyError):
+    return error_response(request, 503, "DATABASE_UNAVAILABLE", "数据服务暂不可用，请稍后重试")
 
 
 @app.get("/")
 def index() -> dict[str, str]:
     return {"service": "silver-memory-api", "stage": "scaffold", "provider": "not-configured"}
+
+
+@app.get("/api/v1/healthz")
+@app.get("/healthz", include_in_schema=False)
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/api/v1/readyz")
+def readiness():
+    try:
+        with get_engine().connect() as connection:
+            connection.execute(text("SELECT 1"))
+            revision = connection.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).scalar_one()
+        return {"status": "ready", "schema_revision": revision}
+    except (SQLAlchemyError, ValueError):
+        raise ApiError(
+            503, "DATABASE_UNAVAILABLE", "数据服务暂不可用，请检查本项目数据库及迁移"
+        ) from None

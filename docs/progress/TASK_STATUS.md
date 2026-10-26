@@ -2,7 +2,7 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T03（下一开发任务，尚未开始）
+- Current task: T03（IN_PROGRESS，独立 MySQL 与迁移验收）
 - Last remote-confirmed SHA: CR-001 `cde000795374b63c9d6a93cb89ca2077b2e3d517`（记录时已核验）
 - Last verified CI: PASS（run 40289773428，api/security/mobile 全部通过）
 - 最后核验时间：2026-10-26 16:06:04 +08:00。
@@ -14,7 +14,8 @@
 | T01 | DONE_PUSHED | 本地全部核心检查通过 | 9b512ac283eea4f8fc2e99ae2beb4d4bf2145691 | SHA 一致 | PASS | 依赖审计 KNOWN_ISSUES |
 | T02 | DONE_PUSHED | 12 项浏览器测试、本地全门禁通过 | 功能 1a6920794eda17b9065353d3bb07734c7a7245db；修复 89c82eb4066a5416f75c1645c7b0a279e6625130 | SHA 一致 | PASS | 首轮失败已独立修复，历史保留 |
 | CR-001 | DONE_PUSHED | 原件/暂存哈希、覆盖/安全校验、5 扫描测试和 3 API 测试通过 | cde000795374b63c9d6a93cb89ca2077b2e3d517 | SHA 一致 | PASS | 正式登记，不表示功能交付 |
-| T03 | TODO | - | - | - | - | 独立 MySQL 与迁移 |
+| T03 | TESTING | 12 后端/MySQL 测试 + 全项目门禁 PASS，health/ready 实跑 200 | 本次提交后记录 | 待执行 | 待运行 | 见 T03_DATABASE.md；仅本项目双库 |
+| UI-FIX-01 | TODO | - | - | - | - | 用户新增 UI 整改，随 T04–T06 接入真实流程后独立验收/提交，不改 T02 |
 | T04 | TODO | - | - | - | - | 用户与权限 |
 | T05 | TODO | - | - | - | - | 对话持久化 |
 | T06 | TODO | - | - | - | - | DeepSeek 接入 |

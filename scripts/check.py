@@ -25,9 +25,12 @@ def main() -> None:
     run([PYTHON, "scripts/security_scan.py"])
     run([PYTHON, "-m", "unittest", "discover", "-s", "scripts", "-p", "test_*.py"])
     run([PYTHON, "scripts/validate_workflow.py"])
-    run([PYTHON, "-m", "ruff", "check", "app", "tests"], ROOT / "services/api")
     run(
-        [PYTHON, "-m", "ruff", "format", "--check", "app", "tests"],
+        [PYTHON, "-m", "ruff", "check", "app", "tests", "alembic"],
+        ROOT / "services/api",
+    )
+    run(
+        [PYTHON, "-m", "ruff", "format", "--check", "app", "tests", "alembic"],
         ROOT / "services/api",
     )
     run([PYTHON, "-m", "ruff", "check", "scripts"])

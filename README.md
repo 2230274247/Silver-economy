@@ -9,7 +9,7 @@ AI companion and personal memory platform for older adults.
 T02 提供 Muse 参考的聊天首屏、原创伙伴、三个主导航及个人设置、登录和历史页壳。
 按用户最新设计改为聊天/我的回忆/提醒，个人设置在右上；18/20/22px 字号可持久化切换。
 页面明确显示未接入登录、聊天和记忆；当前没有模型调用，没有数据库连接。
-独立 MySQL/Alembic 从 T03 开始，账号和业务按任务顺序开发。
+T03 已接入独立 MySQL/Alembic 基础迁移及健康/就绪接口，账号和业务按后续任务顺序开发。
 H5 是本期运行目标；保留 uni-app 页面及平台封装结构，微信小程序/App 需要后续适配与验收。
 
 ## 环境与安装
@@ -70,14 +70,30 @@ Chrome 开发者工具切换手机视口；360/390/430px 的视觉验收从 T02 
 ## 配置与独立数据库
 
 `.env.example` 只包含变量和空凭据；需要时复制为未跟踪的 `.env`。
-API key 只在后端使用，不放入 VITE_ 变量、H5 包或 GitHub。
+API key 只在后端使用，不放入 VITE_ 变量、H5 包或 GitHub；普通用户界面没有 API Key 输入。
 模型示例 ID 尚未验证，T06 以官方文档和实际请求为准；当前没有 live 验证或费用。
 
 Compose 配置已预留独立项目 `silver-memory-demo-v01`，库 `silver_memory_demo_v01`，
 默认只绑定 `127.0.0.1:13306`，命名卷与其他项目分离。
-T03 启动前配置本地 MYSQL_PASSWORD/MYSQL_ROOT_PASSWORD，复查端口并运行迁移。
+本项目 MySQL 初始化（已安装 Python 锁定依赖、启动 Docker Desktop 后，从项目根目录执行）：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/init-dev-db.py
+cd services/api
+..\..\.venv\Scripts\python.exe -m alembic upgrade head
+cd ../..
+```
+
+初始化脚本只在不存在 .env 时生成随机密码及开发/测试 URL，不打印凭据，不覆盖已有 .env。
+若已手动复制空 .env.example，需要在本机填好独立 MySQL 配置后再运行；不要把空密码交给数据库。
+开发库 silver_memory_demo_v01，测试库 silver_memory_demo_v01_test，共用本项目容器，独立于已有科研数据库。
+白名单同时限制驱动、项目数据库名、silver_demo 用户、loopback 和 13306 端口；不接受 ALE_AI_MySQL 或未知 schema。
 现有 3307 监听不复用。不要对未知数据库执行迁移，不执行 `docker compose down -v` 清空数据。
-DATABASE_URL 仅可指向本项目独立数据库。
+不使用运行时 create_all；新增业务通过后续 Alembic 迁移。初始迁移回退会删除这八张表，仅在可丢弃测试库验证，不对有数据的开发库自动回退。
+
+活性：<http://127.0.0.1:8000/api/v1/healthz>；数据库就绪：<http://127.0.0.1:8000/api/v1/readyz>。
+就绪失败返回 503 和脱敏 error.code/message/request_id，不暴露数据库 URL。
+服务日志只记录请求 ID/方法/状态/耗时，不记录请求正文或完整 URL 查询参数。
 
 ## 验证与 CI
 
@@ -89,7 +105,9 @@ DATABASE_URL 仅可指向本项目独立数据库。
 
 检查包括 Git 可见文件的敏感信息扫描、扫描器负例测试、CI 结构校验、
 Python lint/format/pytest、前端 typecheck/lint/H5 build，任一步失败即非零退出。
-CI 在 dev/v0.1 push 和指向 main 的 PR 上执行；T03 增加真实 MySQL 集成任务。
+CI 在 dev/v0.1 push 和指向 main 的 PR 上执行；API job 启动自己的独立 MySQL，强制运行真实迁移和约束测试。
+本机 .env 有 TEST_DATABASE_URL 时也运行真实集成测试；缺数据库可跳过，但不能据此声称 T03 通过。
+严格门禁可设置 REQUIRE_MYSQL_TESTS=1，数据库未配置时直接失败。
 T02 增加 Chromium UI 测试，覆盖 360/390/430px、导航/草稿、字体、来源预览及减少动态效果。
 本机运行 UI 测试（进入 apps/mobile；浏览器依赖也留在项目内）：
 

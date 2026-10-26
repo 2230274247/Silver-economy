@@ -1,6 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = ["mysql: integration test against this project's isolated MySQL test schema"]
 
 [tool.ruff]
 target-version = "py312"

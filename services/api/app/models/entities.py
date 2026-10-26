@@ -1,0 +1,123 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import (
+    Boolean,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import UTC_DATETIME, Base, Identity, Updated
+
+
+class User(Identity, Base):
+    __tablename__ = "users"
+    login_name: Mapped[str] = mapped_column(String(64), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    disabled_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class Owned:
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+
+
+class Conversation(Identity, Owned, Base):
+    __tablename__ = "conversations"
+    __table_args__ = (UniqueConstraint("user_id", "id"),)
+    title: Mapped[str] = mapped_column(String(120), default="新对话")
+    last_message_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class Message(Identity, Updated, Owned, Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        UniqueConstraint("user_id", "client_request_id"),
+        UniqueConstraint("user_id", "reply_to_message_id"),
+        ForeignKeyConstraint(
+            ["user_id", "conversation_id"], ["conversations.user_id", "conversations.id"]
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "reply_to_message_id"], ["messages.user_id", "messages.id"]
+        ),
+        Index("ix_messages_conversation_created", "conversation_id", "created_at", "id"),
+    )
+    conversation_id: Mapped[str] = mapped_column(String(36))
+    role: Mapped[str] = mapped_column(String(16))
+    content: Mapped[str] = mapped_column(Text)
+    client_request_id: Mapped[str | None] = mapped_column(String(64))
+    reply_to_message_id: Mapped[str | None] = mapped_column(String(36))
+    status: Mapped[str] = mapped_column(String(24), default="saved")
+    error_code: Mapped[str | None] = mapped_column(String(64))
+
+
+class MemoryFact(Identity, Updated, Owned, Base):
+    __tablename__ = "memory_facts"
+    __table_args__ = (UniqueConstraint("user_id", "id"),)
+    kind: Mapped[str] = mapped_column(String(32))
+    key: Mapped[str] = mapped_column(String(128))
+    value: Mapped[str] = mapped_column(Text)
+    fact_status: Mapped[str] = mapped_column(String(24), default="candidate")
+    valid_from: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    valid_to: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    event_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    recorded_at: Mapped[datetime] = mapped_column(UTC_DATETIME, server_default=func.now())
+    confidence_label: Mapped[str] = mapped_column(String(32), default="explicit")
+    deleted_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class MemorySource(Identity, Owned, Base):
+    __tablename__ = "memory_sources"
+    __table_args__ = (
+        ForeignKeyConstraint(["user_id", "memory_id"], ["memory_facts.user_id", "memory_facts.id"]),
+        ForeignKeyConstraint(["user_id", "message_id"], ["messages.user_id", "messages.id"]),
+        UniqueConstraint("memory_id", "message_id"),
+    )
+    memory_id: Mapped[str] = mapped_column(String(36))
+    message_id: Mapped[str] = mapped_column(String(36))
+    source_excerpt: Mapped[str] = mapped_column(Text)
+
+
+class LifeEvent(Identity, Owned, Base):
+    __tablename__ = "life_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id", "source_memory_id"], ["memory_facts.user_id", "memory_facts.id"]
+        ),
+    )
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text)
+    occurred_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    occurred_precision: Mapped[str] = mapped_column(String(24), default="unknown")
+    recorded_at: Mapped[datetime] = mapped_column(UTC_DATETIME, server_default=func.now())
+    source_memory_id: Mapped[str | None] = mapped_column(String(36))
+    is_user_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class Reminder(Identity, Updated, Owned, Base):
+    __tablename__ = "reminders"
+    __table_args__ = (UniqueConstraint("user_id", "id"),)
+    title: Mapped[str] = mapped_column(String(160))
+    due_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    timezone: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(24), default="pending")
+
+
+class ModelUsage(Identity, Owned, Base):
+    __tablename__ = "model_usage"
+    provider: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str] = mapped_column(String(80))
+    purpose: Mapped[str] = mapped_column(String(32))
+    request_id: Mapped[str] = mapped_column(String(64), index=True)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+    estimated_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 8))

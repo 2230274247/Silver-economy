@@ -6,7 +6,7 @@ if ($Target -eq 'api') {
   if (-not (Test-Path -LiteralPath $python)) { throw 'Run scripts/setup.ps1 first' }
   Push-Location -LiteralPath (Join-Path $projectRoot 'services\api')
   try {
-    & $python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+    & $python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log
     if ($LASTEXITCODE -ne 0) { throw 'API failed to start' }
   } finally { Pop-Location }
 } else {
