@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T08（真实跨会话召回与本地回归通过，待 push/SHA/CI）
+- Current task: T09（控制/状态更新、回归及真实当前状态召回通过，待 push/SHA/CI）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T07 `ab54cf99cf432aca15d32477b1b61a1b1e879a97`
-- Last verified CI: PASS（run 40334086929，api/security/mobile 全部通过）
-- 最后核验时间：2026-10-26 23:01:27 +08:00。
+- Last remote-confirmed SHA: T08 `d205546532360551ed35f8aad396eb60ae250e22`
+- Last verified CI: PASS（run 40346315913，api/security/mobile 全部通过）
+- 最后核验时间：2026-10-26 23:53:33 +0800。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -21,8 +21,8 @@
 | UI-FIX-01 | DONE_PUSHED | 27 UI、28 后端及全门禁 PASS | 2a3d4e1d533bd792c0ba733781608b031790c83a | SHA 一致 | PASS | T05 之后独立修复引导/IME/多行/交互，再启用 T06；不改写 T02 |
 | T06 | DONE_PUSHED | 真实 H5/DeepSeek/刷新、46 后端/27 UI/全门禁 PASS | e8861218fa6a6244e657b1713befc98d6db6a667 | SHA 一致 | PASS | 预算/Provider/Mock 隔离 |
 | T07 | DONE_PUSHED | 75 后端/33 UI/6专项、真实单次合并抽取/来源/刷新 PASS | ab54cf99cf432aca15d32477b1b61a1b1e879a97 | SHA 一致 | PASS | 候选/授权/时间精度/去重/Prompt溯源；T08召回未实现 |
-| T08 | TESTING | 100 后端、36 UI、真实新登录/新会话/引用/刷新与全门禁 PASS | 本次提交后补记 | 待执行 | 待运行 | SQL基线、最多5条/12KB、授权状态过滤、搜索与来源；万级效果尚待T10E2 |
-| T09 | TODO | - | - | - | - | 记忆纠错/删除 |
+| T08 | DONE_PUSHED | 100 后端、36 UI、真实新登录/新会话/引用/刷新与全门禁 PASS | d205546532360551ed35f8aad396eb60ae250e22 | SHA一致 | PASS（40346315913） | SQL基线、最多5条/12KB、授权状态过滤、搜索与来源；万级效果尚待T10E2 |
+| T09 | TESTING | 129后端、42UI、全门禁PASS；真实当前状态召回/刷新PASS（首次失败与规则修复保留） | 本次提交后补记 | 待执行 | 待运行 | 确认/纠错/审计/权限/失效/删除、明确身体状态；详见T09_MEMORY_CONTROL.md |
 | T10 | TODO | - | - | - | - | 回忆时间线 |
 | T10E1 | TODO | - | - | - | - | Synthetic 参数生成器，100/1000/10000 独立测试库 |
 | T10E2 | TODO | - | - | - | - | 固定至少200题、召回/回答/冲突/隔离/删除/并发/资源，HTML+JSON报告 |
@@ -43,4 +43,4 @@ T00–T10 保持原任务顺序；最终目标新增 T10E1→E2；再 T11A→B�
 数据库/API/计划/验收详见 docs/changes/CR-001-impact.md 与 ADR-003，不凭文档称建表或功能已完成。
 DeepSeek 本机 Key 已配置且一次真实 H5 验证通过；高德/推送仍待配置，Android 真机未验证。
 这些是后续 live/真机门禁，不阻塞当前文档及 Mock 开发；需要时由用户本机配置，不索取聊天中的密钥。
-当前实际 DeepSeek 累计调用 3 次，保守估算合计 USD 0.00038250（非账单）；T06聊天、T07合并回复/提取、T08新会话召回各一次，高德/推送 0。自动回归只用 Mock；未经授权不购买或部署付费服务。
+当前实际 DeepSeek 累计调用 6 次，2291输入/261输出tokens，保守估算合计 USD 0.00100050（非账单）；T09新增3次，含1次未抽取、1次授权变化拒绝及1次隔离后成功召回，全部保留。高德/推送0。自动回归只用 Mock；未经授权不购买或部署付费服务。

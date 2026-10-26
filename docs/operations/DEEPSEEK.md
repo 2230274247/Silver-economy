@@ -21,3 +21,6 @@
 
 自动测试强制 Mock：pytest 禁止真实 HTTPTransport；Playwright 使用独占 5174→18000 Mock 服务，不复用运营 5173→8000。CI 不注入 Key。
 首次真实验证最多一条合成短输入，失败不重试；通过真实 H5 登录→发送→刷新检查历史，记录实际 token/耗时/估算费用。缺 Key 记录 LIVE_NOT_VERIFIED，不能将 Mock 截图当真模型。
+
+T09起浏览器回归另用ui_a/ui_b与忽略文件`.cache/ui-accounts.json`；npm test:ui先安全生成专用账号，18000服务UI_TEST_MODE=true拒绝其他账号及其既有会话。运营联调仍用demo_a/demo_b，不混用授权状态。回归使用同项目开发库的独立合成用户；pytest单独测试库，均不得连接生产用户/其他项目库。
+已知用量的价格估算在隐私/引用校验之前计算；历史一条completed_rejected回执曾缺估算字段，T09报告按其已知tokens另行计算，未改写原回执。真实调用分阶段有持久attempt标记，默认verify只读；出现根因已修复的新独立验证会单独编号记录，不能删除旧标记重试。

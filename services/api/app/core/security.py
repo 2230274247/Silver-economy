@@ -9,6 +9,7 @@ from fastapi import Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.database import get_session
 from app.core.errors import ApiError
 from app.models.entities import AuthSession, User
@@ -48,7 +49,7 @@ def current_user(request: Request, db: DatabaseSession) -> User:
             User.disabled_at.is_(None),
         )
     )
-    if user is None:
+    if user is None or (get_settings().ui_test_mode and user.login_name not in {"ui_a", "ui_b"}):
         raise ApiError(401, "AUTH_REQUIRED", "登录已失效，请重新登录")
     return user
 

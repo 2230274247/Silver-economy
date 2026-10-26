@@ -45,6 +45,8 @@ class ContextBuilder:
                 "status": fact.fact_status,
                 "confirmed": fact.confirmed_at is not None,
                 "synthetic": fact.is_synthetic,
+                "authority": fact.value_origin,
+                "revision": fact.revision,
             }
             proposed = json.dumps([*data, entry], ensure_ascii=False, separators=(",", ":"))
             if len(proposed.encode()) > min(3500, budget):

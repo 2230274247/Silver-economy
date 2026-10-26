@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
-import { freshChat, login } from './helpers';
+import { freshChat, login, resetHealthState } from './helpers';
 
 test('memory consent read failure is retryable and cancelling never grants permission', async ({ page }) => {
   await login(page);
@@ -23,6 +23,7 @@ test('memory consent read failure is retryable and cancelling never grants permi
 
 test('memory consent, grounded candidate, source and reload use real MySQL with Mock', async ({ page }, info) => {
   await login(page);
+  await resetHealthState(page);
   try {
     await page.getByRole('button', { name: '打开个人设置' }).click();
     await page.getByRole('button', { name: '开启长期记忆', exact: true }).click();

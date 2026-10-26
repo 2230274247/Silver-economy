@@ -1,5 +1,6 @@
 """Create synthetic local demo accounts without committing or printing passwords."""
 
+import argparse
 import json
 import secrets
 import sys
@@ -16,8 +17,14 @@ from app.models.entities import User
 
 
 def main():
-    path = ROOT / ".cache/demo-accounts.json"
-    names = ["demo_a", "demo_b"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--ui", action="store_true", help="Isolated Mock browser-test accounts"
+    )
+    args = parser.parse_args()
+    filename = "ui-accounts.json" if args.ui else "demo-accounts.json"
+    path = ROOT / ".cache" / filename
+    names = ["ui_a", "ui_b"] if args.ui else ["demo_a", "demo_b"]
     with Session(get_engine()) as db:
         existing = db.scalars(
             select(User.login_name).where(User.login_name.in_(names))
@@ -25,7 +32,7 @@ def main():
         if existing:
             if set(existing) == set(names) and path.exists():
                 print(
-                    "Demo users already exist; credentials unchanged in ignored .cache/demo-accounts.json"
+                    f"Synthetic users already exist; credentials unchanged in ignored .cache/{filename}"
                 )
                 return
             raise SystemExit(
@@ -50,9 +57,7 @@ def main():
         with path.open("x", encoding="utf-8") as file:
             json.dump(accounts, file, indent=2)
         db.commit()
-    print(
-        "Created two synthetic demo users; passwords only in ignored .cache/demo-accounts.json"
-    )
+    print(f"Created two synthetic users; passwords only in ignored .cache/{filename}")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,8 @@
-import hashlib
-
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.memory.extractor import event_time
+from app.memory.updater import MemoryUpdater, fingerprint
 from app.models.entities import MemoryFact, MemorySource
 
 
@@ -14,11 +13,9 @@ class MemoryRepository:
         saved = []
         for candidate in candidates:
             when, precision = event_time(candidate.time_expression, message.created_at)
-            fingerprint = hashlib.sha256(
-                f"{provider}|{candidate.kind}|{candidate.key}|{candidate.value}|{when}".encode()
-            ).hexdigest()
+            digest = fingerprint(provider, candidate.kind, candidate.key, candidate.value, when)
             statement = select(MemoryFact).where(
-                MemoryFact.user_id == message.user_id, MemoryFact.fingerprint == fingerprint
+                MemoryFact.user_id == message.user_id, MemoryFact.fingerprint == digest
             )
             fact = db.scalar(statement)
             if not fact:
@@ -29,7 +26,7 @@ class MemoryRepository:
                             kind=candidate.kind,
                             key=candidate.key,
                             value=candidate.value,
-                            fingerprint=fingerprint,
+                            fingerprint=digest,
                             time_expression=candidate.time_expression or None,
                             event_at=when,
                             event_precision=precision,
@@ -63,4 +60,6 @@ class MemoryRepository:
                     )
                 )
             saved.append(fact)
+        db.flush()
+        MemoryUpdater().reconcile(db, message, saved)
         return saved

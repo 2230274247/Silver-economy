@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import AppButton from '../../components/AppButton.vue';
+import MemoryControls from '../../components/MemoryControls.vue';
+import { type Memory, memoryStatus } from '../../stores/memory';
+import { invalidateMemoryReferences } from '../../stores/chat';
 import AppHeader from '../../components/AppHeader.vue';
 import BottomTabs from '../../components/BottomTabs.vue';
 import EmptyState from '../../components/EmptyState.vue';
@@ -10,7 +13,6 @@ import { request } from '../../platform/network';
 import { requestId } from '../../platform/ids';
 import { bindComposer } from '../../platform/composer';
 import { labelTextControl } from '../../platform/accessibility';
-interface Memory { id: string; value: string; time_expression: string | null; event_precision: string; extractor_provider: string | null; is_synthetic: boolean }
 interface Source { source_excerpt: string; conversation_id: string; message: { id: string; content: string; created_at: string } }
 const memories = ref<Memory[]>([]);
 const loading = ref(false);
@@ -53,6 +55,15 @@ async function viewSources(id: string, more = false) {
   catch { error.value = '来源读取失败，请再次点击查看来源重试。'; }
   finally { sourceBusy.value = ''; }
 }
+function updatedMemory(item: Memory) {
+  memories.value = memories.value.map(old => old.id === item.id ? item : old);
+  invalidateMemoryReferences(item.id); error.value = '';
+}
+function deletedMemory(id: string) {
+  memories.value = memories.value.filter(item => item.id !== id);
+  delete sources.value[id]; delete sourceCursor.value[id];
+  invalidateMemoryReferences(id, true); error.value = '';
+}
 function openSource(source: Source) { uni.navigateTo({ url: `/pages/index/index?id=${source.conversation_id}` }); }
 onLoad(() => { void load(); });
 function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
@@ -71,9 +82,9 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
         <text class="page-title">
           值得记住的，都在这里。
         </text><text class="page-description">
-          这里只显示从你的聊天提取的候选记忆，可以核对来源。
+          可以核对来源、确认和纠错。删除长期记忆不会删除原始聊天。
         </text><text class="preview-label">
-          候选仍待确认 · 不补写未发生的细节
+          候选待确认 · 历史与当前状态分开保存
         </text>
         <text
           v-if="loading"
@@ -133,7 +144,7 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
           class="surface-card memory-card"
         >
           <text class="memory-label">
-            {{ memory.extractor_provider === 'mock' ? 'Mock 抽取候选 · 待确认' : '候选记忆 · 待确认' }}{{ memory.is_synthetic ? ' · Synthetic' : '' }}
+            {{ memoryStatus(memory) }}
           </text>
           <text class="memory-value">
             {{ memory.value }}
@@ -141,6 +152,11 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
           <text class="memory-label">
             时间：{{ memory.time_expression || '未明确' }}；精度：{{ memory.event_precision === 'month' ? '月份' : memory.event_precision === 'year' ? '年份' : memory.event_precision === 'day' ? '日期' : '未明确' }}
           </text>
+          <MemoryControls
+            :memory="memory"
+            @updated="updatedMemory"
+            @deleted="deletedMemory"
+          />
           <AppButton
             secondary
             :loading="sourceBusy === memory.id"

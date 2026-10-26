@@ -159,9 +159,21 @@ onLoad(async options => {
             class="memory-reference"
           >
             <text class="reference-title">
-              记忆依据 · {{ ['inactive', 'invalid', 'superseded'].includes(reference.status) ? '历史记录，已失效' : reference.confirmed ? '已确认' : '候选，待确认' }}{{ reference.extractor_provider === 'mock' ? ' · Mock' : '' }}{{ reference.is_synthetic ? ' · Synthetic' : '' }}
+              记忆依据 · {{ ['inactive', 'invalid', 'superseded', 'historical'].includes(reference.status) ? '历史记录，已失效' : reference.confirmed ? '已确认' : '候选，待确认' }}{{ reference.extractor_provider === 'mock' ? ' · Mock' : '' }}{{ reference.is_synthetic ? ' · Synthetic' : '' }}
             </text>
-            <text>{{ reference.source_excerpt }}</text>
+            <text
+              v-if="reference.changed_since_reply"
+              class="reference-title"
+            >
+              此回复使用的是旧版本，记忆已更新；请到“我的回忆”核对。
+            </text>
+            <text>{{ reference.evidence_origin === 'user_edit' ? '用户修改后的依据：' : '' }}{{ reference.evidence_text || reference.source_excerpt }}</text>
+            <text
+              v-if="reference.evidence_origin === 'user_edit'"
+              class="reference-title"
+            >
+              原始聊天：{{ reference.source_excerpt }}（保留溯源，不作为纠错后的事实）
+            </text>
             <AccessibleButton
               class="retry-button"
               @click="openEvidence(reference)"

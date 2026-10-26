@@ -15,6 +15,10 @@ class MemoryReferenceOut(BaseModel):
     confirmed: bool
     is_synthetic: bool
     extractor_provider: str | None
+    evidence_text: str
+    evidence_origin: str
+    memory_revision: int
+    changed_since_reply: bool
 
 
 class ConversationOut(BaseModel):

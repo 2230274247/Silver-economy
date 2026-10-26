@@ -37,7 +37,12 @@ def login(payload: Login, request: Request, response: Response, db: DatabaseSess
     valid = verify_password(
         payload.password.get_secret_value(), user.password_hash if user else dummy_hash
     )
-    if not valid or user is None or user.disabled_at is not None:
+    if (
+        not valid
+        or user is None
+        or user.disabled_at is not None
+        or (get_settings().ui_test_mode and user.login_name not in {"ui_a", "ui_b"})
+    ):
         raise ApiError(401, "INVALID_CREDENTIALS", "账号或密码不正确")
     old_token = request.cookies.get(COOKIE_NAME)
     if old_token:

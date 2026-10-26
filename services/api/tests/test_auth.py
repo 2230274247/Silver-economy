@@ -3,6 +3,7 @@ from datetime import timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app.core.config import get_settings
 from app.core.security import COOKIE_NAME, hash_token, utc_now
 from app.main import app
 from app.models.entities import AuthSession
@@ -15,6 +16,26 @@ def sign_in(client, account):
     )
     assert response.status_code == 200
     return response
+
+
+def test_mock_browser_server_rejects_operator_login_and_existing_operator_cookie(
+    accounts, clients, monkeypatch, db
+):
+    client = clients[0]
+    monkeypatch.setenv("UI_TEST_MODE", "true")
+    get_settings.cache_clear()
+    user, password = accounts[0]
+    assert client.get("/api/v1/me").status_code == 401
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"login_name": user.login_name, "password": password}
+        ).status_code
+        == 401
+    )
+    user.login_name = "ui_a"
+    db.flush()
+    assert sign_in(client, accounts[0]).status_code == 200
+    assert client.get("/api/v1/me").json()["login_name"] == "ui_a"
 
 
 def test_login_cookie_hash_and_identity(accounts, db):

@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     test_database_url: SecretStr = SecretStr("")
     session_ttl_seconds: int = 43200
     cookie_secure: bool = False
+    ui_test_mode: bool = False
     llm_provider: Literal["mock", "deepseek"] = "mock"
     deepseek_api_key: SecretStr = SecretStr("")
     deepseek_base_url: str = "https://api.deepseek.com"

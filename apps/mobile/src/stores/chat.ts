@@ -4,7 +4,7 @@ import { requestId } from '../platform/ids';
 import { draft } from './ui';
 
 export interface Conversation { id: string; title: string; created_at: string }
-export interface MemoryReference { label: string; memory_id: string; source_message_id: string; conversation_id: string; source_excerpt: string; recorded_at: string; status: string; confirmed: boolean; is_synthetic: boolean; extractor_provider: string | null }
+export interface MemoryReference { evidence_text: string; evidence_origin: string; memory_revision: number; changed_since_reply: boolean; label: string; memory_id: string; source_message_id: string; conversation_id: string; source_excerpt: string; recorded_at: string; status: string; confirmed: boolean; is_synthetic: boolean; extractor_provider: string | null }
 export interface Message {
   id: string; role: 'user' | 'assistant'; content: string; status: string;
   error_code: string | null; created_at: string;
@@ -108,4 +108,8 @@ export async function sendText(content = draft.value, key?: string) {
 export function retryReply(item: Message) {
   const original = messages.value.find(message => message.id === item.reply_to_message_id);
   if (original?.client_request_id) return sendText(original.content, original.client_request_id);
+}
+
+export function invalidateMemoryReferences(id: string, deleted = false) {
+  messages.value = messages.value.map(message => ({ ...message, memory_refs: (message.memory_refs || []).flatMap(reference => reference.memory_id !== id ? [reference] : deleted ? [] : [{ ...reference, changed_since_reply: true }]) }));
 }

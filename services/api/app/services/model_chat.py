@@ -15,12 +15,18 @@ from app.llm.providers import ProviderFailure, get_provider
 from app.memory.context import MAX_CONTEXT_BYTES, ContextBuilder, MemoryAnswerEnvelope
 from app.memory.extractor import MemoryExtractor
 from app.memory.repository import MemoryRepository
-from app.memory.retriever import MemoryRetriever, evidence_signature, valid_context_fact
+from app.memory.retriever import (
+    MemoryRetriever,
+    evidence_signature,
+    historical_query,
+    valid_context_fact,
+)
+from app.memory.updater import MemoryUpdater
 from app.models.entities import MemoryFact, MemoryUse, Message, ModelBudget, ModelUsage, User
 
 logger = logging.getLogger("silver.model")
 SYSTEM_PROMPT = (PROJECT_ROOT / "prompts/chat-v1.txt").read_text(encoding="utf-8").strip()
-MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v2.txt").read_text(encoding="utf-8").strip()
+MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v3.txt").read_text(encoding="utf-8").strip()
 
 
 def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
@@ -105,7 +111,7 @@ def generate_reply(db, item, assistant):
             provider=provider,
             model=settings.deepseek_model if provider == "deepseek" else "mock-v1",
             purpose="chat",
-            prompt_version="chat-memory/v2" if memory_enabled else "chat/v1",
+            prompt_version="chat-memory/v3" if memory_enabled else "chat/v1",
             request_id=item.client_request_id,
             reserved_tokens=tokens,
             status="reserved",
@@ -122,6 +128,17 @@ def generate_reply(db, item, assistant):
         usage.model = result.model
         usage.input_tokens, usage.output_tokens = result.input_tokens, result.output_tokens
         usage.status = "completed"
+        # Worst-case peak cache-miss estimate for the documented default model,
+        # not a vendor bill; unknown custom models have no fabricated price.
+        usage.estimated_cost = (
+            (
+                Decimal(result.input_tokens) * Decimal("0.3")
+                + Decimal(result.output_tokens) * Decimal("1.2")
+            )
+            / 1000000
+            if provider == "deepseek" and result.model.startswith("deepseek-flash")
+            else None
+        )
         if memory_enabled:
             assistant.raw_model_output = result.content
             try:
@@ -129,6 +146,7 @@ def generate_reply(db, item, assistant):
                 reply, candidates, rejected = MemoryExtractor().parse(
                     envelope.model_dump_json(exclude={"memory_refs"}), item.content
                 )
+                candidates = MemoryUpdater().complete_candidates(item.content, candidates)
                 assistant.content = reply
                 # Consent may have been withdrawn while the paid call was in flight.
                 owner = db.scalar(
@@ -155,7 +173,9 @@ def generate_reply(db, item, assistant):
                         )
                         if (
                             fact is None
-                            or not valid_context_fact(fact)
+                            or not valid_context_fact(
+                                fact, include_historical=historical_query(item.content)
+                            )
                             or evidence_signature(fact) != memory.evidence_snapshot
                         ):
                             raise ProviderFailure("MEMORY_CHANGED_DURING_REPLY")
@@ -168,10 +188,15 @@ def generate_reply(db, item, assistant):
                                 memory_id=memory.fact.id,
                                 source_message_id=memory.source.message_id,
                                 reference_label=label,
+                                memory_revision=memory.fact.revision,
                             )
                         )
                     MemoryRepository().save_candidates(
-                        db, item, candidates, provider, extractor_version="chat-memory/v2"
+                        db,
+                        item,
+                        candidates,
+                        provider,
+                        extractor_version="chat-memory/v3+state-rule/v1",
                     )
                     item.memory_status = "partial_rejected" if rejected else "captured"
                 else:
@@ -182,17 +207,6 @@ def generate_reply(db, item, assistant):
                 item.memory_status = "failed_schema"
                 assistant.content, assistant.status = "", "failed"
                 assistant.error_code = "MODEL_RESPONSE_FORMAT"
-        # Worst-case peak cache-miss estimate for the documented default model,
-        # not a vendor bill; unknown custom models have no fabricated price.
-        usage.estimated_cost = (
-            (
-                Decimal(result.input_tokens) * Decimal("0.3")
-                + Decimal(result.output_tokens) * Decimal("1.2")
-            )
-            / 1000000
-            if provider == "deepseek" and result.model.startswith("deepseek-flash")
-            else None
-        )
     except ProviderFailure as error:
         assistant.status = "failed"
         assistant.error_code = error.code

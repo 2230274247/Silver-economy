@@ -17,6 +17,8 @@
 | 2026-10-26 21:07:45 +08:00 | T06 真实模型/额度 | e8861218fa6a6244e657b1713befc98d6db6a667 | 官方DeepSeek/Mock、原文先存、共享预算/幂等、用量日志、独立Mock回归；首个真实H5刷新闭环 | 46后端、27UI、全门禁PASS；live1次97/13tokens；push/SHA PASS；CI 40327943073 PASS |
 | 2026-10-26 21:50:05 +08:00 | T07 候选记忆/来源 | ab54cf99cf432aca15d32477b1b61a1b1e879a97 | 明确授权、同次回复/抽取、原文证据/精度/去重、来源分页、Prompt溯源、Mock/live分开 | 75后端/33UI/6专项/全门禁PASS；真实1次293/63tokens；push/SHA PASS；CI 40334086929 PASS |
 
+| 2026-10-26 23:08:00 +08:00 | T08 跨会话召回/引用 | d205546532360551ed35f8aad396eb60ae250e22 | SQL检索/ContextBuilder、持久化来源引用、搜索/未知、在途授权与来源校验、完整Unicode输入 | 100后端/36UI/全门禁/真实召回PASS；push/SHA一致；CI40346315913三项PASS |
+
 最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。
 
@@ -36,3 +38,5 @@
 4. 记录 SHA、分支、push/SHA 核验、CI run URL/结果、未完成项和下一步。
 5. 当次 commit 的最终 SHA/推送/CI 只能事后核验，在后续提交补记，不预先填成功；Git 本身提供实际提交时间。
 6. 不记录真实私密对话、地点、密钥、设备标识和未脱敏供应商日志。
+
+T09提交前核验：2026-10-26 23:53:33 +0800。功能/失败/修复、实际命令/证据/费用详见T09_MEMORY_CONTROL.md；129后端/42UI及全门禁通过。本次SHA/push/CI按规则事后补记。

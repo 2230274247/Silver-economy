@@ -66,6 +66,7 @@ def evidence_signature(fact):
         fact.retrieval_allowed,
         fact.is_synthetic,
         fact.extractor_provider,
+        fact.revision,
     )
 
 
@@ -100,14 +101,29 @@ def query_terms(query):
     return compact, terms[:20], kinds
 
 
-def valid_context_fact(fact, now=None):
+def historical_query(query):
+    return not any(word in query for word in ("现在", "目前", "当前")) and any(
+        word in query for word in ("以前", "当时", "上次", "那次", "曾经", "发生过", "之前")
+    )
+
+
+def valid_context_fact(fact, now=None, *, include_historical=False):
     now = now or datetime.now(UTC).replace(tzinfo=None)
     return (
         fact.deleted_at is None
         and fact.retrieval_allowed
-        and fact.fact_status in {"candidate", "active", "confirmed"}
+        and fact.fact_status
+        in (
+            {"candidate", "active", "confirmed", "historical"}
+            if include_historical
+            else {"candidate", "active", "confirmed"}
+        )
         and (fact.valid_from is None or fact.valid_from <= now)
-        and (fact.valid_to is None or fact.valid_to > now)
+        and (
+            fact.valid_to is None
+            or fact.valid_to > now
+            or (include_historical and fact.fact_status == "historical")
+        )
     )
 
 
@@ -168,11 +184,20 @@ class MemoryRetriever:
                 )
             )
         if for_context:
+            include_history = historical_query(query)
             statement = statement.where(
                 MemoryFact.retrieval_allowed.is_(True),
-                MemoryFact.fact_status.in_(["candidate", "active", "confirmed"]),
+                MemoryFact.fact_status.in_(
+                    ["candidate", "active", "confirmed", "historical"]
+                    if include_history
+                    else ["candidate", "active", "confirmed"]
+                ),
                 or_(MemoryFact.valid_from.is_(None), MemoryFact.valid_from <= now),
-                or_(MemoryFact.valid_to.is_(None), MemoryFact.valid_to > now),
+                or_(
+                    MemoryFact.valid_to.is_(None),
+                    MemoryFact.valid_to > now,
+                    and_(MemoryFact.fact_status == "historical", literal(include_history)),
+                ),
             )
         if provider == "mock":
             statement = statement.where(

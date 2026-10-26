@@ -110,7 +110,7 @@ def test_capture_linked_raw_evidence_and_deduplicate(clients, db):
     send(a)
     facts = a.get("/api/v1/memories").json()["items"]
     assert len(facts) == 1 and facts[0]["status"] == "candidate"
-    assert facts[0]["extractor_version"] == "chat-memory/v2"
+    assert facts[0]["extractor_version"] == "chat-memory/v3+state-rule/v1"
     assert facts[0]["event_precision"] == "month" and facts[0]["confirmed_at"] is None
     sources = a.get(f"/api/v1/memories/{facts[0]['id']}/sources").json()["items"]
     assert len(sources) == 2 and all(s["source_excerpt"] == body["content"] for s in sources)

@@ -2,14 +2,14 @@ from datetime import UTC
 
 from sqlalchemy import and_, select
 
-from app.models.entities import MemoryFact, MemorySource, MemoryUse, Message
+from app.models.entities import MemoryFact, MemoryRevision, MemorySource, MemoryUse, Message
 
 
 def reference_map(db, user_id, assistant_ids):
     if not assistant_ids:
         return {}
     rows = db.execute(
-        select(MemoryUse, MemoryFact, MemorySource, Message)
+        select(MemoryUse, MemoryFact, MemorySource, Message, MemoryRevision)
         .join(
             MemoryFact,
             and_(MemoryFact.id == MemoryUse.memory_id, MemoryFact.user_id == MemoryUse.user_id),
@@ -31,10 +31,19 @@ def reference_map(db, user_id, assistant_ids):
             MemoryUse.assistant_message_id.in_(assistant_ids),
             MemoryFact.deleted_at.is_(None),
         )
+        .outerjoin(
+            MemoryRevision,
+            and_(
+                MemoryRevision.user_id == MemoryUse.user_id,
+                MemoryRevision.memory_id == MemoryUse.memory_id,
+                MemoryRevision.revision == MemoryUse.memory_revision,
+            ),
+        )
         .order_by(MemoryUse.reference_label)
     ).all()
     result = {}
-    for use, fact, source, message in rows:
+    for use, fact, source, message, revision in rows:
+        edited = revision is not None and revision.after.get("value_origin") == "user_edit"
         result.setdefault(use.assistant_message_id, []).append(
             {
                 "label": use.reference_label,
@@ -47,6 +56,10 @@ def reference_map(db, user_id, assistant_ids):
                 "confirmed": fact.confirmed_at is not None,
                 "is_synthetic": fact.is_synthetic,
                 "extractor_provider": fact.extractor_provider,
+                "evidence_text": revision.after["value"] if edited else source.source_excerpt,
+                "evidence_origin": "user_edit" if edited else "chat",
+                "memory_revision": use.memory_revision,
+                "changed_since_reply": use.memory_revision != fact.revision,
             }
         )
     return result

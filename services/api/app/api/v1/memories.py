@@ -7,8 +7,18 @@ from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, DatabaseSession
 from app.memory.retriever import MemoryRetriever
-from app.models.entities import MemoryFact, MemorySource, Message, User
-from app.schemas.memory import MemoryPage, SourcePage
+from app.memory.updater import MemoryUpdater
+from app.models.entities import MemoryFact, MemoryRevision, MemorySource, Message, User
+from app.schemas.memory import (
+    MemoryConfirmation,
+    MemoryCorrection,
+    MemoryMutation,
+    MemoryOut,
+    MemoryPage,
+    MemoryPermission,
+    RevisionPage,
+    SourcePage,
+)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -47,6 +57,8 @@ def memory_data(item):
         "extractor_provider": item.extractor_provider,
         "extractor_version": item.extractor_version,
         "is_synthetic": item.is_synthetic,
+        "revision": item.revision,
+        "value_origin": item.value_origin,
     }
 
 
@@ -61,6 +73,78 @@ def owned_memory(db, user_id, memory_id):
     if item is None:
         raise ApiError(404, "NOT_FOUND", "记忆不存在或无法访问")
     return item
+
+
+def mutate(db, user, memory_id, payload, action):
+    updater = MemoryUpdater()
+    fact = updater.owned_for_update(db, user.id, memory_id, payload.expected_revision)
+    updater.apply(db, fact, action, payload)
+    db.commit()
+    return memory_data(fact)
+
+
+@router.post("/memories/{memory_id}/confirm", response_model=MemoryOut)
+def confirm_memory(
+    memory_id: str, payload: MemoryConfirmation, user: CurrentUser, db: DatabaseSession
+):
+    return mutate(db, user, memory_id, payload, "confirm")
+
+
+@router.post("/memories/{memory_id}/correct", response_model=MemoryOut)
+def correct_memory(
+    memory_id: str, payload: MemoryCorrection, user: CurrentUser, db: DatabaseSession
+):
+    return mutate(db, user, memory_id, payload, "correct")
+
+
+@router.post("/memories/{memory_id}/invalidate", response_model=MemoryOut)
+def invalidate_memory(
+    memory_id: str, payload: MemoryMutation, user: CurrentUser, db: DatabaseSession
+):
+    return mutate(db, user, memory_id, payload, "invalidate")
+
+
+@router.post("/memories/{memory_id}/permission", response_model=MemoryOut)
+def memory_permission(
+    memory_id: str, payload: MemoryPermission, user: CurrentUser, db: DatabaseSession
+):
+    return mutate(db, user, memory_id, payload, "permission")
+
+
+@router.delete("/memories/{memory_id}")
+def delete_memory(memory_id: str, payload: MemoryMutation, user: CurrentUser, db: DatabaseSession):
+    mutate(db, user, memory_id, payload, "delete")
+    return {"deleted": True, "raw_messages_retained": True}
+
+
+@router.get("/memories/{memory_id}/revisions", response_model=RevisionPage)
+def memory_revisions(
+    memory_id: str,
+    user: CurrentUser,
+    db: DatabaseSession,
+    before_revision: int | None = Query(None, ge=1),
+):
+    owned_memory(db, user.id, memory_id)
+    statement = select(MemoryRevision).where(
+        MemoryRevision.user_id == user.id, MemoryRevision.memory_id == memory_id
+    )
+    if before_revision:
+        statement = statement.where(MemoryRevision.revision < before_revision)
+    rows = db.scalars(statement.order_by(MemoryRevision.revision.desc()).limit(31)).all()
+    return {
+        "items": [
+            {
+                "revision": r.revision,
+                "action": r.action,
+                "actor": r.actor,
+                "created_at": timestamp(r.created_at),
+                "before": r.before,
+                "after": r.after,
+            }
+            for r in rows[:30]
+        ],
+        "next_revision": rows[29].revision if len(rows) > 30 else None,
+    }
 
 
 @router.get("/memories", response_model=MemoryPage)

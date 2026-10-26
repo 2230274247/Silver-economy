@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     ForeignKey,
     ForeignKeyConstraint,
@@ -93,6 +94,22 @@ class MemoryFact(Identity, Updated, Owned, Base):
     extractor_provider: Mapped[str | None] = mapped_column(String(32))
     extractor_version: Mapped[str | None] = mapped_column(String(80))
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    value_origin: Mapped[str] = mapped_column(String(24), default="chat")
+
+
+class MemoryRevision(Identity, Owned, Base):
+    __tablename__ = "memory_revisions"
+    __table_args__ = (
+        ForeignKeyConstraint(["user_id", "memory_id"], ["memory_facts.user_id", "memory_facts.id"]),
+        UniqueConstraint("memory_id", "revision"),
+    )
+    memory_id: Mapped[str] = mapped_column(String(36))
+    revision: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(String(32))
+    actor: Mapped[str] = mapped_column(String(24))
+    before: Mapped[dict] = mapped_column(JSON)
+    after: Mapped[dict] = mapped_column(JSON)
 
 
 class MemorySource(Identity, Owned, Base):
@@ -144,6 +161,7 @@ class MemoryUse(Identity, Owned, Base):
     memory_id: Mapped[str] = mapped_column(String(36))
     source_message_id: Mapped[str] = mapped_column(String(36))
     reference_label: Mapped[str] = mapped_column(String(8))
+    memory_revision: Mapped[int] = mapped_column(Integer, default=1)
 
 
 class Reminder(Identity, Updated, Owned, Base):
