@@ -7,6 +7,7 @@ from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, DatabaseSession
 from app.memory.retriever import MemoryRetriever
+from app.memory.timeline import event_label, timeline_page
 from app.memory.updater import MemoryUpdater
 from app.models.entities import MemoryFact, MemoryRevision, MemorySource, Message, User
 from app.schemas.memory import (
@@ -18,6 +19,7 @@ from app.schemas.memory import (
     MemoryPermission,
     RevisionPage,
     SourcePage,
+    TimelinePage,
 )
 
 router = APIRouter(prefix="/api/v1")
@@ -198,6 +200,25 @@ def search_memories(
         db, user.id, q, provider=get_settings().llm_provider, limit=limit, for_context=False
     )
     return {"items": [memory_data(result.fact) for result in results], "next_cursor": None}
+
+
+@router.get("/memories/timeline", response_model=TimelinePage)
+def get_timeline(
+    user: CurrentUser,
+    db: DatabaseSession,
+    limit: int = Query(30, ge=1, le=100),
+    before_id: str | None = None,
+):
+    facts, counts, cursor = timeline_page(
+        db, user.id, provider=get_settings().llm_provider, before_id=before_id, limit=limit
+    )
+    return {
+        "items": [
+            {**memory_data(fact), "event_label": event_label(fact), "source_count": counts[fact.id]}
+            for fact in facts
+        ],
+        "next_cursor": cursor,
+    }
 
 
 @router.get("/memories/{memory_id}/sources", response_model=SourcePage)

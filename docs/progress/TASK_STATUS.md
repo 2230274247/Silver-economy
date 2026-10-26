@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T09（控制/状态更新、回归及真实当前状态召回通过，待 push/SHA/CI）
+- Current task: T10（来源时间线、本地全门禁/三尺寸验证通过，待 push/SHA/CI）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T08 `d205546532360551ed35f8aad396eb60ae250e22`
-- Last verified CI: PASS（run 40346315913，api/security/mobile 全部通过）
-- 最后核验时间：2026-10-26 23:53:33 +0800。
+- Last remote-confirmed SHA: T09 `2ce30e51ede2d7f901eb233b5f17f1ef21908f33`
+- Last verified CI: PASS（run 40354267818，api/security/mobile 全部通过）
+- 最后核验时间：2026-10-27T04:17:22+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -22,8 +22,8 @@
 | T06 | DONE_PUSHED | 真实 H5/DeepSeek/刷新、46 后端/27 UI/全门禁 PASS | e8861218fa6a6244e657b1713befc98d6db6a667 | SHA 一致 | PASS | 预算/Provider/Mock 隔离 |
 | T07 | DONE_PUSHED | 75 后端/33 UI/6专项、真实单次合并抽取/来源/刷新 PASS | ab54cf99cf432aca15d32477b1b61a1b1e879a97 | SHA 一致 | PASS | 候选/授权/时间精度/去重/Prompt溯源；T08召回未实现 |
 | T08 | DONE_PUSHED | 100 后端、36 UI、真实新登录/新会话/引用/刷新与全门禁 PASS | d205546532360551ed35f8aad396eb60ae250e22 | SHA一致 | PASS（40346315913） | SQL基线、最多5条/12KB、授权状态过滤、搜索与来源；万级效果尚待T10E2 |
-| T09 | TESTING | 129后端、42UI、全门禁PASS；真实当前状态召回/刷新PASS（首次失败与规则修复保留） | 本次提交后补记 | 待执行 | 待运行 | 确认/纠错/审计/权限/失效/删除、明确身体状态；详见T09_MEMORY_CONTROL.md |
-| T10 | TODO | - | - | - | - | 回忆时间线 |
+| T09 | DONE_PUSHED | 129后端、42UI、全门禁PASS；真实当前状态召回/刷新PASS（首次失败与规则修复保留） | 2ce30e51ede2d7f901eb233b5f17f1ef21908f33 | SHA一致 | PASS（40354267818） | 确认/纠错/审计/权限/失效/删除、明确身体状态；详见T09_MEMORY_CONTROL.md |
+| T10 | TESTING | 134后端/45UI/全门禁PASS，运营预览只读持久数据PASS，真实模型新增0 | 本次提交后补记 | 待执行 | 待运行 | 来源关联的确定性时间线，时间精度/纠错删除即时同步；未生成推测摘要 |
 | T10E1 | TODO | - | - | - | - | Synthetic 参数生成器，100/1000/10000 独立测试库 |
 | T10E2 | TODO | - | - | - | - | 固定至少200题、召回/回答/冲突/隔离/删除/并发/资源，HTML+JSON报告 |
 | T11 | TODO（汇总） | - | - | - | - | CR-001，A–E 全部独立验收 |

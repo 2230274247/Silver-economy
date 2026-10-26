@@ -755,6 +755,64 @@
         }
       }
     },
+    "/api/v1/memories/timeline": {
+      "get": {
+        "summary": "Get Timeline",
+        "operationId": "get_timeline_api_v1_memories_timeline_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "before_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelinePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/memories/{memory_id}/sources": {
       "get": {
         "summary": "Get Sources",
@@ -1662,6 +1720,170 @@
           "next_cursor"
         ],
         "title": "SourcePage"
+      },
+      "TimelineItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "event_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event At"
+          },
+          "event_precision": {
+            "type": "string",
+            "title": "Event Precision"
+          },
+          "time_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Expression"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "retrieval_allowed": {
+            "type": "boolean",
+            "title": "Retrieval Allowed"
+          },
+          "extractor_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extractor Provider"
+          },
+          "extractor_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extractor Version"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "value_origin": {
+            "type": "string",
+            "title": "Value Origin"
+          },
+          "event_label": {
+            "type": "string",
+            "title": "Event Label"
+          },
+          "source_count": {
+            "type": "integer",
+            "title": "Source Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "key",
+          "value",
+          "status",
+          "event_at",
+          "event_precision",
+          "time_expression",
+          "recorded_at",
+          "confirmed_at",
+          "retrieval_allowed",
+          "extractor_provider",
+          "extractor_version",
+          "is_synthetic",
+          "revision",
+          "value_origin",
+          "event_label",
+          "source_count"
+        ],
+        "title": "TimelineItem"
+      },
+      "TimelinePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "TimelinePage"
       },
       "ValidationError": {
         "properties": {

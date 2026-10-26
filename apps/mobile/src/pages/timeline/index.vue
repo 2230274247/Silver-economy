@@ -13,8 +13,10 @@ import { request } from '../../platform/network';
 import { requestId } from '../../platform/ids';
 import { bindComposer } from '../../platform/composer';
 import { labelTextControl } from '../../platform/accessibility';
+type TimelineMemory = Memory & { event_label?: string; source_count?: number; recorded_at?: string };
 interface Source { source_excerpt: string; conversation_id: string; message: { id: string; content: string; created_at: string } }
-const memories = ref<Memory[]>([]);
+const memories = ref<TimelineMemory[]>([]);
+const viewMode = ref<'library' | 'timeline'>('library');
 const loading = ref(false);
 const error = ref('');
 const cursor = ref<string | null>(null);
@@ -34,13 +36,13 @@ function updateQuery(event: Event) {
   void event;
 }
 function confirmSearch(event: Event) { query.value = (event as unknown as { detail: { value: string } }).detail.value; void runSearch(); }
-async function runSearch() { if (loading.value) return; appliedQuery.value = query.value.trim(); await load(false); }
-async function clearSearch() { if (loading.value) return; query.value = ''; appliedQuery.value = ''; await load(false); }
+async function runSearch() { if (loading.value) return; viewMode.value = 'library'; appliedQuery.value = query.value.trim(); await load(false); }
+async function clearSearch() { if (loading.value) return; viewMode.value = 'library'; query.value = ''; appliedQuery.value = ''; await load(false); }
 async function load(more = false) {
   if (loading.value) return;
   loading.value = true; error.value = '';
   try {
-    const page = await request<{ items: Memory[]; next_cursor: string | null }>(appliedQuery.value ? `/memories/search?q=${encodeURIComponent(appliedQuery.value)}` : `/memories${more && cursor.value ? `?before_id=${cursor.value}` : ''}`);
+    const page = await request<{ items: TimelineMemory[]; next_cursor: string | null }>(appliedQuery.value ? `/memories/search?q=${encodeURIComponent(appliedQuery.value)}` : `/memories${viewMode.value === 'timeline' ? '/timeline' : ''}${more && cursor.value ? `?before_id=${cursor.value}` : ''}`);
     memories.value = more ? [...memories.value, ...page.items] : page.items; cursor.value = page.next_cursor;
   } catch (reason) { error.value = reason instanceof Error ? reason.message : '记忆读取失败'; }
   finally { loading.value = false; }
@@ -55,14 +57,20 @@ async function viewSources(id: string, more = false) {
   catch { error.value = '来源读取失败，请再次点击查看来源重试。'; }
   finally { sourceBusy.value = ''; }
 }
+async function chooseView(mode: 'library' | 'timeline') {
+  if (loading.value || viewMode.value === mode) return;
+  viewMode.value = mode; query.value = ''; appliedQuery.value = ''; memories.value = []; cursor.value = null; await load();
+}
 function updatedMemory(item: Memory) {
-  memories.value = memories.value.map(old => old.id === item.id ? item : old);
+  memories.value = memories.value.map(old => old.id === item.id ? { ...old, ...item } : old);
   invalidateMemoryReferences(item.id); error.value = '';
+  if (viewMode.value === 'timeline') void load();
 }
 function deletedMemory(id: string) {
   memories.value = memories.value.filter(item => item.id !== id);
   delete sources.value[id]; delete sourceCursor.value[id];
   invalidateMemoryReferences(id, true); error.value = '';
+  void load();
 }
 function openSource(source: Source) { uni.navigateTo({ url: `/pages/index/index?id=${source.conversation_id}` }); }
 onLoad(() => { void load(); });
@@ -85,6 +93,34 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
           可以核对来源、确认和纠错。删除长期记忆不会删除原始聊天。
         </text><text class="preview-label">
           候选待确认 · 历史与当前状态分开保存
+        </text>
+        <view
+          class="view-options"
+          role="group"
+          aria-label="回忆查看方式"
+        >
+          <AppButton
+            secondary
+            :disabled="loading"
+            :aria-pressed="viewMode === 'library'"
+            @click="chooseView('library')"
+          >
+            记忆列表
+          </AppButton>
+          <AppButton
+            secondary
+            :disabled="loading"
+            :aria-pressed="viewMode === 'timeline'"
+            @click="chooseView('timeline')"
+          >
+            按时间查看
+          </AppButton>
+        </view>
+        <text
+          v-if="viewMode === 'timeline'"
+          class="memory-label"
+        >
+          按事情发生的时间范围排列；未明确发生时间的按记录时间排列。年份、月份不代表已确定具体哪一天。
         </text>
         <text
           v-if="loading"
@@ -143,6 +179,18 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
           :key="memory.id"
           class="surface-card memory-card"
         >
+          <text
+            v-if="viewMode === 'timeline'"
+            class="event-label"
+          >
+            {{ memory.event_label }}
+          </text>
+          <text
+            v-if="viewMode === 'timeline'"
+            class="memory-label"
+          >
+            {{ memory.source_count }} 段原文依据 · 记录于 {{ new Date(memory.recorded_at || '').toLocaleString('zh-CN') }}
+          </text>
           <text class="memory-label">
             {{ memoryStatus(memory) }}
           </text>
@@ -221,6 +269,8 @@ function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
 
 <style scoped>
 .content-scroll { height: 0; flex: 1; }
+.view-options { display: flex; gap: 10px; margin: 16px 0; }
+.event-label { display: block; color: var(--color-primary-dark); font-size: 20px; font-weight: 600; }
 .memory-card { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
 .memory-label { display: block; font-size: 15px; color: var(--color-muted); line-height: 1.6; }
 .memory-value, .source-card { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }

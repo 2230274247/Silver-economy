@@ -30,6 +30,16 @@ class MemoryPage(BaseModel):
     next_cursor: str | None
 
 
+class TimelineItem(MemoryOut):
+    event_label: str
+    source_count: int
+
+
+class TimelinePage(BaseModel):
+    items: list[TimelineItem]
+    next_cursor: str | None
+
+
 class SourceOut(BaseModel):
     id: str
     source_excerpt: str

@@ -1,0 +1,14 @@
+{
+  "verified_at_hk": "2026-10-27T04:17:22+08:00",
+  "backend_passed": 134,
+  "ui_passed": 45,
+  "scanner_tests_passed": 5,
+  "schema_revision": "t09_update",
+  "schema_changed": false,
+  "persisted_synthetic_view": true,
+  "read_only_demo_message_posts": 0,
+  "project_deepseek_receipts": 6,
+  "new_deepseek_receipts_since_t10_start": 0,
+  "test_model": "Mock",
+  "android_device_tested": false
+}
