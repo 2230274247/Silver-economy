@@ -33,6 +33,8 @@ jobs:
         working-directory: services/api
   mobile:
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/browsers
     defaults:
       run:
         working-directory: apps/mobile
@@ -47,3 +49,5 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build:h5
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:ui

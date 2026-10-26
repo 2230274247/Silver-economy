@@ -6,9 +6,10 @@ AI companion and personal memory platform for older adults.
 
 ## 当前可运行范围
 
-T01 提供 uni-app Vue3/TypeScript H5 与 FastAPI 工程骨架。
+T02 提供 Muse 参考的聊天首屏、原创伙伴、三个主导航及个人设置、登录和历史页壳。
+按用户最新设计改为聊天/我的回忆/提醒，个人设置在右上；18/20/22px 字号可持久化切换。
 页面明确显示未接入登录、聊天和记忆；当前没有模型调用，没有数据库连接。
-四 Tab 从 T02 开始，独立 MySQL/Alembic 从 T03 开始，账号和业务按任务顺序开发。
+独立 MySQL/Alembic 从 T03 开始，账号和业务按任务顺序开发。
 H5 是本期运行目标；保留 uni-app 页面及平台封装结构，微信小程序/App 需要后续适配与验收。
 
 ## 环境与安装
@@ -89,6 +90,16 @@ DATABASE_URL 仅可指向本项目独立数据库。
 检查包括 Git 可见文件的敏感信息扫描、扫描器负例测试、CI 结构校验、
 Python lint/format/pytest、前端 typecheck/lint/H5 build，任一步失败即非零退出。
 CI 在 dev/v0.1 push 和指向 main 的 PR 上执行；T03 增加真实 MySQL 集成任务。
+T02 增加 Chromium UI 测试，覆盖 360/390/430px、导航/草稿、字体、来源预览及减少动态效果。
+本机运行 UI 测试（进入 apps/mobile；浏览器依赖也留在项目内）：
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH = 'H:\AI For research institute\Silver-economy\.cache\browsers'
+npx playwright install chromium
+npm run test:ui
+```
+
+修改 pages.json 增加页面后应重启 H5 开发服务，避免沿用旧的路由表。
 扫描器只覆盖规则可识别的凭据和私有路径，不能替代提交前人工审查；二进制截图需另审。
 依赖风险用 `npm audit --json` 查看，不自动执行破坏性升级。
 
@@ -102,4 +113,6 @@ CI 在 dev/v0.1 push 和指向 main 的 PR 上执行；T03 增加真实 MySQL �
 - 本任务提交的最终远端与 CI 结果在下一次提交中记录，不预先标记完成。
 
 后续隐私界面会明确聊天原文与长期记忆的保管、纠错及删除边界。
-V0.1 仅内部演示；语音、照片/生成影像、系统推送和复杂向量检索均延后。
+V0.1 仅内部演示；语音、照片/生成影像、手机离开网页后的通知和复杂向量检索均延后。
+用户已将电脑浏览器后台通知、真实路线/天气查询纳入首版 T11 扩展验收，
+详见 [ADR-002](docs/decisions/ADR-002-assistant-and-ui.md)。当前尚未实现，不能据预览页认为已具备提醒能力。
