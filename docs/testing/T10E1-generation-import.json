@@ -1,0 +1,341 @@
+{
+  "verified_at_hk": "2026-10-27T04:56:12+08:00",
+  "task": "T10E1",
+  "scope": "Generation/import validation, not memory retrieval quality or the fixed 200-question evaluation.",
+  "database": "silver_memory_demo_v01_test",
+  "schema_changes": false,
+  "backend_tests_passed": 164,
+  "model_calls": 0,
+  "operator_deepseek_receipts_total": 6,
+  "scales": [
+    {
+      "dataset_id": "81a42b12-a7d9-57c2-ba67-59493de12b0f",
+      "generator": "synthetic/v1",
+      "synthetic": true,
+      "users": 2,
+      "memories": 100,
+      "source_messages": 110,
+      "duplicate_observations": 10,
+      "categories": {
+        "health": 20,
+        "relationship": 10,
+        "work": 10,
+        "habit": 10,
+        "interest": 10,
+        "travel": 10,
+        "date": 10,
+        "event": 10,
+        "place": 10
+      },
+      "precision": {
+        "year": 19,
+        "day": 19,
+        "unknown": 32,
+        "month": 30
+      },
+      "statuses": {
+        "historical": 5,
+        "confirmed": 91,
+        "inactive": 3,
+        "deleted": 1
+      },
+      "invalid": {
+        "inactive": 3,
+        "deleted": 1,
+        "permission_denied": 5,
+        "expired": 1
+      },
+      "conflict_records": 10,
+      "per_user_memories": {
+        "b7c9bd14-32e4-59df-b417-4623eefa7e6c": 51,
+        "a709eceb-d8dd-5049-8012-d5c33ac8916a": 49
+      },
+      "unique_values": 100,
+      "model_calls": 0,
+      "already_present": false,
+      "inserted_memories": 100,
+      "import_seconds": 0.625,
+      "schema": "silver_memory_demo_v01_test",
+      "file_sha256": "50b8d364a42551ba9b3045a59cfb34d2bc87b59cf8b76cb237008c1f57f240b7",
+      "config": {
+        "users": 2,
+        "memories": 100,
+        "seed": 20261027,
+        "start_year": 2006,
+        "end_year": 2026,
+        "categories": [
+          "relationship",
+          "work",
+          "habit",
+          "interest",
+          "travel",
+          "date",
+          "health",
+          "event",
+          "place"
+        ],
+        "duplicate_ratio": 0.1,
+        "conflict_ratio": 0.1,
+        "invalid_ratio": 0.1,
+        "reference_date": "2026-10-26"
+      },
+      "database_counts_after_repeat": {
+        "memories": 100,
+        "unique_values": 100,
+        "synthetic_memories": 100,
+        "messages": 110,
+        "sources": 110,
+        "model_usage_rows": 0,
+        "source_mismatches": 0
+      },
+      "corpus_bytes": 84555,
+      "repeat_verification": {
+        "already_present": true,
+        "inserted_memories": 0,
+        "seconds": 0.25
+      }
+    },
+    {
+      "dataset_id": "f63883f8-7ab3-5e22-bef7-f98293a31fa3",
+      "generator": "synthetic/v1",
+      "synthetic": true,
+      "users": 2,
+      "memories": 1000,
+      "source_messages": 1100,
+      "duplicate_observations": 100,
+      "categories": {
+        "health": 200,
+        "relationship": 100,
+        "work": 100,
+        "habit": 100,
+        "interest": 100,
+        "travel": 100,
+        "date": 100,
+        "event": 100,
+        "place": 100
+      },
+      "precision": {
+        "year": 184,
+        "day": 184,
+        "unknown": 332,
+        "month": 300
+      },
+      "statuses": {
+        "historical": 50,
+        "confirmed": 899,
+        "deleted": 22,
+        "inactive": 29
+      },
+      "invalid": {
+        "expired": 19,
+        "deleted": 22,
+        "permission_denied": 30,
+        "inactive": 29
+      },
+      "conflict_records": 100,
+      "per_user_memories": {
+        "a8018d8e-8474-5e24-92f6-a025f8299375": 500,
+        "f989feda-c39f-5738-89f7-cd6f26e8459c": 500
+      },
+      "unique_values": 1000,
+      "model_calls": 0,
+      "already_present": false,
+      "inserted_memories": 1000,
+      "import_seconds": 3.094,
+      "schema": "silver_memory_demo_v01_test",
+      "file_sha256": "e33aa3d0942ec0fb4bdcf9056efab12a972cd0e8a31dd438c4970d95a748e714",
+      "config": {
+        "users": 2,
+        "memories": 1000,
+        "seed": 20261027,
+        "start_year": 2006,
+        "end_year": 2026,
+        "categories": [
+          "relationship",
+          "work",
+          "habit",
+          "interest",
+          "travel",
+          "date",
+          "health",
+          "event",
+          "place"
+        ],
+        "duplicate_ratio": 0.1,
+        "conflict_ratio": 0.1,
+        "invalid_ratio": 0.1,
+        "reference_date": "2026-10-26"
+      },
+      "database_counts_after_repeat": {
+        "memories": 1000,
+        "unique_values": 1000,
+        "synthetic_memories": 1000,
+        "messages": 1100,
+        "sources": 1100,
+        "model_usage_rows": 0,
+        "source_mismatches": 0
+      },
+      "corpus_bytes": 842693,
+      "repeat_verification": {
+        "already_present": true,
+        "inserted_memories": 0,
+        "seconds": 0.641
+      }
+    },
+    {
+      "dataset_id": "d0852eb5-3e9e-58d6-a007-3c4bb1592ee5",
+      "generator": "synthetic/v1",
+      "synthetic": true,
+      "users": 2,
+      "memories": 10000,
+      "source_messages": 11000,
+      "duplicate_observations": 1000,
+      "categories": {
+        "health": 2000,
+        "relationship": 1000,
+        "work": 1000,
+        "habit": 1000,
+        "interest": 1000,
+        "travel": 1000,
+        "date": 1000,
+        "event": 1000,
+        "place": 1000
+      },
+      "precision": {
+        "year": 1834,
+        "day": 1834,
+        "unknown": 3332,
+        "month": 3000
+      },
+      "statuses": {
+        "historical": 500,
+        "confirmed": 8983,
+        "deleted": 259,
+        "inactive": 258
+      },
+      "invalid": {
+        "permission_denied": 240,
+        "deleted": 259,
+        "expired": 243,
+        "inactive": 258
+      },
+      "conflict_records": 1000,
+      "per_user_memories": {
+        "73ed35cb-884e-5c14-a0df-d7d295a75124": 5000,
+        "cf1e5c81-0059-5dc6-9efd-ab8a75fa5a53": 5000
+      },
+      "unique_values": 10000,
+      "model_calls": 0,
+      "already_present": false,
+      "inserted_memories": 10000,
+      "import_seconds": 21.516,
+      "schema": "silver_memory_demo_v01_test",
+      "file_sha256": "3f9aeed3fb04174c7dbab0c558c9507b41eca386cbb5418b31bfb3a22e31a1ed",
+      "config": {
+        "users": 2,
+        "memories": 10000,
+        "seed": 20261027,
+        "start_year": 2006,
+        "end_year": 2026,
+        "categories": [
+          "relationship",
+          "work",
+          "habit",
+          "interest",
+          "travel",
+          "date",
+          "health",
+          "event",
+          "place"
+        ],
+        "duplicate_ratio": 0.1,
+        "conflict_ratio": 0.1,
+        "invalid_ratio": 0.1,
+        "reference_date": "2026-10-26"
+      },
+      "database_counts_after_repeat": {
+        "memories": 10000,
+        "unique_values": 10000,
+        "synthetic_memories": 10000,
+        "messages": 11000,
+        "sources": 11000,
+        "model_usage_rows": 0,
+        "source_mismatches": 0
+      },
+      "corpus_bytes": 8435608,
+      "repeat_verification": {
+        "already_present": true,
+        "inserted_memories": 0,
+        "seconds": 4.359
+      }
+    }
+  ],
+  "custom_generation_check": {
+    "dataset_id": "cb25b123-9d7f-505c-92e2-d765b68f3291",
+    "generator": "synthetic/v1",
+    "synthetic": true,
+    "users": 3,
+    "memories": 100,
+    "source_messages": 120,
+    "duplicate_observations": 20,
+    "categories": {
+      "work": 60,
+      "place": 40
+    },
+    "precision": {
+      "year": 21,
+      "day": 20,
+      "unknown": 33,
+      "month": 26
+    },
+    "statuses": {
+      "historical": 10,
+      "confirmed": 81,
+      "deleted": 5,
+      "inactive": 4
+    },
+    "invalid": {
+      "expired": 4,
+      "deleted": 5,
+      "permission_denied": 7,
+      "inactive": 4
+    },
+    "conflict_records": 20,
+    "per_user_memories": {
+      "fe1deeb7-6daa-5b9d-81d0-90ed0212f8e0": 34,
+      "93798f19-b4ba-5001-8f61-b519bf6677cd": 33,
+      "2b1e4a6c-8bc2-5fe2-a21b-47c262260a84": 33
+    },
+    "unique_values": 100,
+    "model_calls": 0,
+    "config": {
+      "users": 3,
+      "memories": 100,
+      "seed": 17,
+      "start_year": 2000,
+      "end_year": 2010,
+      "categories": [
+        "work",
+        "place"
+      ],
+      "duplicate_ratio": 0.2,
+      "conflict_ratio": 0.2,
+      "invalid_ratio": 0.2,
+      "reference_date": "2026-10-26"
+    },
+    "min_known_event_year": 2000,
+    "max_known_event_year": 2010,
+    "imported": false
+  },
+  "known_limitations": [
+    "Conflict ratio is the fraction of explicitly labelled before/after fixture records, not a measured semantic-conflict detection score.",
+    "Repeated common fictional names and approximate dates can be ambiguous; independent objective evaluation must handle this rather than assume every question has a unique fact.",
+    "Counts are total L1 records per cohort; the 10000-record cohort has 5000 per user.",
+    "The test database is disposable; full schema regression can erase these fixtures. Regenerate/import before evaluation."
+  ],
+  "source_sha256_utf8_lf": {
+    "services/api/app/memory/synthetic_data.py": "10fd0cec9c33a819d2e585b92bb04d983712af301703c69bc892c3961d7dc257",
+    "services/api/app/memory/synthetic_import.py": "c6be366297f60f2d9b212a81b2d1b41a65709e5c601725695d1e5896bd61992c",
+    "scripts/memory-synthetic.py": "e272cf2bdd7c8d944c9a9545ba71a9a22e95bce95fda13035d8edca112d23643"
+  }
+}

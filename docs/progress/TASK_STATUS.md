@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T10（来源时间线、本地全门禁/三尺寸验证通过，待 push/SHA/CI）
+- Current task: T10E1（参数化生成/三档真实测试库导入及幂等通过，待 push/SHA/CI）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T09 `2ce30e51ede2d7f901eb233b5f17f1ef21908f33`
-- Last verified CI: PASS（run 40354267818，api/security/mobile 全部通过）
-- 最后核验时间：2026-10-27T04:17:22+08:00。
+- Last remote-confirmed SHA: T10 `d7572f9b6f0f2b1c71e5db507bec126ebdc22fb8`
+- Last verified CI: PASS（run 40394518915，api/security/mobile 全部通过）
+- 最后核验时间：2026-10-27T04:57:38+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -23,8 +23,8 @@
 | T07 | DONE_PUSHED | 75 后端/33 UI/6专项、真实单次合并抽取/来源/刷新 PASS | ab54cf99cf432aca15d32477b1b61a1b1e879a97 | SHA 一致 | PASS | 候选/授权/时间精度/去重/Prompt溯源；T08召回未实现 |
 | T08 | DONE_PUSHED | 100 后端、36 UI、真实新登录/新会话/引用/刷新与全门禁 PASS | d205546532360551ed35f8aad396eb60ae250e22 | SHA一致 | PASS（40346315913） | SQL基线、最多5条/12KB、授权状态过滤、搜索与来源；万级效果尚待T10E2 |
 | T09 | DONE_PUSHED | 129后端、42UI、全门禁PASS；真实当前状态召回/刷新PASS（首次失败与规则修复保留） | 2ce30e51ede2d7f901eb233b5f17f1ef21908f33 | SHA一致 | PASS（40354267818） | 确认/纠错/审计/权限/失效/删除、明确身体状态；详见T09_MEMORY_CONTROL.md |
-| T10 | TESTING | 134后端/45UI/全门禁PASS，运营预览只读持久数据PASS，真实模型新增0 | 本次提交后补记 | 待执行 | 待运行 | 来源关联的确定性时间线，时间精度/纠错删除即时同步；未生成推测摘要 |
-| T10E1 | TODO | - | - | - | - | Synthetic 参数生成器，100/1000/10000 独立测试库 |
+| T10 | DONE_PUSHED | 134后端/45UI/全门禁PASS，运营预览只读持久数据PASS，真实模型新增0 | d7572f9b6f0f2b1c71e5db507bec126ebdc22fb8 | SHA一致 | PASS（40394518915） | 来源关联的确定性时间线，时间精度/纠错删除即时同步；未生成推测摘要 |
+| T10E1 | TESTING | 164后端/完整门禁、100/1000/10000真实SQL计数/重复导入PASS，新增模型0 | 本次提交后补记 | 待执行 | 待运行 | Synthetic参数/9类/原文去重来源/预标注冲突/无效/时间精度；非召回质量验收 |
 | T10E2 | TODO | - | - | - | - | 固定至少200题、召回/回答/冲突/隔离/删除/并发/资源，HTML+JSON报告 |
 | T11 | TODO（汇总） | - | - | - | - | CR-001，A–E 全部独立验收 |
 | T11A | TODO | - | - | - | - | 意图识别/追问/可编辑确认卡 |
