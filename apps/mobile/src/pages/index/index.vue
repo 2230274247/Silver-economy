@@ -152,6 +152,12 @@ onLoad(async options => {
           <text class="message-time">
             {{ message.status === 'sending' ? '发送中，尚未确认保存' : new Date(message.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
           </text>
+          <text
+            v-if="message.role === 'user' && message.memory_status && message.memory_status !== 'disabled'"
+            class="message-time"
+          >
+            {{ message.memory_status === 'captured' ? '已检查候选记忆，可在“我的回忆”核对' : message.memory_status === 'partial_rejected' ? '缺少原文依据的候选已忽略' : '本条记忆提取未完成' }}
+          </text>
         </view>
         <view
           v-if="busy"

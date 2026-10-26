@@ -13,7 +13,7 @@ test('mobile shell, draft, real navigation and font preference', async ({ page }
   const input = page.getByRole('textbox', { name: '想对小忆说的话' });
   await input.fill('一段未发送的合成草稿');
   await page.getByRole('button', { name: '我的回忆', exact: true }).click();
-  await expect(page.getByText('故事，从一段聊天开始')).toBeVisible();
+  await expect(page.getByText('值得记住的，都在这里。')).toBeVisible();
   await page.getByRole('button', { name: '提醒', exact: true }).click();
   await expect(page.getByText('还没有待办的事')).toBeVisible();
   await page.getByRole('button', { name: '聊天', exact: true }).click();

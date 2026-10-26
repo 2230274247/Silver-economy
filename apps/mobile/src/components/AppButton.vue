@@ -24,6 +24,7 @@ defineEmits<{ click: [] }>();
 
 <style scoped>
 .app-button { display: flex; align-items: center; justify-content: center; min-height: 52px; width: 100%; padding: 12px 18px; border-radius: 16px; color: white; background: var(--color-primary); font-size: var(--font-body); transition: background var(--motion-duration); }
-.app-button:not(:disabled):active, .app-button:not(:disabled):hover { background: var(--color-primary-dark); }
+.app-button:not(.secondary)[aria-disabled="false"]:active, .app-button:not(.secondary)[aria-disabled="false"]:hover { background: var(--color-primary-dark); }
 .app-button.secondary { color: var(--color-primary-dark); background: var(--color-soft); }
+.app-button.secondary[aria-disabled="false"]:active, .app-button.secondary[aria-disabled="false"]:hover { background: #dce8df; }
 </style>

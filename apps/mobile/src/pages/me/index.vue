@@ -8,8 +8,35 @@ import { fontSize, setFontSize } from '../../stores/ui';
 import type { FontSize } from '../../platform/storage';
 import { ref } from 'vue';
 import { currentUser, logout, sessionError } from '../../stores/session';
+import { onShow } from '@dcloudio/uni-app';
+import { request } from '../../platform/network';
 const busy = ref(false);
 const accountError = ref('');
+const memoryEnabled = ref(false);
+const memoryBusy = ref(false);
+const memoryLoading = ref(true);
+const memoryReady = ref(false);
+const memoryError = ref('');
+async function readMemoryConsent() {
+  memoryLoading.value = true;
+  memoryReady.value = false; memoryError.value = '';
+  try { if (currentUser.value) { memoryEnabled.value = (await request<{ enabled: boolean }>('/memory-consent')).enabled; memoryReady.value = true; } }
+  catch { memoryError.value = '记忆设置读取失败，请重试。'; }
+  finally { memoryLoading.value = false; }
+}
+onShow(readMemoryConsent);
+async function toggleMemory() {
+  if (memoryBusy.value || memoryLoading.value || !memoryReady.value) return;
+  memoryBusy.value = true; memoryError.value = '';
+  try {
+    if (!memoryEnabled.value) {
+      const choice = await uni.showModal({ title: '开启长期记忆', content: '允许从聊天提取候选记忆，用于后续会话。当前支持保存候选和查看来源，跨会话使用尚未开放。可以随时关闭，关闭不会删除聊天或已有记忆。', confirmText: '允许', cancelText: '暂不' });
+      if (!choice.confirm) return;
+    }
+    memoryEnabled.value = (await request<{ enabled: boolean }>('/memory-consent', 'POST', { enabled: !memoryEnabled.value })).enabled;
+  } catch { memoryError.value = '记忆设置保存失败，请重试。'; }
+  finally { memoryBusy.value = false; }
+}
 const sizes: { size: FontSize; label: string }[] = [{ size: 18, label: '标准' }, { size: 20, label: '大号' }, { size: 22, label: '特大' }];
 function openLogin() { uni.navigateTo({ url: '/pages/login/index' }); }
 async function leave() {
@@ -75,10 +102,35 @@ async function leave() {
           <text class="setting-title">
             关于你的记忆
           </text><text class="privacy-copy">
-            后续接入后，你可以查看记忆来源、纠正或删除。聊天原文与长期记忆会分别说明保存方式。
+            开启后，从聊天提取有原文依据的候选记忆。你可以查看来源；候选未经本人确认，不等同确定事实。
           </text><text class="setting-note">
-            聊天文字保存在本项目数据库。长期记忆功能尚未接入。
+            {{ !memoryReady ? '记忆设置状态尚未确认。' : memoryEnabled ? '长期记忆已开启。' : '长期记忆未开启。' }} 关闭后停止新提取和后续召回，不删除原文或已有候选。编辑、删除尚未开放。
           </text>
+          <AppButton
+            v-if="currentUser"
+            :loading="memoryBusy"
+            :disabled="memoryLoading || !memoryReady"
+            :error="!!memoryError"
+            secondary
+            @click="toggleMemory"
+          >
+            {{ memoryEnabled ? '关闭长期记忆' : '开启长期记忆' }}
+          </AppButton>
+          <text
+            v-if="memoryError"
+            role="alert"
+            class="account-error"
+          >
+            {{ memoryError }}
+          </text>
+          <AppButton
+            v-if="memoryError && !memoryReady"
+            secondary
+            :loading="memoryLoading"
+            @click="readMemoryConsent"
+          >
+            重新读取记忆设置
+          </AppButton>
         </view>
         <text
           v-if="accountError || sessionError"

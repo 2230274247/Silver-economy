@@ -39,6 +39,7 @@ def message_data(item: Message):
         "reply_to_message_id": item.reply_to_message_id,
         "client_request_id": item.client_request_id,
         "provider": item.provider,
+        "memory_status": item.memory_status,
     }
 
 

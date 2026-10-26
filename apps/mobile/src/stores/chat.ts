@@ -9,6 +9,7 @@ export interface Message {
   error_code: string | null; created_at: string;
   reply_to_message_id: string | null; client_request_id: string | null;
   provider: string | null;
+  memory_status?: string | null;
 }
 interface Page<T> { items: T[]; next_cursor: string | null }
 export const activeConversation = ref<Conversation | null>(null);

@@ -21,6 +21,7 @@ class MessageOut(BaseModel):
     reply_to_message_id: str | None
     client_request_id: str | None
     provider: str | None
+    memory_status: str | None
 
 
 class ConversationPage(BaseModel):

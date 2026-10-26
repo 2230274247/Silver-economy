@@ -23,11 +23,17 @@ class ModelReply:
 
 
 class ModelProvider(Protocol):
-    def complete(self, messages: list[dict[str, str]]) -> ModelReply: ...
+    def complete(
+        self, messages: list[dict[str, str]], *, json_output: bool = False
+    ) -> ModelReply: ...
 
 
 class MockProvider:
-    def complete(self, messages):
+    def complete(self, messages, *, json_output=False):
+        if json_output:
+            from app.memory.extractor import mock_envelope
+
+            return ModelReply(mock_envelope(messages[-1]["content"]), "mock-v1", 0, 0)
         return ModelReply(
             "【Mock 测试回复】已收到你的消息；这不是 DeepSeek 的真实回答。", "mock-v1", 0, 0
         )
@@ -43,7 +49,7 @@ class DeepSeekProvider:
         self.settings = settings
         self.transport = transport
 
-    def complete(self, messages):
+    def complete(self, messages, *, json_output=False):
         key = self.settings.deepseek_api_key.get_secret_value()
         if not key.strip():
             raise ProviderFailure("MODEL_NOT_CONFIGURED")
@@ -63,6 +69,7 @@ class DeepSeekProvider:
                         "max_tokens": self.settings.deepseek_max_output_tokens,
                         "thinking": {"type": "disabled"},
                         "stream": False,
+                        **({"response_format": {"type": "json_object"}} if json_output else {}),
                     },
                 )
             if response.status_code != 200:

@@ -23,6 +23,7 @@ class User(Identity, Base):
     login_name: Mapped[str] = mapped_column(String(64), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     disabled_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    memory_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Owned:
@@ -65,11 +66,13 @@ class Message(Identity, Updated, Owned, Base):
     status: Mapped[str] = mapped_column(String(24), default="saved")
     error_code: Mapped[str | None] = mapped_column(String(64))
     provider: Mapped[str | None] = mapped_column(String(32))
+    memory_status: Mapped[str | None] = mapped_column(String(32))
+    raw_model_output: Mapped[str | None] = mapped_column(Text)
 
 
 class MemoryFact(Identity, Updated, Owned, Base):
     __tablename__ = "memory_facts"
-    __table_args__ = (UniqueConstraint("user_id", "id"),)
+    __table_args__ = (UniqueConstraint("user_id", "id"), UniqueConstraint("user_id", "fingerprint"))
     kind: Mapped[str] = mapped_column(String(32))
     key: Mapped[str] = mapped_column(String(128))
     value: Mapped[str] = mapped_column(Text)
@@ -80,6 +83,16 @@ class MemoryFact(Identity, Updated, Owned, Base):
     recorded_at: Mapped[datetime] = mapped_column(UTC_DATETIME, server_default=func.now())
     confidence_label: Mapped[str] = mapped_column(String(32), default="explicit")
     deleted_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))
+    time_expression: Mapped[str | None] = mapped_column(String(120))
+    event_precision: Mapped[str] = mapped_column(String(24), default="unknown")
+    event_timezone: Mapped[str] = mapped_column(String(64), default="Asia/Hong_Kong")
+    state_text: Mapped[str | None] = mapped_column(String(80))
+    confirmed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    retrieval_allowed: Mapped[bool] = mapped_column(Boolean, default=False)
+    extractor_provider: Mapped[str | None] = mapped_column(String(32))
+    extractor_version: Mapped[str | None] = mapped_column(String(80))
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class MemorySource(Identity, Owned, Base):
@@ -125,6 +138,7 @@ class ModelUsage(Identity, Owned, Base):
     provider: Mapped[str] = mapped_column(String(32))
     model: Mapped[str] = mapped_column(String(80))
     purpose: Mapped[str] = mapped_column(String(32))
+    prompt_version: Mapped[str | None] = mapped_column(String(80))
     request_id: Mapped[str] = mapped_column(String(64), index=True)
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)

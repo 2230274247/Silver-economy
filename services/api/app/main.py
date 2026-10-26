@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
+from app.api.v1.memories import router as memories_router
 from app.core.config import get_settings
 from app.core.database import get_engine
 from app.core.errors import ApiError
@@ -28,6 +29,7 @@ if not silver_logger.handlers:
 logger = logging.getLogger("silver.api")
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(memories_router)
 
 
 @app.middleware("http")

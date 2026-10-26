@@ -6,18 +6,22 @@ from datetime import datetime
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.dialects.mysql import insert
 
 from app.core.config import PROJECT_ROOT, get_settings
 from app.llm.providers import ProviderFailure, get_provider
-from app.models.entities import Message, ModelBudget, ModelUsage
+from app.memory.extractor import MemoryExtractor
+from app.memory.repository import MemoryRepository
+from app.models.entities import Message, ModelBudget, ModelUsage, User
 
 logger = logging.getLogger("silver.model")
 SYSTEM_PROMPT = (PROJECT_ROOT / "prompts/chat-v1.txt").read_text(encoding="utf-8").strip()
+MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v1.txt").read_text(encoding="utf-8").strip()
 
 
-def context_messages(db, item):
+def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
     # Bound both message count and UTF-8 bytes; never send every historical message.
     history = db.scalars(
         select(Message)
@@ -30,7 +34,7 @@ def context_messages(db, item):
         .order_by(Message.created_at.desc(), Message.id.desc())
         .limit(12)
     ).all()
-    selected, size = [], len(SYSTEM_PROMPT.encode("utf-8"))
+    selected, size = [], len(system_prompt.encode("utf-8"))
     for message in history:
         if message.provider == "mock":
             continue
@@ -39,7 +43,7 @@ def context_messages(db, item):
             break
         selected.append({"role": message.role, "content": message.content})
         size += cost
-    return [{"role": "system", "content": SYSTEM_PROMPT}, *reversed(selected)]
+    return [{"role": "system", "content": system_prompt}, *reversed(selected)]
 
 
 def reserve_budget(db, settings, tokens):
@@ -63,7 +67,9 @@ def generate_reply(db, item, assistant):
     settings = get_settings()
     provider = settings.llm_provider
     assistant.provider = provider
-    prompts = context_messages(db, item)
+    memory_enabled = db.scalar(select(User.memory_enabled).where(User.id == item.user_id))
+    prompts = context_messages(db, item, MEMORY_PROMPT if memory_enabled else SYSTEM_PROMPT)
+    item.memory_status = "pending" if memory_enabled else "disabled"
     usage = None
     started = time.monotonic()
     try:
@@ -85,19 +91,44 @@ def generate_reply(db, item, assistant):
             provider=provider,
             model=settings.deepseek_model if provider == "deepseek" else "mock-v1",
             purpose="chat",
+            prompt_version="chat-memory/v1" if memory_enabled else "chat/v1",
             request_id=item.client_request_id,
             reserved_tokens=tokens,
             status="reserved",
         )
         db.add(usage)
         db.commit()  # original + pending reply and quota reservation durable before external I/O
-        result = get_provider(settings).complete(prompts)
+        model = get_provider(settings)
+        result = (
+            model.complete(prompts, json_output=True) if memory_enabled else model.complete(prompts)
+        )
         assistant.content = result.content
         assistant.status = "completed"
         assistant.error_code = None
         usage.model = result.model
         usage.input_tokens, usage.output_tokens = result.input_tokens, result.output_tokens
         usage.status = "completed"
+        if memory_enabled:
+            assistant.raw_model_output = result.content
+            try:
+                reply, candidates, rejected = MemoryExtractor().parse(result.content, item.content)
+                assistant.content = reply
+                # Consent may have been withdrawn while the paid call was in flight.
+                owner = db.scalar(
+                    select(User)
+                    .where(User.id == item.user_id)
+                    .with_for_update()
+                    .execution_options(populate_existing=True)
+                )
+                if owner.memory_enabled:
+                    MemoryRepository().save_candidates(db, item, candidates, provider)
+                    item.memory_status = "partial_rejected" if rejected else "captured"
+                else:
+                    item.memory_status = "disabled"
+            except (ValidationError, ValueError):
+                item.memory_status = "failed_schema"
+                assistant.content, assistant.status = "", "failed"
+                assistant.error_code = "MODEL_RESPONSE_FORMAT"
         # Worst-case peak cache-miss estimate for the documented default model,
         # not a vendor bill; unknown custom models have no fabricated price.
         usage.estimated_cost = (
@@ -112,6 +143,8 @@ def generate_reply(db, item, assistant):
     except ProviderFailure as error:
         assistant.status = "failed"
         assistant.error_code = error.code
+        if memory_enabled:
+            item.memory_status = "model_failed"
         if usage:
             usage.status, usage.error_code = "unknown", error.code
         # Keep quota reserved even when outcome is unknown; no blind retries.
