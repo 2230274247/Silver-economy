@@ -41,7 +41,7 @@ function open(path: string) {
 
 <style scoped>
 .bottom-tabs { display: flex; flex-shrink: 0; margin: 0 20px; padding: 8px 0 calc(9px + env(safe-area-inset-bottom)); border-top: 1px solid var(--color-line); }
-.tab { flex: 1; min-width: 0; min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--color-muted); font-size: 13px; border-radius: 16px; transition: background var(--motion-duration); }
+.tab { flex: 1; min-width: 0; min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--color-muted); font-size: 15px; border-radius: 16px; transition: background var(--motion-duration); }
 .tab-icon { padding: 3px 15px; border-radius: 18px; }
 .tab.selected { color: var(--color-primary-dark); font-weight: 600; }
 .selected .tab-icon { background: var(--color-soft); }

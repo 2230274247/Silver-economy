@@ -2,10 +2,10 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T05（本地通过，待 push/SHA/CI）
+- Current task: UI-FIX-01（本地通过，待 push/SHA/CI）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T04 `e967f4535b7222bf4d1c7051dd42c22eedaf8bcd`
-- Last verified CI: PASS（run 40294959392，api/security/mobile 全部通过）
+- Last remote-confirmed SHA: T05 `2252da21c02510ced73d7061badb9418a6187ca3`
+- Last verified CI: PASS（run 40297897977，api/security/mobile 全部通过）
 - 最后核验时间：2026-10-26 16:06:04 +08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
@@ -17,8 +17,8 @@
 | CR-001 | DONE_PUSHED | 原件/暂存哈希、覆盖/安全校验、5 扫描测试和 3 API 测试通过 | cde000795374b63c9d6a93cb89ca2077b2e3d517 | SHA 一致 | PASS | 正式登记，不表示功能交付 |
 | T03 | DONE_PUSHED | 12 后端/MySQL 测试 + 全项目门禁 PASS，health/ready 实跑 200 | 3aa87eee69790e7fc1cbce46fda8eb8f7315cdb3 | SHA 一致 | PASS | 2026-10-26 16:32:46 +08:00；仅本项目双库 |
 | T04 | DONE_PUSHED | 20 后端测试、15 真实 UI 测试及全门禁 PASS | e967f4535b7222bf4d1c7051dd42c22eedaf8bcd | SHA 一致 | PASS | 2026-10-26 16:49:25 +08:00；见 T04_AUTH.md |
-| T05 | TESTING | 28 后端测试、18 实际 UI 测试、完整门禁 PASS | 本次提交后记录 | 待执行 | 待运行 | 见 T05_CHAT.md；模型尚未接入 |
-| UI-FIX-01 | TODO | - | - | - | - | T05 之后独立修复引导/IME/多行/交互，再启用 T06；不改写 T02 |
+| T05 | DONE_PUSHED | 28 后端测试、18 实际 UI 测试、完整门禁 PASS | 2252da21c02510ced73d7061badb9418a6187ca3 | SHA 一致 | PASS | 见 T05_CHAT.md；模型尚未接入 |
+| UI-FIX-01 | TESTING | 27 UI、28 后端及全门禁 PASS | 本次提交后补记 | 待执行 | 待运行 | T05 之后独立修复引导/IME/多行/交互，再启用 T06；不改写 T02 |
 | T06 | TODO | - | - | - | - | DeepSeek 接入 |
 | T07 | TODO | - | - | - | - | 记忆抽取与来源 |
 | T08 | TODO | - | - | - | - | 跨会话检索 |

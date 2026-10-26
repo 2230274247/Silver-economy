@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, nextTick, ref } from 'vue';
+import { onMounted, onUnmounted, nextTick, ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import AccessibleButton from '../../components/AccessibleButton.vue';
 import AppHeader from '../../components/AppHeader.vue';
@@ -7,14 +7,29 @@ import AppIcon from '../../components/AppIcon.vue';
 import BottomTabs from '../../components/BottomTabs.vue';
 import MobileShell from '../../components/MobileShell.vue';
 import { labelTextControl } from '../../platform/accessibility';
+import { bindComposer } from '../../platform/composer';
+import { requestId } from '../../platform/ids';
 import { currentUser, restoreSession, sessionError } from '../../stores/session';
 import { draft } from '../../stores/ui';
 import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, type Message } from '../../stores/chat';
 const scrollTarget = ref('');
+const composerId = `chat-draft-${requestId()}`;
 let freshRequested = false;
+const focusInput = ref(false);
+const composing = ref(false);
+let removeKeyboard = () => {};
+const suggestions = ['想聊聊今天发生的事', '有件事想请你帮忙记住', '我想安排一次出行'];
+function updateDraft(event: Event) {
+  // #ifndef H5
+  draft.value = (event as unknown as { detail: { value: string } }).detail.value;
+  // #endif
+  // H5 uses synchronous native input in the platform adapter.
+  void event;
+}
+async function chooseSuggestion(text: string) { draft.value = text; focusInput.value = false; await nextTick(); focusInput.value = true; }
 async function newest() { scrollTarget.value = ''; await nextTick(); scrollTarget.value = 'chat-tail'; }
 async function send() {
-  if (loading.value) return;
+  if (loading.value || composing.value) return;
   const saved = await sendText();
   if (saved && freshRequested && activeConversation.value) {
     freshRequested = false;
@@ -22,7 +37,8 @@ async function send() {
   } else await newest();
 }
 async function retry(item: Message) { await retryReply(item); await newest(); }
-onMounted(() => labelTextControl('chat-draft', '想对小忆说的话'));
+onMounted(async () => { await nextTick(); labelTextControl(composerId, '想对小忆说的话'); removeKeyboard = bindComposer(composerId, send, newest, value => { draft.value = value; }); });
+onUnmounted(() => removeKeyboard());
 onLoad(async options => {
   freshRequested = options?.new === '1';
   if (!currentUser.value) await restoreSession();
@@ -66,12 +82,23 @@ onLoad(async options => {
           正在读取聊天…
         </text>
         <view
-          v-else-if="!messages.length"
+          v-else-if="!messages.length && !busy"
           class="empty-chat"
         >
           <text class="empty-title">
             今天想聊些什么？
           </text><text>小事也可以，慢慢说。</text>
+          <view class="suggestions">
+            <AccessibleButton
+              v-for="text in suggestions"
+              :key="text"
+              class="suggestion"
+              :disabled="loading"
+              @click="chooseSuggestion(text)"
+            >
+              {{ text }}
+            </AccessibleButton>
+          </view>
         </view>
         <view
           v-for="message in messages"
@@ -137,22 +164,35 @@ onLoad(async options => {
       <view class="composer">
         <label
           class="sr-only"
-          for="chat-draft"
+          :for="composerId"
         >想对小忆说的话</label>
-        <input
-          id="chat-draft"
-          v-model="draft"
+        <textarea
+          :id="composerId"
+          :value="draft"
           class="draft-input"
           placeholder="说点什么吧…"
+          placeholder-style="color:#586761;opacity:1"
           :maxlength="2000"
+          auto-height
+          :focus="focusInput"
+          :ignore-composition-event="false"
+          :show-confirm-bar="false"
+          :cursor-spacing="20"
           confirm-type="send"
+          @focus="newest"
+          @input="updateDraft"
+          @keyboardheightchange="newest"
+          @compositionstart="composing = true"
+          @compositionend="composing = false"
+          @blur="composing = false"
           @confirm="send"
-        >
+        />
         <AccessibleButton
           v-if="draft.trim() || busy"
           class="send-button"
           :loading="busy"
-          :disabled="loading"
+          :disabled="loading || composing"
+          :error="!!chatError"
           aria-label="发送消息"
           @click="send"
         >
@@ -183,6 +223,8 @@ onLoad(async options => {
 .empty-chat { margin: auto 0; padding: 44px 0; text-align: center; line-height: 1.8; color: var(--color-muted); }
 .empty-chat text { display: block; }
 .empty-title { font-size: 24px; color: var(--color-text); margin-bottom: 12px; }
+.suggestions { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.suggestion { min-height: 48px; padding: 10px 16px; border: 1px solid var(--color-line); border-radius: 18px; color: var(--color-primary-dark); background: var(--color-surface); font-size: 16px; line-height: 1.6; }
 .quiet-state { text-align: center; color: var(--color-muted); padding: 24px; }
 .message-row { display: flex; flex-direction: column; margin-bottom: 22px; }
 .message-row.user { align-items: flex-end; }
@@ -190,14 +232,17 @@ onLoad(async options => {
 .user .message { background: var(--color-bubble); border-radius: 22px 22px 6px 22px; }
 .speaker { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; font-size: 14px; color: var(--color-muted); }
 .speaker-avatar { width: 25px; height: 25px; }
-.message-time { color: var(--color-muted); font-size: 14px; line-height: 1.6; margin-top: 5px; }
+.message-time { color: var(--color-muted); font-size: 15px; line-height: 1.6; margin-top: 5px; }
 .reply-error { background: var(--color-soft); padding: 14px; border-radius: 16px; line-height: 1.7; color: var(--color-muted); font-size: 16px; }
 .retry-button { min-height: 44px; color: var(--color-primary-dark); padding: 8px; font-size: 16px; }
 .older-button { min-height: 48px; color: var(--color-primary-dark); font-size: 16px; }
 .composer-area { flex-shrink: 0; padding: 4px 20px 16px; }
 .composer { display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 6px 8px 6px 18px; background: white; border: 1px solid var(--color-line); border-radius: 32px; }
-.draft-input { flex: 1; width: 0; min-width: 0; height: 44px; font-size: var(--font-body); color: var(--color-text); }
+.draft-input { flex: 1; width: 0; min-width: 0; min-height: 28px; max-height: 112px; font-size: var(--font-body); line-height: 28px; color: var(--color-text); }
+.draft-input :deep(.uni-textarea-wrapper) { max-height: 112px; }
+.draft-input :deep(textarea) { max-height: 112px; overflow-y: auto !important; }
 .send-button { min-width: 64px; min-height: 44px; padding: 8px 12px; border-radius: 24px; background: var(--color-primary); color: white; font-size: 16px; flex-shrink: 0; }
+.send-button[aria-disabled="false"]:hover { background: var(--color-primary-dark); }
 .voice-button { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
 .inline-error { color: var(--color-error); font-size: 16px; line-height: 1.6; padding: 8px 4px; }
 .tail { height: 1px; }

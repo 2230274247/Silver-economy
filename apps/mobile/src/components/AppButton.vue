@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AccessibleButton from './AccessibleButton.vue';
-withDefaults(defineProps<{ secondary?: boolean; disabled?: boolean; loading?: boolean }>(), {
+withDefaults(defineProps<{ secondary?: boolean; disabled?: boolean; loading?: boolean; error?: boolean }>(), {
   secondary: false,
   disabled: false,
   loading: false,
+  error: false,
 });
 defineEmits<{ click: [] }>();
 </script>
@@ -14,6 +15,7 @@ defineEmits<{ click: [] }>();
     :class="{ secondary }"
     :disabled="disabled || loading"
     :loading="loading"
+    :error="error"
     @click="$emit('click')"
   >
     <slot />
