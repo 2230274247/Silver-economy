@@ -403,6 +403,59 @@
         }
       }
     },
+    "/api/v1/memories/search": {
+      "get": {
+        "summary": "Search Memories",
+        "operationId": "search_memories_api_v1_memories_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 30,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/memories/{memory_id}/sources": {
       "get": {
         "summary": "Get Sources",
@@ -804,6 +857,72 @@
         ],
         "title": "MemoryPage"
       },
+      "MemoryReferenceOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "memory_id": {
+            "type": "string",
+            "title": "Memory Id"
+          },
+          "source_message_id": {
+            "type": "string",
+            "title": "Source Message Id"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "source_excerpt": {
+            "type": "string",
+            "title": "Source Excerpt"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic"
+          },
+          "extractor_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extractor Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "memory_id",
+          "source_message_id",
+          "conversation_id",
+          "source_excerpt",
+          "recorded_at",
+          "status",
+          "confirmed",
+          "is_synthetic",
+          "extractor_provider"
+        ],
+        "title": "MemoryReferenceOut"
+      },
       "MessageOut": {
         "properties": {
           "id": {
@@ -885,6 +1004,13 @@
               }
             ],
             "title": "Memory Status"
+          },
+          "memory_refs": {
+            "items": {
+              "$ref": "#/components/schemas/MemoryReferenceOut"
+            },
+            "type": "array",
+            "title": "Memory Refs"
           }
         },
         "type": "object",

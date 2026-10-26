@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, DatabaseSession, utc_now
+from app.memory.references import reference_map
 from app.models.entities import Conversation, Message
 from app.schemas.chat import ConversationOut, ConversationPage, MessagePage, SendResult
 from app.services.model_chat import generate_reply
@@ -28,7 +29,7 @@ def conversation_data(item: Conversation):
     }
 
 
-def message_data(item: Message):
+def message_data(item: Message, references=None):
     return {
         "id": item.id,
         "role": item.role,
@@ -40,6 +41,7 @@ def message_data(item: Message):
         "client_request_id": item.client_request_id,
         "provider": item.provider,
         "memory_status": item.memory_status,
+        "memory_refs": references or [],
     }
 
 
@@ -122,8 +124,9 @@ def list_messages(
     ).all()
     more = len(items) > limit
     items = items[:limit]
+    references = reference_map(db, user.id, [item.id for item in items if item.role == "assistant"])
     return {
-        "items": [message_data(item) for item in reversed(items)],
+        "items": [message_data(item, references.get(item.id)) for item in reversed(items)],
         "next_cursor": items[-1].id if more else None,
     }
 
@@ -138,6 +141,10 @@ class SendMessage(BaseModel):
     def nonblank(cls, value):
         if not value.strip():
             raise ValueError("Message must contain text")
+        try:
+            value.encode("utf-8")
+        except UnicodeEncodeError:
+            raise ValueError("Message must contain valid Unicode") from None
         return value
 
 
@@ -149,7 +156,9 @@ def saved_result(db, user_message, *, replayed=False):
     )
     return {
         "user_message": message_data(user_message),
-        "assistant_message": message_data(assistant),
+        "assistant_message": message_data(
+            assistant, reference_map(db, user_message.user_id, [assistant.id]).get(assistant.id)
+        ),
         "replayed": replayed,
         "provider": assistant.provider or "not_configured",
     }

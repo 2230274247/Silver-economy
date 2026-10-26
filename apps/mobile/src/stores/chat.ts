@@ -4,12 +4,14 @@ import { requestId } from '../platform/ids';
 import { draft } from './ui';
 
 export interface Conversation { id: string; title: string; created_at: string }
+export interface MemoryReference { label: string; memory_id: string; source_message_id: string; conversation_id: string; source_excerpt: string; recorded_at: string; status: string; confirmed: boolean; is_synthetic: boolean; extractor_provider: string | null }
 export interface Message {
   id: string; role: 'user' | 'assistant'; content: string; status: string;
   error_code: string | null; created_at: string;
   reply_to_message_id: string | null; client_request_id: string | null;
   provider: string | null;
   memory_status?: string | null;
+  memory_refs?: MemoryReference[];
 }
 interface Page<T> { items: T[]; next_cursor: string | null }
 export const activeConversation = ref<Conversation | null>(null);

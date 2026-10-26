@@ -1,7 +1,20 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class MemoryReferenceOut(BaseModel):
+    label: str
+    memory_id: str
+    source_message_id: str
+    conversation_id: str
+    source_excerpt: str
+    recorded_at: datetime
+    status: str
+    confirmed: bool
+    is_synthetic: bool
+    extractor_provider: str | None
 
 
 class ConversationOut(BaseModel):
@@ -22,6 +35,7 @@ class MessageOut(BaseModel):
     client_request_id: str | None
     provider: str | None
     memory_status: str | None
+    memory_refs: list[MemoryReferenceOut] = Field(default_factory=list)
 
 
 class ConversationPage(BaseModel):

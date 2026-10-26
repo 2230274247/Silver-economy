@@ -27,6 +27,7 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
         "messages",
         "memory_facts",
         "memory_sources",
+        "memory_uses",
         "life_events",
         "reminders",
         "model_usage",

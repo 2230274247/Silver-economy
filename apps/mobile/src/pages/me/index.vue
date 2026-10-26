@@ -30,7 +30,7 @@ async function toggleMemory() {
   memoryBusy.value = true; memoryError.value = '';
   try {
     if (!memoryEnabled.value) {
-      const choice = await uni.showModal({ title: '开启长期记忆', content: '允许从聊天提取候选记忆，用于后续会话。当前支持保存候选和查看来源，跨会话使用尚未开放。可以随时关闭，关闭不会删除聊天或已有记忆。', confirmText: '允许', cancelText: '暂不' });
+      const choice = await uni.showModal({ title: '开启长期记忆', content: '允许从聊天提取有原文依据的候选记忆，并在后续会话检索使用。候选未经本人确认，回复会提供来源供核对。可以随时关闭；关闭不会删除聊天或已有记忆。', confirmText: '允许', cancelText: '暂不' });
       if (!choice.confirm) return;
     }
     memoryEnabled.value = (await request<{ enabled: boolean }>('/memory-consent', 'POST', { enabled: !memoryEnabled.value })).enabled;

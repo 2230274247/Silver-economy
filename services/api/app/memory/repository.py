@@ -8,7 +8,9 @@ from app.models.entities import MemoryFact, MemorySource
 
 
 class MemoryRepository:
-    def save_candidates(self, db, message, candidates, provider):
+    def save_candidates(
+        self, db, message, candidates, provider, *, extractor_version="chat-memory/v1"
+    ):
         saved = []
         for candidate in candidates:
             when, precision = event_time(candidate.time_expression, message.created_at)
@@ -35,7 +37,7 @@ class MemoryRepository:
                             fact_status="candidate",
                             retrieval_allowed=True,
                             extractor_provider=provider,
-                            extractor_version="chat-memory/v1",
+                            extractor_version=extractor_version,
                             confidence_label="explicit_span",
                         )
                         db.add(fact)

@@ -12,13 +12,15 @@ from sqlalchemy.dialects.mysql import insert
 
 from app.core.config import PROJECT_ROOT, get_settings
 from app.llm.providers import ProviderFailure, get_provider
+from app.memory.context import MAX_CONTEXT_BYTES, ContextBuilder, MemoryAnswerEnvelope
 from app.memory.extractor import MemoryExtractor
 from app.memory.repository import MemoryRepository
-from app.models.entities import Message, ModelBudget, ModelUsage, User
+from app.memory.retriever import MemoryRetriever, evidence_signature, valid_context_fact
+from app.models.entities import MemoryFact, MemoryUse, Message, ModelBudget, ModelUsage, User
 
 logger = logging.getLogger("silver.model")
 SYSTEM_PROMPT = (PROJECT_ROOT / "prompts/chat-v1.txt").read_text(encoding="utf-8").strip()
-MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v1.txt").read_text(encoding="utf-8").strip()
+MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v2.txt").read_text(encoding="utf-8").strip()
 
 
 def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
@@ -34,12 +36,12 @@ def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
         .order_by(Message.created_at.desc(), Message.id.desc())
         .limit(12)
     ).all()
-    selected, size = [], len(system_prompt.encode("utf-8"))
+    selected, size = [], len(system_prompt.encode("utf-8")) + 32
     for message in history:
         if message.provider == "mock":
             continue
         cost = len(message.content.encode("utf-8")) + 32
-        if size + cost > 8000:
+        if size + cost > MAX_CONTEXT_BYTES:
             break
         selected.append({"role": message.role, "content": message.content})
         size += cost
@@ -67,8 +69,20 @@ def generate_reply(db, item, assistant):
     settings = get_settings()
     provider = settings.llm_provider
     assistant.provider = provider
-    memory_enabled = db.scalar(select(User.memory_enabled).where(User.id == item.user_id))
-    prompts = context_messages(db, item, MEMORY_PROMPT if memory_enabled else SYSTEM_PROMPT)
+    owner = db.scalar(
+        select(User)
+        .where(User.id == item.user_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    memory_enabled = owner.memory_enabled
+    selected = {}
+    prompt = SYSTEM_PROMPT
+    if memory_enabled:
+        retrieved = MemoryRetriever().retrieve(db, item.user_id, item.content, provider=provider)
+        context = ContextBuilder().build(MEMORY_PROMPT, retrieved, item.content)
+        prompt, selected = context.system_prompt, context.selected
+    prompts = context_messages(db, item, prompt)
     item.memory_status = "pending" if memory_enabled else "disabled"
     usage = None
     started = time.monotonic()
@@ -91,7 +105,7 @@ def generate_reply(db, item, assistant):
             provider=provider,
             model=settings.deepseek_model if provider == "deepseek" else "mock-v1",
             purpose="chat",
-            prompt_version="chat-memory/v1" if memory_enabled else "chat/v1",
+            prompt_version="chat-memory/v2" if memory_enabled else "chat/v1",
             request_id=item.client_request_id,
             reserved_tokens=tokens,
             status="reserved",
@@ -111,7 +125,10 @@ def generate_reply(db, item, assistant):
         if memory_enabled:
             assistant.raw_model_output = result.content
             try:
-                reply, candidates, rejected = MemoryExtractor().parse(result.content, item.content)
+                envelope = MemoryAnswerEnvelope.model_validate_json(result.content)
+                reply, candidates, rejected = MemoryExtractor().parse(
+                    envelope.model_dump_json(exclude={"memory_refs"}), item.content
+                )
                 assistant.content = reply
                 # Consent may have been withdrawn while the paid call was in flight.
                 owner = db.scalar(
@@ -121,10 +138,46 @@ def generate_reply(db, item, assistant):
                     .execution_options(populate_existing=True)
                 )
                 if owner.memory_enabled:
-                    MemoryRepository().save_candidates(db, item, candidates, provider)
+                    labels = list(dict.fromkeys(envelope.memory_refs))
+                    if any(label not in selected for label in labels):
+                        raise ProviderFailure("MEMORY_UNSUPPORTED_REFERENCE")
+                    # Editing/deleting/revoking while generation is in flight must
+                    # not return an answer grounded in stale private evidence.
+                    for label in labels:
+                        memory = selected[label]
+                        fact = db.scalar(
+                            select(MemoryFact)
+                            .where(
+                                MemoryFact.id == memory.fact.id, MemoryFact.user_id == item.user_id
+                            )
+                            .with_for_update()
+                            .execution_options(populate_existing=True)
+                        )
+                        if (
+                            fact is None
+                            or not valid_context_fact(fact)
+                            or evidence_signature(fact) != memory.evidence_snapshot
+                        ):
+                            raise ProviderFailure("MEMORY_CHANGED_DURING_REPLY")
+                    for label in labels:
+                        memory = selected[label]
+                        db.add(
+                            MemoryUse(
+                                user_id=item.user_id,
+                                assistant_message_id=assistant.id,
+                                memory_id=memory.fact.id,
+                                source_message_id=memory.source.message_id,
+                                reference_label=label,
+                            )
+                        )
+                    MemoryRepository().save_candidates(
+                        db, item, candidates, provider, extractor_version="chat-memory/v2"
+                    )
                     item.memory_status = "partial_rejected" if rejected else "captured"
                 else:
                     item.memory_status = "disabled"
+                    if selected:
+                        raise ProviderFailure("MEMORY_CONSENT_CHANGED")
             except (ValidationError, ValueError):
                 item.memory_status = "failed_schema"
                 assistant.content, assistant.status = "", "failed"
@@ -143,10 +196,12 @@ def generate_reply(db, item, assistant):
     except ProviderFailure as error:
         assistant.status = "failed"
         assistant.error_code = error.code
+        assistant.content = ""
         if memory_enabled:
             item.memory_status = "model_failed"
         if usage:
-            usage.status, usage.error_code = "unknown", error.code
+            usage.status = "completed_rejected" if usage.status == "completed" else "unknown"
+            usage.error_code = error.code
         # Keep quota reserved even when outcome is unknown; no blind retries.
     finally:
         if usage:

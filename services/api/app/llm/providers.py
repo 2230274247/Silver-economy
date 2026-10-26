@@ -31,9 +31,15 @@ class ModelProvider(Protocol):
 class MockProvider:
     def complete(self, messages, *, json_output=False):
         if json_output:
+            from app.memory.context import CONTEXT_MARKER, mock_memory_answer
             from app.memory.extractor import mock_envelope
 
-            return ModelReply(mock_envelope(messages[-1]["content"]), "mock-v1", 0, 0)
+            content = (
+                mock_memory_answer(messages)
+                if CONTEXT_MARKER in messages[0]["content"]
+                else mock_envelope(messages[-1]["content"])
+            )
+            return ModelReply(content, "mock-v1", 0, 0)
         return ModelReply(
             "【Mock 测试回复】已收到你的消息；这不是 DeepSeek 的真实回答。", "mock-v1", 0, 0
         )

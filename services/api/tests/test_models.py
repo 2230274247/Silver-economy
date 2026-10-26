@@ -211,7 +211,7 @@ def test_context_has_hard_bounds_and_excludes_mock(clients, db):
     )
     prompts = model_chat.context_messages(db, latest)
     assert len(prompts) <= 13
-    assert sum(len(m["content"].encode()) + 32 for m in prompts) <= 8200
+    assert sum(len(m["content"].encode()) + 32 for m in prompts) <= 12000
     assert not any("【Mock" in m["content"] for m in prompts)
 
 

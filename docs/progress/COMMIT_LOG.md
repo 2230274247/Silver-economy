@@ -15,6 +15,7 @@
 | 2026-10-26 17:13:25 +08:00 | T05 持久化聊天 | 2252da21c02510ced73d7061badb9418a6187ca3 | 实际会话/消息/API/历史分页、原文保存与幂等、刷新定位/越权保护；模型当时未接入 | 28 后端、18 UI 和全门禁 PASS；push/SHA PASS；CI 40297897977 PASS |
 | 2026-10-26 17:37:21 +08:00 | UI-FIX-01 输入交互 | 2a3d4e1d533bd792c0ba733781608b031790c83a | 建议草稿、紧凑多行、IME/去重、同步原文、独立页面绑定和按钮状态；保留 T02 历史 | 27 UI、28 后端与全门禁 PASS；push/SHA PASS；CI 40300983242 PASS |
 | 2026-10-26 21:07:45 +08:00 | T06 真实模型/额度 | e8861218fa6a6244e657b1713befc98d6db6a667 | 官方DeepSeek/Mock、原文先存、共享预算/幂等、用量日志、独立Mock回归；首个真实H5刷新闭环 | 46后端、27UI、全门禁PASS；live1次97/13tokens；push/SHA PASS；CI 40327943073 PASS |
+| 2026-10-26 21:50:05 +08:00 | T07 候选记忆/来源 | ab54cf99cf432aca15d32477b1b61a1b1e879a97 | 明确授权、同次回复/抽取、原文证据/精度/去重、来源分页、Prompt溯源、Mock/live分开 | 75后端/33UI/6专项/全门禁PASS；真实1次293/63tokens；push/SHA PASS；CI 40334086929 PASS |
 
 最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。

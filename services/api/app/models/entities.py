@@ -123,6 +123,29 @@ class LifeEvent(Identity, Owned, Base):
     is_user_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class MemoryUse(Identity, Owned, Base):
+    __tablename__ = "memory_uses"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id", "assistant_message_id"], ["messages.user_id", "messages.id"]
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "memory_id"],
+            ["memory_facts.user_id", "memory_facts.id"],
+        ),
+        ForeignKeyConstraint(
+            ["memory_id", "source_message_id"],
+            ["memory_sources.memory_id", "memory_sources.message_id"],
+        ),
+        UniqueConstraint("assistant_message_id", "memory_id", "source_message_id"),
+        UniqueConstraint("assistant_message_id", "reference_label"),
+    )
+    assistant_message_id: Mapped[str] = mapped_column(String(36))
+    memory_id: Mapped[str] = mapped_column(String(36))
+    source_message_id: Mapped[str] = mapped_column(String(36))
+    reference_label: Mapped[str] = mapped_column(String(8))
+
+
 class Reminder(Identity, Updated, Owned, Base):
     __tablename__ = "reminders"
     __table_args__ = (UniqueConstraint("user_id", "id"),)

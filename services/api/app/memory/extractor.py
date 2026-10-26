@@ -58,10 +58,34 @@ class MemoryExtractor:
                 item = MemoryCandidate.model_validate(value)
                 if item.source_excerpt not in source or not item.source_excerpt.strip():
                     raise ValueError("No source evidence")
+                clauses = re.findall(r"[^。！？!?，,；;]+[。！？!?，,；;]?", source)
+                matching_raw = [
+                    clause
+                    for clause in clauses
+                    if item.source_excerpt.rstrip("。！？!?，,；; ") in clause
+                ]
+                if matching_raw and all(
+                    clause.rstrip().endswith(("？", "?"))
+                    or clause.rstrip("。！？!?，,；; ").endswith(("吗", "么"))
+                    or "是不是" in clause
+                    or "是否" in clause
+                    for clause in matching_raw
+                ):
+                    raise ValueError("A question is not evidence of a life event")
                 # Persist only directly supported spans, never a free-form LLM life detail.
                 for field in (item.key, item.value, item.time_expression, item.state_text):
                     if field and field not in item.source_excerpt:
                         raise ValueError("Unsupported detail")
+                # Keep negation, uncertainty and actor qualifiers. A model may
+                # select the word '恢复' from '我的膝盖没有恢复'; that bare span
+                # must never become a positive remembered fact.
+                grounded = (
+                    matching_raw[0].strip() if len(matching_raw) == 1 else item.source_excerpt
+                )
+                if len(grounded) > 1000:
+                    raise ValueError("Evidence clause is too long to safely extract")
+                item.value = grounded
+                item.source_excerpt = grounded
                 candidates.append(item)
             except (ValidationError, ValueError):
                 rejected += 1
@@ -84,6 +108,15 @@ def event_time(expression: str, reference: datetime):
         return anchor(year, month), "month"
     if expression == "去年":
         return anchor(local.year - 1), "year"
+    if match := re.fullmatch(r"(去年|今年|前年)(\d{1,2})月(\d{1,2})[日号]", expression):
+        try:
+            return anchor(
+                local.year - {"去年": 1, "今年": 0, "前年": 2}[match[1]],
+                int(match[2]),
+                int(match[3]),
+            ), "day"
+        except ValueError:
+            return None, "unknown"
     for pattern, precision in (
         (r"(\d{4})\s*年", "year"),
         (r"(\d{4})\s*年\s*(\d{1,2})\s*月", "month"),

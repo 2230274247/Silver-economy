@@ -1,7 +1,7 @@
 /** H5 key handling stays here; native targets keep uni-app's confirm lifecycle. */
-export function bindComposer(id: string, send: () => void | Promise<void>, revealLatest: () => void | Promise<void>, update: (value: string) => void): () => void {
+export function bindComposer(id: string, send: () => void | Promise<void>, revealLatest: () => void | Promise<void>, update: (value: string) => void, selector: 'textarea' | 'input' = 'textarea'): () => void {
   // #ifdef H5
-  const field = document.getElementById(id)?.querySelector('textarea');
+  const field = document.getElementById(id)?.querySelector<HTMLTextAreaElement | HTMLInputElement>(selector);
   if (!field) return () => {};
   let composing = false;
   // uni-app throttles its input event by 100ms. Read native input synchronously
@@ -9,7 +9,8 @@ export function bindComposer(id: string, send: () => void | Promise<void>, revea
   const input = () => update(field.value);
   const start = () => { composing = true; };
   const end = () => { composing = false; };
-  const keydown = (event: KeyboardEvent) => {
+  const keydown = (nativeEvent: Event) => {
+    const event = nativeEvent as KeyboardEvent;
     if (event.key !== 'Enter') return;
     event.stopImmediatePropagation();
     if (composing || event.isComposing || event.keyCode === 229) return;
@@ -17,7 +18,7 @@ export function bindComposer(id: string, send: () => void | Promise<void>, revea
     event.preventDefault();
     if (!event.repeat) void send();
   };
-  const keyup = (event: KeyboardEvent) => { if (event.key === 'Enter') event.stopImmediatePropagation(); };
+  const keyup = (nativeEvent: Event) => { const event = nativeEvent as KeyboardEvent; if (event.key === 'Enter') event.stopImmediatePropagation(); };
   field.addEventListener('compositionstart', start, true);
   field.addEventListener('input', input);
   field.addEventListener('compositionend', end, true);

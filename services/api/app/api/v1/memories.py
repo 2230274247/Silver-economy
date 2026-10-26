@@ -6,6 +6,7 @@ from app.api.v1.chat import message_data, timestamp
 from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.security import CurrentUser, DatabaseSession
+from app.memory.retriever import MemoryRetriever
 from app.models.entities import MemoryFact, MemorySource, Message, User
 from app.schemas.memory import MemoryPage, SourcePage
 
@@ -100,6 +101,19 @@ def list_memories(
         "items": [memory_data(item) for item in items],
         "next_cursor": items[-1].id if more else None,
     }
+
+
+@router.get("/memories/search", response_model=MemoryPage)
+def search_memories(
+    user: CurrentUser,
+    db: DatabaseSession,
+    q: str = Query(min_length=1, max_length=200),
+    limit: int = Query(30, ge=1, le=30),
+):
+    results = MemoryRetriever().retrieve(
+        db, user.id, q, provider=get_settings().llm_provider, limit=limit, for_context=False
+    )
+    return {"items": [memory_data(result.fact) for result in results], "next_cursor": None}
 
 
 @router.get("/memories/{memory_id}/sources", response_model=SourcePage)

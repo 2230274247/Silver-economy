@@ -11,7 +11,7 @@ import { bindComposer } from '../../platform/composer';
 import { requestId } from '../../platform/ids';
 import { currentUser, restoreSession, sessionError } from '../../stores/session';
 import { draft } from '../../stores/ui';
-import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, modelMode, modelConfigured, type Message } from '../../stores/chat';
+import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, modelMode, modelConfigured, type Message, type MemoryReference } from '../../stores/chat';
 const scrollTarget = ref('');
 const composerId = `chat-draft-${requestId()}`;
 let freshRequested = false;
@@ -37,6 +37,7 @@ async function send() {
   } else await newest();
 }
 async function retry(item: Message) { await retryReply(item); await newest(); }
+function openEvidence(reference: MemoryReference) { uni.navigateTo({ url: `/pages/index/index?id=${reference.conversation_id}` }); }
 onMounted(async () => { await nextTick(); labelTextControl(composerId, '想对小忆说的话'); removeKeyboard = bindComposer(composerId, send, newest, value => { draft.value = value; }); });
 onUnmounted(() => removeKeyboard());
 onLoad(async options => {
@@ -152,6 +153,22 @@ onLoad(async options => {
           <text class="message-time">
             {{ message.status === 'sending' ? '发送中，尚未确认保存' : new Date(message.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
           </text>
+          <view
+            v-for="reference in message.memory_refs || []"
+            :key="reference.label"
+            class="memory-reference"
+          >
+            <text class="reference-title">
+              记忆依据 · {{ ['inactive', 'invalid', 'superseded'].includes(reference.status) ? '历史记录，已失效' : reference.confirmed ? '已确认' : '候选，待确认' }}{{ reference.extractor_provider === 'mock' ? ' · Mock' : '' }}{{ reference.is_synthetic ? ' · Synthetic' : '' }}
+            </text>
+            <text>{{ reference.source_excerpt }}</text>
+            <AccessibleButton
+              class="retry-button"
+              @click="openEvidence(reference)"
+            >
+              打开原会话
+            </AccessibleButton>
+          </view>
           <text
             v-if="message.role === 'user' && message.memory_status && message.memory_status !== 'disabled'"
             class="message-time"
@@ -271,4 +288,6 @@ onLoad(async options => {
 .voice-button { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
 .inline-error { color: var(--color-error); font-size: 16px; line-height: 1.6; padding: 8px 4px; }
 .tail { height: 1px; }
+.memory-reference { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; margin-top: 10px; max-width: 92%; border: 1px solid var(--color-line); border-radius: 16px; line-height: 1.7; font-size: 16px; overflow-wrap: anywhere; }
+.reference-title { font-size: 14px; color: var(--color-muted); }
 </style>

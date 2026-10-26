@@ -110,7 +110,7 @@ def test_capture_linked_raw_evidence_and_deduplicate(clients, db):
     send(a)
     facts = a.get("/api/v1/memories").json()["items"]
     assert len(facts) == 1 and facts[0]["status"] == "candidate"
-    assert facts[0]["extractor_version"] == "chat-memory/v1"
+    assert facts[0]["extractor_version"] == "chat-memory/v2"
     assert facts[0]["event_precision"] == "month" and facts[0]["confirmed_at"] is None
     sources = a.get(f"/api/v1/memories/{facts[0]['id']}/sources").json()["items"]
     assert len(sources) == 2 and all(s["source_excerpt"] == body["content"] for s in sources)
@@ -258,3 +258,19 @@ def test_partial_extraction_rejects_hallucination_without_losing_valid_fact():
         source,
     )
     assert reply == "谢谢告诉我。" and len(items) == 1 and rejected == 1
+
+
+def test_fact_span_preserves_negation_and_uncertainty_from_its_clause():
+    source = "我的膝盖好像没有恢复"
+    _, items, rejected = parse(
+        payload(source, value="恢复", time_expression="", state_text="恢复"), source
+    )
+    assert rejected == 0 and items[0].value == source and items[0].source_excerpt == source
+
+
+def test_question_mark_without_ma_does_not_create_a_fact():
+    source = "我的膝盖恢复了？"
+    _, items, rejected = parse(
+        payload(source, value="恢复", time_expression="", state_text="恢复"), source
+    )
+    assert items == [] and rejected == 1
