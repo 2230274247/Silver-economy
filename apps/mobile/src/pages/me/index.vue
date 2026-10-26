@@ -6,8 +6,19 @@ import BottomTabs from '../../components/BottomTabs.vue';
 import MobileShell from '../../components/MobileShell.vue';
 import { fontSize, setFontSize } from '../../stores/ui';
 import type { FontSize } from '../../platform/storage';
+import { ref } from 'vue';
+import { currentUser, logout, sessionError } from '../../stores/session';
+const busy = ref(false);
+const accountError = ref('');
 const sizes: { size: FontSize; label: string }[] = [{ size: 18, label: '标准' }, { size: 20, label: '大号' }, { size: 22, label: '特大' }];
 function openLogin() { uni.navigateTo({ url: '/pages/login/index' }); }
+async function leave() {
+  if (busy.value) return;
+  busy.value = true; accountError.value = '';
+  try { await logout(); uni.reLaunch({ url: '/pages/login/index' }); }
+  catch { accountError.value = '退出失败，请检查网络后重试。当前会话尚未注销。'; }
+  finally { busy.value = false; }
+}
 </script>
 
 <template>
@@ -32,6 +43,12 @@ function openLogin() { uni.navigateTo({ url: '/pages/login/index' }); }
               时光有声
             </text><text class="page-description">
               按你舒服的方式，慢慢聊。
+            </text>
+            <text
+              v-if="currentUser"
+              class="setting-note"
+            >
+              已登录：{{ currentUser.login_name }}
             </text>
           </view>
         </view>
@@ -63,11 +80,27 @@ function openLogin() { uni.navigateTo({ url: '/pages/login/index' }); }
             当前为界面预览，未保存对话或记忆。
           </text>
         </view>
+        <text
+          v-if="accountError || sessionError"
+          role="alert"
+          class="account-error"
+        >
+          {{ accountError || sessionError }}
+        </text>
         <AppButton
+          v-if="currentUser"
+          :loading="busy"
+          secondary
+          @click="leave"
+        >
+          {{ busy ? '正在退出…' : '退出登录' }}
+        </AppButton>
+        <AppButton
+          v-else
           secondary
           @click="openLogin"
         >
-          查看登录页面
+          登录演示账号
         </AppButton>
       </view>
     </scroll-view>
@@ -89,4 +122,5 @@ function openLogin() { uni.navigateTo({ url: '/pages/login/index' }); }
 .font-options button.chosen { color: var(--color-primary-dark); border-color: var(--color-primary); background: var(--color-soft); }
 .font-sample { display: block; font-size: var(--font-body); line-height: 1.8; }
 .privacy-copy { display: block; margin-top: 12px; line-height: 1.8; }
+.account-error { color: var(--color-error); line-height: 1.6; }
 </style>

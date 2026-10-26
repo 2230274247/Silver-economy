@@ -50,9 +50,25 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: apps/mobile/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r services/api/requirements.lock
+        working-directory: .
+      - run: python scripts/init-dev-db.py
+        working-directory: .
+      - run: python -m alembic upgrade head
+        working-directory: services/api
+      - run: python scripts/seed-demo-users.py
+        working-directory: .
+      - run: mkdir -p ../../logs && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log > ../../logs/api-ci.log 2>&1 &
+        working-directory: services/api
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build:h5
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui
+      - if: always()
+        run: docker compose -f docker-compose.dev.yml stop mysql
+        working-directory: .

@@ -8,8 +8,8 @@ AI companion and personal memory platform for older adults.
 
 T02 提供 Muse 参考的聊天首屏、原创伙伴、三个主导航及个人设置、登录和历史页壳。
 按用户最新设计改为聊天/我的回忆/提醒，个人设置在右上；18/20/22px 字号可持久化切换。
-页面明确显示未接入登录、聊天和记忆；当前没有模型调用，没有数据库连接。
-T03 已接入独立 MySQL/Alembic 基础迁移及健康/就绪接口，账号和业务按后续任务顺序开发。
+T03 已接入独立 MySQL/Alembic；T04 已接入真实测试账户登录、身份恢复与退出。
+聊天/记忆仍为明确标注的界面预览，没有模型调用或真实聊天记录；后续按任务顺序接入。
 H5 是本期运行目标；保留 uni-app 页面及平台封装结构，微信小程序/App 需要后续适配与验收。
 
 ## 环境与安装
@@ -82,6 +82,7 @@ Compose 配置已预留独立项目 `silver-memory-demo-v01`，库 `silver_memor
 cd services/api
 ..\..\.venv\Scripts\python.exe -m alembic upgrade head
 cd ../..
+.\.venv\Scripts\python.exe scripts/seed-demo-users.py
 ```
 
 初始化脚本只在不存在 .env 时生成随机密码及开发/测试 URL，不打印凭据，不覆盖已有 .env。
@@ -94,6 +95,16 @@ cd ../..
 活性：<http://127.0.0.1:8000/api/v1/healthz>；数据库就绪：<http://127.0.0.1:8000/api/v1/readyz>。
 就绪失败返回 503 和脱敏 error.code/message/request_id，不暴露数据库 URL。
 服务日志只记录请求 ID/方法/状态/耗时，不记录请求正文或完整 URL 查询参数。
+
+## 演示账号与后端模型配置
+
+种子脚本创建 demo_a/demo_b 两个合成账号，密码随机生成，只保存在忽略的 `.cache/demo-accounts.json`，不打印到终端或 Git。
+在本机查看该文件后进入 H5 右上设置→登录演示账号。登录为真实 MySQL 校验；HttpOnly Cookie 恢复会话，退出会撤销服务端会话。
+不要将演示账号用于真实资料；已有账号不会被种子脚本自动重置。密码只存 Argon2id 哈希，数据库会话只存 token 哈希。
+开发 Cookie 仅 localhost HTTP 使用；正式部署需要 HTTPS 与 COOKIE_SECURE=true，不能据 Demo 认为已生产发布。
+
+运营方 DeepSeek 配置入口是忽略的 `.env.deepseek`，填写 DEEPSEEK_API_KEY 后保存；普通用户网页没有 Key 输入。
+具体说明及 T06 待实现的保守额度门禁见 [运营配置](docs/OPERATOR_MODEL_CONFIG.md)。当前仍是 Mock 配置准备，未消耗真实 API 额度。
 
 ## 验证与 CI
 
@@ -108,7 +119,7 @@ Python lint/format/pytest、前端 typecheck/lint/H5 build，任一步失败即�
 CI 在 dev/v0.1 push 和指向 main 的 PR 上执行；API job 启动自己的独立 MySQL，强制运行真实迁移和约束测试。
 本机 .env 有 TEST_DATABASE_URL 时也运行真实集成测试；缺数据库可跳过，但不能据此声称 T03 通过。
 严格门禁可设置 REQUIRE_MYSQL_TESTS=1，数据库未配置时直接失败。
-T02 增加 Chromium UI 测试，覆盖 360/390/430px、导航/草稿、字体、来源预览及减少动态效果。
+Chromium UI 测试覆盖 360/390/430px：导航/草稿、字体、来源预览、减少动态效果，以及真实登录/刷新/退出/换号；当前 15 项。
 本机运行 UI 测试（进入 apps/mobile；浏览器依赖也留在项目内）：
 
 ```powershell

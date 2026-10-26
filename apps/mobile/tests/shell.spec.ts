@@ -12,7 +12,7 @@ test('mobile shell, draft, navigation and font preference', async ({ page }, tes
   await expect(page.getByRole('button', { name: '提醒', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect((await page.locator('.composer').boundingBox())?.height).toBeLessThanOrEqual(64);
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T02-chat-${testInfo.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/chat-${testInfo.project.name}.png`) });
   const input = page.getByRole('textbox', { name: '想对小忆说的话' });
   await input.fill('一段未发送的合成草稿');
   await page.getByRole('button', { name: '我的回忆', exact: true }).click();
@@ -30,7 +30,7 @@ test('mobile shell, draft, navigation and font preference', async ({ page }, tes
   await page.getByRole('button', { name: '聊天', exact: true }).click();
   await expect(page.locator('.phone-shell')).toHaveCSS('font-size', '22px');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T02-large-${testInfo.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/large-${testInfo.project.name}.png`) });
   expect(errors).toEqual([]);
 });
 

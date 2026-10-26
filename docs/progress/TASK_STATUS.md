@@ -2,9 +2,10 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T03（IN_PROGRESS，独立 MySQL 与迁移验收）
-- Last remote-confirmed SHA: CR-001 `cde000795374b63c9d6a93cb89ca2077b2e3d517`（记录时已核验）
-- Last verified CI: PASS（run 40289773428，api/security/mobile 全部通过）
+- Current task: T04（本地通过，待 push/SHA/CI）
+- 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
+- Last remote-confirmed SHA: T03 `3aa87eee69790e7fc1cbce46fda8eb8f7315cdb3`
+- Last verified CI: PASS（run 40293010288，api/security/mobile 全部通过）
 - 最后核验时间：2026-10-26 16:06:04 +08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
@@ -14,9 +15,9 @@
 | T01 | DONE_PUSHED | 本地全部核心检查通过 | 9b512ac283eea4f8fc2e99ae2beb4d4bf2145691 | SHA 一致 | PASS | 依赖审计 KNOWN_ISSUES |
 | T02 | DONE_PUSHED | 12 项浏览器测试、本地全门禁通过 | 功能 1a6920794eda17b9065353d3bb07734c7a7245db；修复 89c82eb4066a5416f75c1645c7b0a279e6625130 | SHA 一致 | PASS | 首轮失败已独立修复，历史保留 |
 | CR-001 | DONE_PUSHED | 原件/暂存哈希、覆盖/安全校验、5 扫描测试和 3 API 测试通过 | cde000795374b63c9d6a93cb89ca2077b2e3d517 | SHA 一致 | PASS | 正式登记，不表示功能交付 |
-| T03 | TESTING | 12 后端/MySQL 测试 + 全项目门禁 PASS，health/ready 实跑 200 | 本次提交后记录 | 待执行 | 待运行 | 见 T03_DATABASE.md；仅本项目双库 |
+| T03 | DONE_PUSHED | 12 后端/MySQL 测试 + 全项目门禁 PASS，health/ready 实跑 200 | 3aa87eee69790e7fc1cbce46fda8eb8f7315cdb3 | SHA 一致 | PASS | 2026-10-26 16:32:46 +08:00；仅本项目双库 |
 | UI-FIX-01 | TODO | - | - | - | - | 用户新增 UI 整改，随 T04–T06 接入真实流程后独立验收/提交，不改 T02 |
-| T04 | TODO | - | - | - | - | 用户与权限 |
+| T04 | TESTING | 20 后端测试、15 真实 UI 测试及全门禁 PASS | 本次提交后记录 | 待执行 | 待运行 | 见 T04_AUTH.md |
 | T05 | TODO | - | - | - | - | 对话持久化 |
 | T06 | TODO | - | - | - | - | DeepSeek 接入 |
 | T07 | TODO | - | - | - | - | 记忆抽取与来源 |

@@ -22,6 +22,7 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
     assert tables == {
         "alembic_version",
         "users",
+        "auth_sessions",
         "conversations",
         "messages",
         "memory_facts",

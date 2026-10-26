@@ -1,7 +1,31 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import AppButton from '../../components/AppButton.vue';
 import AppHeader from '../../components/AppHeader.vue';
 import MobileShell from '../../components/MobileShell.vue';
+import { labelTextControl } from '../../platform/accessibility';
+import { login } from '../../stores/session';
+const name = ref('');
+const password = ref('');
+const busy = ref(false);
+const error = ref('');
+onMounted(() => {
+  labelTextControl('login-name', '演示账号');
+  labelTextControl('login-password', '密码');
+});
+async function submit() {
+  if (busy.value) return;
+  error.value = '';
+  if (!name.value.trim() || !password.value) { error.value = '请填写账号和密码'; return; }
+  busy.value = true;
+  try {
+    await login(name.value.trim(), password.value);
+    password.value = '';
+    uni.reLaunch({ url: '/pages/index/index' });
+  } catch (failure) {
+    error.value = failure instanceof Error ? failure.message : '登录失败，请重试';
+  } finally { busy.value = false; }
+}
 function preview() { uni.reLaunch({ url: '/pages/index/index' }); }
 </script>
 
@@ -27,23 +51,39 @@ function preview() { uni.reLaunch({ url: '/pages/index/index' }); }
         <view class="surface-card login-form">
           <label for="login-name">演示账号</label><input
             id="login-name"
+            v-model="name"
             class="login-input"
-            placeholder="账号功能接入后开放"
-            disabled
+            placeholder="请输入演示账号"
+            :disabled="busy"
+            :maxlength="64"
           >
           <label for="login-password">密码</label><input
             id="login-password"
+            v-model="password"
             class="login-input"
-            placeholder="请勿输入真实密码"
+            placeholder="请输入演示密码"
             password
-            disabled
+            :disabled="busy"
+            :maxlength="128"
+            confirm-type="done"
+            @confirm="submit"
           >
-          <AppButton disabled>
-            登录暂未开放
+          <text
+            v-if="error"
+            class="login-error"
+            role="alert"
+          >
+            {{ error }}
+          </text>
+          <AppButton
+            :loading="busy"
+            @click="submit"
+          >
+            {{ busy ? '正在登录…' : '登录' }}
           </AppButton>
         </view>
         <text class="setting-note">
-          内部演示，仅使用虚构资料。当前可先预览页面，不会连接模型或保存聊天。
+          仅限合成测试账号。账号由运营方在本机创建，此处无需填写任何模型密钥。
         </text>
         <AppButton
           secondary
@@ -63,4 +103,5 @@ function preview() { uni.reLaunch({ url: '/pages/index/index' }); }
 .login-form { text-align: left; display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
 .login-input { width: 100%; min-height: 48px; padding: 12px; background: var(--color-bg); border-radius: 12px; font-size: 16px; margin-bottom: 8px; }
 .setting-note { font-size: 14px; line-height: 1.8; color: var(--color-muted); }
+.login-error { color: var(--color-error); font-size: 16px; line-height: 1.6; }
 </style>

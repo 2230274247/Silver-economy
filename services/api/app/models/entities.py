@@ -29,6 +29,13 @@ class Owned:
     user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
 
 
+class AuthSession(Identity, Owned, Base):
+    __tablename__ = "auth_sessions"
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime] = mapped_column(UTC_DATETIME, index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
 class Conversation(Identity, Owned, Base):
     __tablename__ = "conversations"
     __table_args__ = (UniqueConstraint("user_id", "id"),)

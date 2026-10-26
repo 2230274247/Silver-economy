@@ -9,16 +9,32 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from app.api.v1.auth import router as auth_router
 from app.core.database import get_engine
 from app.core.errors import ApiError
 
 app = FastAPI(title="银发记忆 Demo", version="0.1.0-alpha")
 logger = logging.getLogger("silver.api")
+app.include_router(auth_router)
 
 
 @app.middleware("http")
 async def request_metadata(request: Request, call_next):
     request.state.request_id = str(uuid.uuid4())
+    origin = request.headers.get("origin")
+    if (
+        request.method not in {"GET", "HEAD", "OPTIONS"}
+        and origin
+        and origin
+        not in {
+            "http://127.0.0.1:5173",
+            "http://localhost:5173",
+            "http://127.0.0.1:8000",
+        }
+    ):
+        response = error_response(request, 403, "ORIGIN_DENIED", "请求来源不允许")
+        response.headers["X-Request-ID"] = request.state.request_id
+        return response
     start = time.monotonic()
     response = await call_next(request)
     response.headers["X-Request-ID"] = request.state.request_id

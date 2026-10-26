@@ -31,10 +31,14 @@ def validated_database_url(value: str, *, test_only: bool = False) -> URL:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(PROJECT_ROOT / ".env", PROJECT_ROOT / ".env.deepseek"), extra="ignore"
+    )
 
     database_url: SecretStr = SecretStr("")
     test_database_url: SecretStr = SecretStr("")
+    session_ttl_seconds: int = 43200
+    cookie_secure: bool = False
 
 
 @lru_cache
