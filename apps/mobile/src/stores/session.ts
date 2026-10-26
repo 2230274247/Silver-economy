@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { ApiFailure, request } from '../platform/network';
 import { draft } from './ui';
+import { resetChat } from './chat';
 
 export interface User { id: string; login_name: string }
 export const currentUser = ref<User | null>(null);
@@ -8,7 +9,7 @@ export const sessionError = ref('');
 let revision = 0;
 
 function replaceUser(user: User | null) {
-  if (currentUser.value?.id !== user?.id) draft.value = '';
+  if (currentUser.value?.id !== user?.id) { draft.value = ''; resetChat(); }
   currentUser.value = user;
   sessionError.value = '';
 }

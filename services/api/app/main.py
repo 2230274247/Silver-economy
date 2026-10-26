@@ -10,12 +10,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from app.api.v1.auth import router as auth_router
+from app.api.v1.chat import router as chat_router
 from app.core.database import get_engine
 from app.core.errors import ApiError
 
 app = FastAPI(title="银发记忆 Demo", version="0.1.0-alpha")
 logger = logging.getLogger("silver.api")
 app.include_router(auth_router)
+app.include_router(chat_router)
 
 
 @app.middleware("http")

@@ -26,7 +26,6 @@ async function submit() {
     error.value = failure instanceof Error ? failure.message : '登录失败，请重试';
   } finally { busy.value = false; }
 }
-function preview() { uni.reLaunch({ url: '/pages/index/index' }); }
 </script>
 
 <template>
@@ -85,12 +84,6 @@ function preview() { uni.reLaunch({ url: '/pages/index/index' }); }
         <text class="setting-note">
           仅限合成测试账号。账号由运营方在本机创建，此处无需填写任何模型密钥。
         </text>
-        <AppButton
-          secondary
-          @click="preview"
-        >
-          先看看界面
-        </AppButton>
       </view>
     </scroll-view>
   </MobileShell>

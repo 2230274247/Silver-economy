@@ -1,29 +1,11 @@
-import secrets
-import uuid
 from datetime import timedelta
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from app.core.database import get_session
-from app.core.security import COOKIE_NAME, hash_token, hasher, utc_now
+from app.core.security import COOKIE_NAME, hash_token, utc_now
 from app.main import app
-from app.models.entities import AuthSession, User
-
-
-@pytest.fixture
-def accounts(db):
-    result = []
-    for _ in range(2):
-        password = secrets.token_urlsafe(24)
-        user = User(login_name=f"test-{uuid.uuid4()}", password_hash=hasher.hash(password))
-        db.add(user)
-        db.flush()
-        result.append((user, password))
-    app.dependency_overrides[get_session] = lambda: db
-    yield result
-    app.dependency_overrides.clear()
+from app.models.entities import AuthSession
 
 
 def sign_in(client, account):

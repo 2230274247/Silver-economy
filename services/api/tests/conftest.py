@@ -1,4 +1,6 @@
 import os
+import secrets
+import uuid
 
 import pytest
 from alembic.config import Config
@@ -6,7 +8,10 @@ from sqlalchemy.orm import Session
 
 from alembic import command
 from app.core.config import PROJECT_ROOT, get_settings, validated_database_url
-from app.core.database import build_engine
+from app.core.database import build_engine, get_session
+from app.core.security import hasher
+from app.main import app
+from app.models.entities import User
 
 
 def migration_config(url: str) -> Config:
@@ -36,3 +41,17 @@ def db(mysql_engine):
         with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
             yield session
         transaction.rollback()
+
+
+@pytest.fixture
+def accounts(db):
+    result = []
+    for _ in range(2):
+        password = secrets.token_urlsafe(24)
+        user = User(login_name=f"test-{uuid.uuid4()}", password_hash=hasher.hash(password))
+        db.add(user)
+        db.flush()
+        result.append((user, password))
+    app.dependency_overrides[get_session] = lambda: db
+    yield result
+    app.dependency_overrides.clear()

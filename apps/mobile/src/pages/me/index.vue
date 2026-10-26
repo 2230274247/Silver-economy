@@ -77,7 +77,7 @@ async function leave() {
           </text><text class="privacy-copy">
             后续接入后，你可以查看记忆来源、纠正或删除。聊天原文与长期记忆会分别说明保存方式。
           </text><text class="setting-note">
-            当前为界面预览，未保存对话或记忆。
+            聊天文字保存在本项目数据库。长期记忆功能尚未接入。
           </text>
         </view>
         <text
