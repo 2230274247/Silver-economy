@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
-import { accounts, freshChat, login } from './helpers';
+import { accounts, freshChat, login, logout } from './helpers';
 
 async function resetConsent(page: import('@playwright/test').Page) {
   for (const account of accounts) {
@@ -30,7 +30,7 @@ test('relogin and new chat retrieve sourced memory; search and user isolation re
     const fact = library.find((item: { value: string }) => item.value === text);
     expect(fact).toBeTruthy();
     await page.getByRole('button', { name: '打开个人设置' }).click();
-    await page.getByRole('button', { name: '退出登录', exact: true }).click();
+    await logout(page);
     await login(page); await freshChat(page);
     await page.getByLabel('想对小忆说的话', { exact: true }).fill(`你还记得${nonce}那次膝盖受伤的事吗？`);
     const recalled = page.waitForResponse(r => r.request().method() === 'POST' && /\/messages$/.test(r.url()));
@@ -59,7 +59,7 @@ test('relogin and new chat retrieve sourced memory; search and user isolation re
     // Restore A's preference before switching accounts; the underlying memory remains.
     expect((await page.request.post('/api/v1/memory-consent', { data: { enabled: false } })).ok()).toBe(true);
     await page.getByRole('button', { name: '打开个人设置' }).click();
-    await page.getByRole('button', { name: '退出登录', exact: true }).click();
+    await logout(page);
     await login(page, 1);
     expect((await page.request.post('/api/v1/memory-consent', { data: { enabled: true } })).ok()).toBe(true);
     await freshChat(page);

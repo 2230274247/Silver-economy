@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
-import { freshChat, login } from './helpers';
+import { freshChat, login, logout } from './helpers';
 
 test('persistent chat, safe reply retry and cross-user denial', async ({ page }, info) => {
   await login(page);
@@ -21,7 +21,7 @@ test('persistent chat, safe reply retry and cross-user denial', async ({ page },
   await expect(page.getByText(text, { exact: true })).toBeVisible();
   await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/chat-persisted-${info.project.name}.png`) });
   await page.getByRole('button', { name: '打开个人设置' }).click();
-  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await logout(page);
   await login(page, 1);
   await expect(page.getByText(text, { exact: true })).toHaveCount(0);
   expect((await page.request.get(messagesUrl)).status()).toBe(404);

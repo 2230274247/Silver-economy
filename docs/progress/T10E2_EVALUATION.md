@@ -78,3 +78,17 @@
 没有新前端业务页面；报告不是普通用户产品页。原H5布局与历史保留，Android真机/高德/持久提醒尚未完成。
 
 下一任务T11A：在既有聊天和用户归属上实现出行意图、必要追问及可编辑确认草案；用户确认后才能进入真正保存/调度流程，不能只作口头承诺。
+
+## 首轮CI失败及独立返修（2026-10-27）
+
+首次提交`b3903deb40e87d6b43f50b2b814bc7ac53697cd0`，06:41:16+08:00，push/远端SHA一致，main仍是原初始化提交。
+CI40414362100：api 197 passed/33.49s、security通过；mobile 43 passed/2 failed，390/430的retrieval重登录用例在`helpers.ts`等待聊天输入框失败。不将它写成全绿或正式完成，下一任务尚未开始。
+失败日志`logs/t10e2-ci-failure.log`、后端CI日志`logs/t10e2-ci-api.log`保留。
+
+实际原因：用例点击“退出登录”后立即`page.goto`打开登录页，绕过应用等待退出响应和路由切换的正常流程；旧退出响应的清Cookie可能晚于新登录响应，从而清掉新会话。
+新增真实浏览器反例把退出响应延迟500ms，按旧顺序成功复现：新登录后`/me`返回401、身份不是预期ui_b（`logs/t10e2-ci-logout-red-assertion.log`）。初始复现器还观察到浏览器过早结束导致延迟响应对象disposed；缓冲响应/等待拦截器结束后保留了明确身份断言失败。
+
+最小修复仅在UI测试：`helpers.ts`新增`logout(page)`，等待实际POST退出204和登录表单可见；auth/chat/retrieval三组用例复用。回归保留延迟响应、重新登录与最终200/正确B身份断言，不增加超时、重试或修改产品鉴权代码。
+单项绿色复测通过（`logs/t10e2-ci-logout-green.log`），四个修改的测试文件独立TypeScript检查通过（`logs/t10e2-ci-fix-types.log`）。完整`npm.cmd run test:ui`实际48 passed/2.4m，360/390/430均通过，含延迟响应回归；`logs/t10e2-ci-fix-ui.log`。本地核验时间07:04:40+08:00，新修复SHA/push/CI按规则事后核验。
+本轮修复不改生产检索、冻结语料/标准答案或调度功能，因此保留原万级评估结果，避免无意义重复；所有UI仍只用独立Mock服务/账号，真实DeepSeek新增0。
+CI另有现有Node action运行时弃用/ubuntu-latest迁移提示，属于后续工程维护事项；未为了本次失败放宽或跳过CI。

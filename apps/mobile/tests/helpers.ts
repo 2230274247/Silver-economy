@@ -27,6 +27,14 @@ export async function login(page: Page, index = 0) {
   await expect(page.getByRole('textbox', { name: '想对小忆说的话' })).toBeVisible();
   await expect(page.locator('.chat-scroll')).toHaveAttribute('aria-busy', 'false');
 }
+export async function logout(page: Page) {
+  const completed = page.waitForResponse(response => response.request().method() === 'POST'
+    && new URL(response.url()).pathname === '/api/v1/auth/logout');
+  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  expect((await completed).status()).toBe(204);
+  // Navigation before this response can apply an old cookie clear after the next login.
+  await expect(page.getByRole('textbox', { name: '演示账号', exact: true })).toBeVisible();
+}
 export async function freshChat(page: Page) {
   await page.getByRole('button', { name: '查看聊天记录' }).click();
   await page.getByRole('button', { name: '开始新对话', exact: true }).click();
