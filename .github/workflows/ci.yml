@@ -32,7 +32,7 @@ jobs:
       - run: pytest -q
         working-directory: services/api
   mobile:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/browsers
     defaults:
