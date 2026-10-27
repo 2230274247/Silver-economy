@@ -21,3 +21,5 @@ T09 提取流水线标识 `chat-memory/v3+state-rule/v1`：Prompt v3 加有限�
 - task-intent/v2与chat-task/v2：TaskEnvelope不变；正常reply不再被后端整条模板替换；会议等未来日程生成待确认卡，已授权的相关记忆可引用，记忆地址不能默认为本次确认地点。
 - weather-search/v1：当前明确城市与今明后天日期→官方Search最多3个有限结果，状态/来源/查询时间进入上下文；失败不编造、一次搜索和一次生成均计预算。
 - 验证：test_chat_assistant.py、原草案/抽取/更新/检索专项；310固定题100事实档无回归，原题集/旧版/历史失败保留。真实H5天气与模型名只用1次Search+1次生成，见CHAT-02专项记录。
+
+CHAT-03 task-intent/v3 / chat-task/v3（2026-10-27T15:45:21+08:00）：新事项draft_id必须空，优先只问具体时刻，再问提醒偏好；保留v2，不改变普通chat-memory/v4或检索算法。验证为39项草案/助手专项，包含真实失败形状的Synthetic反例。

@@ -168,6 +168,101 @@ def test_trip_asks_only_missing_fields_persists_and_replays_without_another_call
     )
 
 
+def test_new_meeting_placeholder_keeps_natural_time_question_and_same_draft_followup(
+    clients, monkeypatch
+):
+    calls = []
+
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            calls.append(prompts)
+            if len(calls) == 1:
+                data = {
+                    "reply": "明天下午几点开始呢？",
+                    "memories": [],
+                    "memory_refs": [],
+                    "outings": [
+                        {
+                            "draft_id": "draft_1",
+                            "kind": "reminder",
+                            "source_excerpt": "明天下午我有一场会议",
+                            "date_text": "明天下午",
+                        }
+                    ],
+                }
+            else:
+                from app.tasks.intent import TASK_MARKER
+
+                pending = json.loads(
+                    prompts[0]["content"].split(TASK_MARKER)[1].split("\nMEMORY_CONTEXT_JSON=")[0]
+                )
+                data = {
+                    "reply": "下午三点。需要我提前提醒你吗？",
+                    "memories": [],
+                    "memory_refs": [],
+                    "outings": [
+                        {
+                            "draft_id": pending[0]["id"],
+                            "kind": "reminder",
+                            "source_excerpt": "下午三点",
+                            "clock_text": "三点",
+                            "period_text": "下午",
+                        }
+                    ],
+                }
+            return ModelReply(json.dumps(data, ensure_ascii=False), "mock-v1", 0, 0)
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    a, _ = clients
+    conversation, result = send(a, "明天下午我有一场会议")
+    first = result["assistant_message"]
+    assert "明天下午几点开始呢" in first["content"]
+    draft = first["task_drafts"][0]
+    assert draft["target_at"] is None and "具体时刻" in draft["missing_fields"]
+    assert draft["date_text"] == "明天" and draft["period_text"] == "下午"
+    assert "明确的日期" not in draft["missing_fields"]
+    _, result = send(a, "下午三点", conversation)
+    updated = result["assistant_message"]["task_drafts"][0]
+    assert updated["id"] == draft["id"] and datetime.fromisoformat(updated["target_at"]).hour == 7
+    assert updated["scheduling_status"] == "not_scheduled"
+
+
+def test_unknown_existing_id_is_not_treated_as_new_meeting(clients, monkeypatch):
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            return ModelReply(
+                json.dumps(
+                    {
+                        "reply": "几点开始？",
+                        "memories": [],
+                        "memory_refs": [],
+                        "outings": [
+                            {
+                                "draft_id": str(uuid.uuid4()),
+                                "kind": "reminder",
+                                "source_excerpt": "明天下午我有一场会议",
+                                "date_text": "明天",
+                                "period_text": "下午",
+                            }
+                        ],
+                    }
+                ),
+                "mock-v1",
+                0,
+                0,
+            )
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    a = clients[0]
+    conversation = a.post("/api/v1/conversations").json()["id"]
+    result = a.post(
+        f"/api/v1/conversations/{conversation}/messages",
+        json={"content": "明天下午我有一场会议", "client_request_id": str(uuid.uuid4())},
+    ).json()
+    assert result["assistant_message"]["error_code"] == "TASK_UNSUPPORTED_REFERENCE"
+    assert result["assistant_message"]["task_drafts"] == []
+
+
 def test_followup_updates_same_draft_and_keeps_original_relative_date_and_evidence(clients):
     a, _ = clients
     conversation, first = send(a, "明天上午十点去张阿姨家做客，提醒我")
@@ -310,7 +405,7 @@ def test_chat_memory_and_task_share_one_provider_call(clients, accounts, db, mon
     facts = list(db.scalars(select(MemoryFact).where(MemoryFact.user_id == accounts[0][0].id)))
     assert len(facts) == 1 and "膝盖已经好了" in facts[0].value and "明天" not in facts[0].value
     usage = db.scalar(select(ModelUsage).where(ModelUsage.user_id == accounts[0][0].id))
-    assert usage.purpose == "chat_task" and usage.prompt_version == "chat-task/v2"
+    assert usage.purpose == "chat_task" and usage.prompt_version == "chat-task/v3"
 
 
 def test_task_real_provider_is_stopped_by_the_same_zero_daily_budget(clients, monkeypatch):

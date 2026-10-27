@@ -148,6 +148,15 @@ def save_candidates(db, message, candidates, context, provider):
         if candidate is None:
             continue
         draft = None
+        if (
+            candidate.draft_id
+            and not context.revisions
+            and NEW_TASK.search(message.content)
+            and re.fullmatch(r"(?:new|draft[_-]?\d+|task[_-]?\d+)", candidate.draft_id)
+        ):
+            # Some models label a new item "draft_1". It is only a local label,
+            # never authority to read/update an existing database task.
+            candidate.draft_id = ""
         if candidate.draft_id:
             if candidate.draft_id not in context.revisions:
                 raise ProviderFailure("TASK_UNSUPPORTED_REFERENCE")

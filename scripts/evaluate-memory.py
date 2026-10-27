@@ -65,6 +65,7 @@ def main():
         "prompts/chat-memory-v4.txt",
         "prompts/chat-v2.txt",
         "prompts/task-intent-v2.txt",
+        "prompts/task-intent-v3.txt",
         "scripts/evaluate-memory.py",
         "services/api/app/memory/eval_dataset.py",
         "services/api/app/memory/evaluator.py",

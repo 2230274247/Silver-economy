@@ -198,7 +198,7 @@ def generate_reply(db, item, assistant):
             provider=provider,
             model=settings.deepseek_model if provider == "deepseek" else "mock-v1",
             purpose="chat_task" if task else "chat",
-            prompt_version="chat-task/v2"
+            prompt_version="chat-task/v3"
             if task
             else "chat-memory/v4"
             if memory_enabled
@@ -327,7 +327,7 @@ def generate_reply(db, item, assistant):
                         candidates,
                         provider,
                         extractor_version=(
-                            "chat-task/v2+state-rule/v1" if task else "chat-memory/v4+state-rule/v1"
+                            "chat-task/v3+state-rule/v1" if task else "chat-memory/v4+state-rule/v1"
                         ),
                     )
                     item.memory_status = "partial_rejected" if rejected else "captured"

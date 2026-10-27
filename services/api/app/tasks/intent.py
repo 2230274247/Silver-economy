@@ -13,7 +13,7 @@ from app.schemas.tasks import TaskCandidate
 from app.tasks.time_parse import CLOCK_PATTERN, parse_target, time_parts
 
 TASK_MARKER = "\nTASK_DRAFT_CONTEXT_JSON="
-TASK_PROMPT = (PROJECT_ROOT / "prompts/task-intent-v2.txt").read_text(encoding="utf-8").strip()
+TASK_PROMPT = (PROJECT_ROOT / "prompts/task-intent-v3.txt").read_text(encoding="utf-8").strip()
 MODES = {
     "taxi": ("打车", "出租车"),
     "driving": ("开车", "自驾"),
@@ -129,6 +129,15 @@ def grounded(candidate: TaskCandidate, source):
         value = getattr(item, field)
         if value and value not in item.source_excerpt:
             setattr(item, field, "")  # Inferred details become missing fields, never facts.
+    # Keep literal calendar parts when a model combines them as "明天下午".
+    for value in (item.date_text, item.clock_text):
+        date, clock, period = time_parts(value)
+        if date:
+            item.date_text = date
+        if clock:
+            item.clock_text = clock
+        if period and not item.period_text:
+            item.period_text = period
     if item.destination and re.search(r"去|到达|拜访", item.source_excerpt):
         item.kind = "outing"
     modes = explicit_modes(item.source_excerpt)

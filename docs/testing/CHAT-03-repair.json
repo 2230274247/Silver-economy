@@ -1,0 +1,16 @@
+{
+  "checked_at_hk": "2026-10-27T15:41:00+08:00",
+  "new_model_calls": 0,
+  "new_search_calls": 0,
+  "scope": "Only the owner-provided failed meeting message; no private message text exported",
+  "status": "REPAIRED_FROM_SAVED_OUTPUT",
+  "original_paid_receipt_status_preserved": true,
+  "raw_output_unchanged": true,
+  "question_about_time_preserved": true,
+  "missing_fields": [
+    "具体时刻"
+  ],
+  "drafts_created": 1,
+  "scheduling_status": "not_scheduled",
+  "compound_date_normalized_from_literal_source": true
+}
