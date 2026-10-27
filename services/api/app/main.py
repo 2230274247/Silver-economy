@@ -15,6 +15,7 @@ from app.api.v1.maps import router as maps_router
 from app.api.v1.memories import router as memories_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.outings import router as outings_router
+from app.api.v1.privacy import router as privacy_router
 from app.api.v1.tasks import router as tasks_router
 from app.core.config import get_settings
 from app.core.database import get_engine
@@ -38,6 +39,7 @@ app.include_router(tasks_router)
 app.include_router(maps_router)
 app.include_router(outings_router)
 app.include_router(notifications_router)
+app.include_router(privacy_router)
 
 
 @app.middleware("http")
