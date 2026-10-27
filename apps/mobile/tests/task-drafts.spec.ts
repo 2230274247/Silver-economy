@@ -19,7 +19,7 @@ test('trip clarification, editable information confirmation and refresh are pers
   expect(first.assistant_message.task_drafts[0].missing_fields).toEqual(['到达还是出发', '出发地', '交通方式']);
   const card = page.locator('.task-card');
   await expect(card).toHaveCount(1);
-  await expect(card).toContainText('Mock'); await expect(card).toContainText('提醒尚未安排');
+  await expect(card).toContainText('Mock'); await expect(card).toContainText('尚未调度');
   await expect(card.getByRole('button', { name: '确认信息', exact: true })).toBeDisabled();
   const followup = await send(page, '十点到，打车，从合成公园出发');
   expect(followup.assistant_message.task_drafts[0].id).toBe(first.assistant_message.task_drafts[0].id);
@@ -42,7 +42,7 @@ test('trip clarification, editable information confirmation and refresh are pers
   await page.reload(); await expect(card).toContainText('信息已确认');
   await expect(card).toContainText('Synthetic 可编辑做客安排');
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
-  await card.getByText('信息已确认 · 提醒尚未安排', { exact: true }).scrollIntoViewIfNeeded();
+  await card.getByText('信息已确认 · 尚未调度', { exact: true }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.resolve(`../../docs/demos/T11A-confirmed-${info.project.name}.png`) });
 });
 

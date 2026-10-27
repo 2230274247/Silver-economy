@@ -69,13 +69,21 @@ def draft_data(draft):
             "origin_place",
             "destination_place",
             "map_snapshot",
+            "access_buffer_minutes",
+            "contingency_buffer_minutes",
+            "schedule_preview",
+            "scheduled_task_id",
         )
     }
     data.update(
         target_at=stamp(draft.target_at),
         confirmed_at=stamp(draft.confirmed_at),
         missing_fields=missing_fields(draft),
-        scheduling_status="not_scheduled",
+        scheduling_status=(
+            draft.status
+            if draft.status in {"scheduled", "cancelled", "completed"}
+            else "not_scheduled"
+        ),
         time_reference_at=stamp(draft.time_reference_at),
         resolved_date=day.isoformat() if day else None,
     )
@@ -245,6 +253,12 @@ def update_draft(db, user_id, draft_id, payload):
         raise ApiError(409, "TASK_DRAFT_STALE", "草案已更新，请重新读取后核对")
     if draft.status == "deferred":
         raise ApiError(409, "TASK_DRAFT_DEFERRED", "此草案已暂不安排，请重新提出事项")
+    if draft.status in {"scheduled", "cancelled", "completed"}:
+        raise ApiError(
+            409,
+            "TASK_DRAFT_ALREADY_SCHEDULED",
+            "此草案已进入任务流程，请从提醒详情修改",
+        )
     now = utc_now()
     draft.title = payload.title
     date, clock, period = time_parts(payload.time_text)
@@ -277,6 +291,8 @@ def update_draft(db, user_id, draft_id, payload):
 
 def invalidate_map_snapshot(draft):
     draft.map_snapshot = None
+    draft.schedule_preview = None
+    draft.scheduled_task_id = None
     for field in ("origin", "destination"):
         place = getattr(draft, field + "_place")
         if place and place["name"] != getattr(draft, field):
@@ -291,6 +307,8 @@ def act_on_draft(db, user_id, draft_id, payload):
         draft.revision - 1,
     }:
         return draft_data(draft)
+    if draft.status in {"scheduled", "cancelled", "completed"}:
+        raise ApiError(409, "TASK_DRAFT_ALREADY_SCHEDULED", "此草案已进入任务流程")
     if draft.revision != payload.expected_revision or draft.status != "draft":
         raise ApiError(409, "TASK_DRAFT_STALE", "草案已更新，请重新读取后核对")
     if desired == "confirmed" and missing_fields(draft):
@@ -299,6 +317,7 @@ def act_on_draft(db, user_id, draft_id, payload):
         )
     draft.status = desired
     draft.confirmed_at = utc_now() if desired == "confirmed" else None
+    draft.schedule_preview = None
     draft.revision += 1
     if draft.map_snapshot:
         draft.map_snapshot = (

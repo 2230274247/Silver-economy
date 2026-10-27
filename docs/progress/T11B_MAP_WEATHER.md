@@ -1,6 +1,6 @@
 # T11B：地点核实、路线和天气
 
-状态：LOCAL_VERIFIED_MOCK（待本次commit/push/SHA/CI）。T11A修复67f9235be1c501cc00567b2ed4272ccbea91d345远端一致，CI40442118042全部success。高德Key尚未配置，LIVE_NOT_VERIFIED；不以Mock作为真实出行验收。
+状态：IMPLEMENTED_PUSHED / LIVE_PENDING。提交c44766fa863f968463099976faab6f4c35e8cc01（2026-10-27T11:41:42+08:00）已推送并核对远端SHA，CI40445595994 api/security/mobile全部success；CI实际264后端/63UI通过，证据`logs/t11b-ci-final.log`及`docs/testing/T11B-remote.json`。事后核验随下一任务日志固化，不改写历史。高德Key尚未配置，LIVE_NOT_VERIFIED；不以Mock作为真实出行验收。
 
 ## 目标与边界
 

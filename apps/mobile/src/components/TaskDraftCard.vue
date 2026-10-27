@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from
 import AccessibleButton from './AccessibleButton.vue';
 import AppButton from './AppButton.vue';
 import MapPreviewPanel from './MapPreviewPanel.vue';
+import SchedulePreviewPanel from './SchedulePreviewPanel.vue';
 import { labelTextControl } from '../platform/accessibility';
 import { bindComposer } from '../platform/composer';
 import { draftTimeText } from '../platform/task-time';
@@ -84,10 +85,10 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       {{ item.kind === 'outing' ? '出行草案' : '提醒草案' }}{{ item.extractor_provider === 'mock' ? ' · Mock' : '' }}{{ item.is_synthetic ? ' · Synthetic' : '' }}
     </text>
     <text class="task-state">
-      {{ item.status === 'confirmed' ? '信息已确认' : item.status === 'deferred' ? '已暂不安排' : '待核对' }} · 提醒尚未安排
+      {{ item.status === 'scheduled' ? '提醒已安排 · Mock' : item.status === 'cancelled' ? '任务已取消' : item.status === 'completed' ? '任务已完成' : item.status === 'confirmed' ? '信息已确认' : item.status === 'deferred' ? '已暂不安排' : '待核对' }} · {{ item.scheduling_status === 'not_scheduled' ? '尚未调度' : item.scheduling_status }}
     </text>
     <text class="task-note">
-      当前只保存信息，不会主动通知。地点、路线和天气请在下方主动核实；后台提醒尚未接通。
+      {{ item.status === 'scheduled' ? '任务与提醒已持久保存；当前为 Mock 站内通知，不能证明手机后台已收到。' : item.status === 'confirmed' ? '信息确认不会自动安排提醒；请在下方单独生成并确认计算预览。' : '当前只保存信息。地点、路线和天气需在下方主动核实，调度前还有独立确认。' }}
     </text>
     <view
       v-if="!editing"
@@ -203,7 +204,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       </AccessibleButton>
     </view>
     <view
-      v-if="item.status !== 'deferred'"
+      v-if="!['deferred', 'scheduled', 'cancelled', 'completed'].includes(item.status)"
       class="task-actions"
     >
       <AppButton
@@ -249,9 +250,15 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       </AccessibleButton>
     </view>
     <MapPreviewPanel
-      v-if="item.kind === 'outing' && !editing"
+      v-if="item.kind === 'outing' && !editing && !['scheduled', 'cancelled', 'completed'].includes(item.status)"
       :item="item"
       :disabled="busy"
+      @changed="emit('changed', $event)"
+      @busy="mapBusy = $event"
+    />
+    <SchedulePreviewPanel
+      :item="item"
+      :disabled="busy || mapBusy"
       @changed="emit('changed', $event)"
       @busy="mapBusy = $event"
     />

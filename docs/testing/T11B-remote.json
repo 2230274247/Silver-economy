@@ -1,0 +1,15 @@
+{
+  "checked_at_hk": "2026-10-27T11:47:55+08:00",
+  "commit_sha": "c44766fa863f968463099976faab6f4c35e8cc01",
+  "remote_sha": "c44766fa863f968463099976faab6f4c35e8cc01",
+  "main_sha": "9f43350cbc23932e17de459729fca3f07b446e54",
+  "ci_url": "https://github.com/2230274247/Silver-economy/actions/runs/40445595994",
+  "ci_conclusion": "success",
+  "jobs": {
+    "api": "success",
+    "security": "success",
+    "mobile": "success"
+  },
+  "amap_live_verified": false,
+  "scope": "Implementation/Mock/transport-contract gates passed; real map service and Android still pending"
+}

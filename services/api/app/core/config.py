@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     maps_provider: Literal["disabled", "mock", "amap"] = "disabled"
     amap_web_service_key: SecretStr = SecretStr("")
     amap_daily_request_limit: int = Field(20, ge=0, le=1000)
+    notifications_provider: Literal["mock", "disabled"] = "mock"
+    worker_lease_seconds: int = Field(60, ge=15, le=600)
+    worker_delivery_grace_minutes: int = Field(15, ge=1, le=1440)
 
     @field_validator("deepseek_base_url")
     @classmethod

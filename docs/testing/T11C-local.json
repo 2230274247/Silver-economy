@@ -1,0 +1,59 @@
+{
+  "checked_at_hk": "2026-10-27T12:42:27+08:00",
+  "task": "T11C",
+  "status": "LOCAL_PASS_PENDING_REMOTE",
+  "baseline_remote_sha": "c44766fa863f968463099976faab6f4c35e8cc01",
+  "commands": {
+    "full_check": ".\\\\.venv\\\\Scripts\\\\python.exe scripts\\\\check.py",
+    "focused_scheduling_ui": "npm run test:ui -- tests/scheduling.spec.ts",
+    "shell_ui_retry": "npm run test:ui -- tests/shell.spec.ts",
+    "full_ui": "npm run test:ui",
+    "worker_once": ".\\\\.venv\\\\Scripts\\\\python.exe -m app.notifications.worker --once"
+  },
+  "results": {
+    "backend_tests_passed": 271,
+    "full_check_passed": true,
+    "focused_scheduling_ui_passed": 6,
+    "shell_ui_retry_passed": 12,
+    "full_ui_passed": 69,
+    "full_ui_duration_minutes": 3.9,
+    "worker_first_scan": {
+      "claimed": 1,
+      "submitted": 1
+    },
+    "worker_second_scan": {
+      "claimed": 0,
+      "submitted": 0
+    },
+    "worker_job_status": "submitted_to_provider",
+    "worker_job_attempts": 1,
+    "worker_provider_message_id_present": true,
+    "worker_reminder_status": "submitted_to_provider",
+    "worker_audit_events": [
+      "task_scheduled",
+      "notification_submitted"
+    ]
+  },
+  "worker_evidence_ids": {
+    "task_id": "e13846b8-2814-49b6-a992-e9b1f7b4d01e",
+    "job_id": "3ef78354-c7de-48ef-8330-dec9a35206c2",
+    "reminder_id": "9ab03d8f-7797-461a-9183-3a38b5949b22"
+  },
+  "screenshots": [
+    "docs/demos/T11C-scheduled-360.png",
+    "docs/demos/T11C-scheduled-390.png",
+    "docs/demos/T11C-scheduled-430.png"
+  ],
+  "external_calls": {
+    "deepseek_new_calls": 0,
+    "amap_live_calls": 0,
+    "notification_provider": "mock",
+    "android_delivery_verified": false
+  },
+  "known_limits": [
+    "Mock notification submission does not prove Android or phone delivery.",
+    "Real AMap access remains unverified until a server-side Web Service key and quota are configured.",
+    "Physical Android background notification remains a T11D acceptance gate.",
+    "Computer or worker shutdown during the reminder window is not represented as a device notification."
+  ]
+}

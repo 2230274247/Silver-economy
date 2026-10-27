@@ -30,6 +30,8 @@ ERRORS = {
 
 def checked_draft(db, user_id, draft_id, revision, *, consent=True, allow_deferred=False):
     draft = owned_draft(db, user_id, draft_id, lock=True)
+    if draft.status in {"scheduled", "cancelled", "completed"}:
+        raise ApiError(409, "TASK_DRAFT_ALREADY_SCHEDULED", "此草案已进入任务流程")
     if draft.revision != revision:
         raise ApiError(409, "TASK_DRAFT_STALE", "草案已更新，请重新读取后核对")
     if draft.kind != "outing" or draft.status == "deferred" and not allow_deferred:

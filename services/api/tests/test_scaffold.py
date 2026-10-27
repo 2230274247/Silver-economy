@@ -15,8 +15,8 @@ def test_service_reports_actual_stage_without_credentials():
     }
 
 
-def test_unimplemented_business_endpoint_is_not_fake_success():
-    assert client.post("/api/v1/outing-tasks", json={}).status_code == 404
+def test_outing_collection_rejects_unsupported_create_method():
+    assert client.post("/api/v1/outing-tasks", json={}).status_code == 405
 
 
 def test_openapi_is_available():

@@ -166,11 +166,20 @@ class MemoryUse(Identity, Owned, Base):
 
 class Reminder(Identity, Updated, Owned, Base):
     __tablename__ = "reminders"
-    __table_args__ = (UniqueConstraint("user_id", "id"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        ForeignKeyConstraint(
+            ["user_id", "outing_task_id"],
+            ["outing_tasks.user_id", "outing_tasks.id"],
+            name="fk_reminders_outing_task",
+        ),
+    )
     title: Mapped[str] = mapped_column(String(160))
     due_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
     timezone: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(24), default="pending")
+    outing_task_id: Mapped[str | None] = mapped_column(String(36))
+    task_revision: Mapped[int] = mapped_column(Integer, default=1)
 
 
 class TaskDraft(Identity, Updated, Owned, Base):
@@ -221,6 +230,100 @@ class TaskDraft(Identity, Updated, Owned, Base):
     origin_place: Mapped[dict | None] = mapped_column(JSON)
     destination_place: Mapped[dict | None] = mapped_column(JSON)
     map_snapshot: Mapped[dict | None] = mapped_column(JSON)
+    access_buffer_minutes: Mapped[int] = mapped_column(Integer, default=10)
+    contingency_buffer_minutes: Mapped[int] = mapped_column(Integer, default=15)
+    schedule_preview: Mapped[dict | None] = mapped_column(JSON)
+    scheduled_task_id: Mapped[str | None] = mapped_column(String(36))
+
+
+class OutingTask(Identity, Updated, Owned, Base):
+    """A user-approved calculation. Draft confirmation alone never creates this row."""
+
+    __tablename__ = "outing_tasks"
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        UniqueConstraint("user_id", "draft_id"),
+        UniqueConstraint("user_id", "idempotency_key"),
+        ForeignKeyConstraint(["user_id", "draft_id"], ["task_drafts.user_id", "task_drafts.id"]),
+        ForeignKeyConstraint(["user_id", "source_message_id"], ["messages.user_id", "messages.id"]),
+        Index("ix_outing_tasks_user_status_time", "user_id", "status", "reminder_at"),
+    )
+    draft_id: Mapped[str] = mapped_column(String(36))
+    source_message_id: Mapped[str] = mapped_column(String(36))
+    kind: Mapped[str] = mapped_column(String(16))
+    title: Mapped[str] = mapped_column(String(160))
+    status: Mapped[str] = mapped_column(String(24), default="scheduled")
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    time_semantics: Mapped[str] = mapped_column(String(16))
+    target_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    timezone: Mapped[str] = mapped_column(String(64), default="Asia/Hong_Kong")
+    origin: Mapped[str] = mapped_column(String(200), default="")
+    destination: Mapped[str] = mapped_column(String(200), default="")
+    transport: Mapped[str] = mapped_column(String(16), default="unknown")
+    route_snapshot: Mapped[dict | None] = mapped_column(JSON)
+    weather_snapshot: Mapped[dict | None] = mapped_column(JSON)
+    calculation_basis: Mapped[dict] = mapped_column(JSON)
+    departure_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    reminder_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    provider: Mapped[str] = mapped_column(String(24), default="mock")
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
+    idempotency_key: Mapped[str] = mapped_column(String(36))
+    preview_id: Mapped[str] = mapped_column(String(36))
+    confirmed_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    cancelled_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    completed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class NotificationJob(Identity, Updated, Owned, Base):
+    __tablename__ = "notification_jobs"
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        UniqueConstraint("user_id", "idempotency_key"),
+        ForeignKeyConstraint(
+            ["user_id", "outing_task_id"], ["outing_tasks.user_id", "outing_tasks.id"]
+        ),
+        ForeignKeyConstraint(["user_id", "reminder_id"], ["reminders.user_id", "reminders.id"]),
+        Index(
+            "ix_notification_jobs_due",
+            "status",
+            "scheduled_at",
+            "next_attempt_at",
+        ),
+    )
+    outing_task_id: Mapped[str] = mapped_column(String(36))
+    reminder_id: Mapped[str] = mapped_column(String(36))
+    task_revision: Mapped[int] = mapped_column(Integer)
+    channel: Mapped[str] = mapped_column(String(24), default="in_app_mock")
+    scheduled_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    status: Mapped[str] = mapped_column(String(24), default="queued")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    idempotency_key: Mapped[str] = mapped_column(String(120))
+    payload: Mapped[dict] = mapped_column(JSON)
+    lease_owner: Mapped[str | None] = mapped_column(String(120))
+    lease_token: Mapped[str | None] = mapped_column(String(36))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    provider: Mapped[str] = mapped_column(String(24), default="mock")
+    provider_message_id: Mapped[str | None] = mapped_column(String(120))
+    last_attempt_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    completed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class TaskAuditLog(Identity, Owned, Base):
+    __tablename__ = "task_audit_logs"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id", "outing_task_id"], ["outing_tasks.user_id", "outing_tasks.id"]
+        ),
+        Index("ix_task_audit_task_created", "outing_task_id", "created_at", "id"),
+    )
+    outing_task_id: Mapped[str] = mapped_column(String(36))
+    event_type: Mapped[str] = mapped_column(String(48))
+    actor: Mapped[str] = mapped_column(String(24))
+    task_revision: Mapped[int] = mapped_column(Integer)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class MapRequest(Identity, Owned, Base):

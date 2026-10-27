@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T11B（地点、路线与天气；本地Mock/合同验证通过，待提交/远端/CI）
+- Current task: T11D（Android 真机通知；T11C 本地通过，等待提交/推送/CI）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T11A修复 `67f9235be1c501cc00567b2ed4272ccbea91d345`
-- Last verified CI: PASS（run 40442118042；api/security/mobile全部success；首轮失败保留）
-- 最后核验时间：2026-10-27T11:08:52+08:00。
+- Last remote-confirmed SHA: T11B `c44766fa863f968463099976faab6f4c35e8cc01`
+- Last verified CI: PASS（run 40445595994；api/security/mobile全部success）
+- 最后核验时间：2026-10-27T11:47:18+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -28,9 +28,9 @@
 | T10E2 | DONE_PUSHED | 197后端、48UI及四档310题/SQL/资源报告PASS | 功能b3903deb40e87d6b43f50b2b814bc7ac53697cd0；修复e38b2c173c55c127db90dd975fc72587468d38d9 | SHA一致 | PASS（40417316422）；首轮失败保留 | 2026-10-27 07:05:37+08:00；修复仅测试同步，生产评分不变 |
 | T11 | TODO（汇总） | - | - | - | - | CR-001，A–E 全部独立验收 |
 | T11A | DONE_PUSHED | 230后端/57UI/全门禁/真实1次/四档310题PASS；输入反例先失败后通过，返修57UI PASS | 功能829bbc6530784175878f3eba0cd11df388c0251d；修复67f9235be1c501cc00567b2ed4272ccbea91d345 | SHA一致 | PASS（40442118042）；首轮40440860292失败保留 | 信息确认not_scheduled，调度仍待T11C；2026-10-27 11:04:33+08:00 |
-| T11B | LOCAL_VERIFIED_MOCK | 263后端完整门禁/63UI；最终34地图/6专项三视口复测PASS；迁移/运营H5/用量审计PASS | 本次提交待核验 | 待推送 | 待运行 | 高德Provider/合同已实现；真实Key未配置，LIVE_NOT_VERIFIED，不能用Mock当真实验收 |
-| T11C | TODO | - | - | - | - | 确定性时间计算、MySQL outbox、持久 Worker |
-| T11D | TODO | - | - | - | - | Android 测试包、真机后台通知，外部配置准入 |
+| T11B | IMPLEMENTED_PUSHED（LIVE_PENDING） | 本地263完整门禁+最终34地图/6UI专项；完整63UI；CI264后端/63UI PASS | c44766fa863f968463099976faab6f4c35e8cc01 | SHA一致 | PASS（40445595994） | 2026-10-27 11:41:42+08:00；Mock/合同/实现通过，真实Key未配置，LIVE_NOT_VERIFIED，不能当真实验收 |
+| T11C | LOCAL_PASS_PENDING_REMOTE | 271后端/69UI/全门禁/独立Worker实进程PASS | 待提交 | 待推送 | 待运行 | 确定性时间、独立确认、MySQL outbox、租约/重启/取消/隔离；新增模型0、高德0、真实推送0 |
+| T11D | IN_PROGRESS（环境审计） | 当前PATH无adb/java/gradle，未发现HBuilderX或Android SDK | - | - | - | Android测试包、真机后台通知；必须保留BLOCKED_PROVIDER_CONFIGURATION/设备门禁，不能用Mock替代 |
 | T11E | TODO | - | - | - | - | 行程详情、导航、修改/取消/完成反馈 |
 | T12 | TODO | - | - | - | - | 设置/隐私/导出 |
 | T13 | TODO | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
