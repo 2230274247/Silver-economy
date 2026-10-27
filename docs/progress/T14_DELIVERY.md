@@ -12,3 +12,5 @@
 未执行：备份恢复、首次克隆单独复现、完整最新付费A–E再演示、真实高德与Android真机。均明确写入V01_PENDING_ACCEPTANCE.md，不伪造通过。用户导出不是数据库备份；CI干净checkout不能替代P06完整交付演练。
 
 修复：独立Worker日志时间曾为本地时刻却标UTC；统一使用gmtime，重启本项目Worker验证UTC输出。没有更改调度时间或用户数据。
+
+远端核验（2026-10-27T14:47:01+08:00）：交付提交71c345244c33d11edfb341298c502f37631cdb64与origin/dev/v0.1一致；CI40462849750当前IN_PROGRESS，各job实时结果见T14-remote.json及GitHub Checks。Draft PR https://github.com/2230274247/Silver-economy/pull/1 已创建；base main、head dev/v0.1、未合并。main仍9f43350cbc23932e17de459729fca3f07b446e54。
