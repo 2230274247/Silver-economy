@@ -40,6 +40,7 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
         "task_drafts",
         "model_usage",
         "model_budget",
+        "admin_model_budget",
         "map_requests",
         "map_budget",
         "outing_tasks",

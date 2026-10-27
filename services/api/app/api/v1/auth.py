@@ -1,5 +1,6 @@
 import secrets
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
@@ -16,7 +17,7 @@ from app.core.security import (
     utc_now,
     verify_password,
 )
-from app.models.entities import AuthSession, User
+from app.models.entities import AdminModelBudget, AuthSession, User
 
 router = APIRouter(prefix="/api/v1")
 
@@ -28,7 +29,7 @@ class Login(BaseModel):
 
 
 def user_data(user: User):
-    return {"id": user.id, "login_name": user.login_name}
+    return {"id": user.id, "login_name": user.login_name, "is_admin": user.is_admin}
 
 
 @router.post("/auth/login")
@@ -70,6 +71,26 @@ def login(payload: Login, request: Request, response: Response, db: DatabaseSess
 @router.get("/me")
 def me(user: CurrentUser):
     return user_data(user)
+
+
+@router.get("/admin/model-status")
+def admin_status(user: CurrentUser, db: DatabaseSession):
+    if not user.is_admin:
+        raise ApiError(403, "ADMIN_REQUIRED", "此页面仅供管理员使用")
+    settings = get_settings()
+    day = datetime.now(ZoneInfo("Asia/Hong_Kong")).date().isoformat()
+    budget = db.get(AdminModelBudget, day)
+    return {
+        "model": settings.deepseek_model,
+        "provider": settings.llm_provider,
+        "search_enabled": settings.deepseek_search_enabled,
+        "daily_request_limit": settings.admin_daily_request_limit,
+        "daily_token_limit": settings.admin_daily_token_limit,
+        "max_output_tokens": settings.admin_max_output_tokens,
+        "requests_used": budget.requests if budget else 0,
+        "reserved_tokens": budget.reserved_tokens if budget else 0,
+        "budget_scope": "administrator_pool",
+    }
 
 
 @router.post("/auth/logout", status_code=204)

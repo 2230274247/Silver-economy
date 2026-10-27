@@ -92,3 +92,5 @@ GitHub Actions执行后端/前端/安全检查；CI和SHA以远端实际结果�
 
 main保留稳定历史，dev/v0.1承载开发提交。每项必要检查后commit/push/远端SHA/CI；不force、不改历史、不自动合并或发布Tag。
 T14交付仍有开放验收项，本仓库不宣称完整V0.1正式验收通过。
+
+CHAT-02补充：新增独立admin运营账号、可配置独立预算与设置状态；天气网页搜索/模型名自然回复已真实验证。使用说明见[CHAT-02记录](docs/progress/CHAT-02_CHAT_WEATHER_ADMIN.md)。管理员随机凭据仅在本机.cache/admin-account.json，不入Git。

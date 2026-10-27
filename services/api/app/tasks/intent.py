@@ -13,7 +13,7 @@ from app.schemas.tasks import TaskCandidate
 from app.tasks.time_parse import CLOCK_PATTERN, parse_target, time_parts
 
 TASK_MARKER = "\nTASK_DRAFT_CONTEXT_JSON="
-TASK_PROMPT = (PROJECT_ROOT / "prompts/task-intent-v1.txt").read_text(encoding="utf-8").strip()
+TASK_PROMPT = (PROJECT_ROOT / "prompts/task-intent-v2.txt").read_text(encoding="utf-8").strip()
 MODES = {
     "taxi": ("打车", "出租车"),
     "driving": ("开车", "自驾"),
@@ -25,7 +25,7 @@ DECLINED = re.compile(
     r"如果|假如|假设|举例|比如|不要提醒|不用提醒|别提醒|不要安排|(?:他|她|别人)说"
 )
 NEW_TASK = re.compile(
-    r"提醒|闹钟|安排.{0,10}(?:出行|出门|行程)|(?:明天|后天|今天|下周|\d+月\d+[日号]).*(?:去|出发|出门|拜访)"
+    r"提醒|闹钟|安排.{0,10}(?:出行|出门|行程)|(?:明天|后天|今天|下周|\d+月\d+[日号]).*(?:去|出发|出门|拜访|开(?:个)?会|会议)"
 )
 ARRIVAL = re.compile(r"到达|抵达|(?:点|时|:\d{2}|：\d{2}).{0,3}到(?!时候)")
 DEPARTURE = re.compile(r"(?:点|时|:\d{2}|：\d{2}).{0,4}(?:出发|出门)")

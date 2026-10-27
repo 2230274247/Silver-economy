@@ -34,6 +34,14 @@ const devicesError = ref('');
 const revokingDevice = ref('');
 const exportBusy = ref(false);
 const exportError = ref('');
+const adminInfo = ref<{ model: string; daily_request_limit: number; daily_token_limit: number; requests_used: number; search_enabled: boolean } | null>(null);
+const adminError = ref('');
+async function readAdmin() {
+  adminInfo.value = null; adminError.value = '';
+  if (!currentUser.value?.is_admin) return;
+  try { adminInfo.value = await request('/admin/model-status'); }
+  catch { adminError.value = '管理员状态读取失败，请重新进入此页。'; }
+}
 async function readMemoryConsent() {
   memoryLoading.value = true;
   memoryReady.value = false; memoryError.value = '';
@@ -53,7 +61,7 @@ async function readDevices() {
     devicesLoading.value = false;
   }
 }
-onShow(async () => { await Promise.all([readMemoryConsent(), readDevices()]); });
+onShow(async () => { await Promise.all([readMemoryConsent(), readDevices(), readAdmin()]); });
 async function toggleMemory() {
   if (memoryBusy.value || memoryLoading.value || !memoryReady.value) return;
   memoryBusy.value = true; memoryError.value = '';
@@ -125,6 +133,27 @@ async function leave() {
       class="content-scroll"
     >
       <view class="page-content settings-content">
+        <view
+          v-if="currentUser?.is_admin"
+          class="settings-card"
+        >
+          <text class="page-title">
+            管理员
+          </text>
+          <text
+            v-if="adminInfo"
+            class="setting-note"
+          >
+            模型：{{ adminInfo.model }} · 联网查询{{ adminInfo.search_enabled ? '已开启' : '已关闭' }}。
+            独立管理员额度：每日 {{ adminInfo.daily_request_limit }} 次请求、{{ adminInfo.daily_token_limit }} 预留 tokens；今日已用 {{ adminInfo.requests_used }} 次。
+          </text>
+          <text
+            v-if="adminError"
+            role="alert"
+          >
+            {{ adminError }}
+          </text>
+        </view>
         <view class="profile">
           <image
             src="/static/companion.svg"

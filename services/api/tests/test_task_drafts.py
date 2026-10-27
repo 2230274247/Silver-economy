@@ -310,7 +310,7 @@ def test_chat_memory_and_task_share_one_provider_call(clients, accounts, db, mon
     facts = list(db.scalars(select(MemoryFact).where(MemoryFact.user_id == accounts[0][0].id)))
     assert len(facts) == 1 and "膝盖已经好了" in facts[0].value and "明天" not in facts[0].value
     usage = db.scalar(select(ModelUsage).where(ModelUsage.user_id == accounts[0][0].id))
-    assert usage.purpose == "chat_task" and usage.prompt_version == "chat-task/v1"
+    assert usage.purpose == "chat_task" and usage.prompt_version == "chat-task/v2"
 
 
 def test_task_real_provider_is_stopped_by_the_same_zero_daily_budget(clients, monkeypatch):

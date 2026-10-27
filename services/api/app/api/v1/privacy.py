@@ -59,6 +59,7 @@ def message_data(item):
         "error_code": item.error_code,
         "provider": item.provider,
         "memory_status": item.memory_status,
+        "search_context": item.search_context,
         "reply_to_message_id": item.reply_to_message_id,
         "created_at": timestamp(item.created_at),
         "updated_at": timestamp(item.updated_at),

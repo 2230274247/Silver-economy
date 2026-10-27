@@ -1,0 +1,25 @@
+{
+  "new_paid_attempts": [
+    {
+      "purpose": "chat",
+      "model": "deepseek-flash",
+      "status": "completed",
+      "input_tokens": 1353,
+      "output_tokens": 117,
+      "latency_ms": 2844,
+      "reserved_tokens": 6589,
+      "estimated_usd": "0.00054630"
+    },
+    {
+      "purpose": "weather_search",
+      "model": "search-api",
+      "status": "completed",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_ms": 781,
+      "reserved_tokens": 0,
+      "estimated_usd": "0.00075000"
+    }
+  ],
+  "pricing_note": "Conservative estimates, not an invoice. Search estimate uses published USD0.75/1000 successful requests; actual account charging/free period may differ."
+}

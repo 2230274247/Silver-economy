@@ -10,3 +10,13 @@ export function openExternalMap(url: string): void {
   window.open(url, '_blank', 'noopener,noreferrer');
   // #endif
 }
+
+export function openWebSource(url: string): void {
+  if (!/^https?:\/\/[^/@\s]+(?:\/|$)/.test(url)) return;
+  // #ifdef APP-PLUS
+  plus.runtime.openURL(url);
+  // #endif
+  // #ifdef H5
+  window.open(url, '_blank', 'noopener,noreferrer');
+  // #endif
+}

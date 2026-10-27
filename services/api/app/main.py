@@ -116,6 +116,7 @@ def model_status():
     settings = get_settings()
     return {
         "provider": settings.llm_provider,
+        "model": settings.deepseek_model if settings.llm_provider == "deepseek" else "mock-v1",
         "configured": settings.llm_provider == "mock"
         or bool(settings.deepseek_api_key.get_secret_value().strip()),
     }

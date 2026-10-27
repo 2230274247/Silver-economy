@@ -25,3 +25,8 @@
 
 T09起浏览器回归另用ui_a/ui_b与忽略文件`.cache/ui-accounts.json`；npm test:ui先安全生成专用账号，18000服务UI_TEST_MODE=true拒绝其他账号及其既有会话。运营联调仍用demo_a/demo_b，不混用授权状态。回归使用同项目开发库的独立合成用户；pytest单独测试库，均不得连接生产用户/其他项目库。
 已知用量的价格估算在隐私/引用校验之前计算；历史一条completed_rejected回执曾缺估算字段，T09报告按其已知tokens另行计算，未改写原回执。真实调用分阶段有持久attempt标记，默认verify只读；出现根因已修复的新独立验证会单独编号记录，不能删除旧标记重试。
+
+## CHAT-02管理员与天气搜索（2026-10-27T15:23:05+08:00）
+
+管理员由scripts/create-admin.py本机创建，凭据只写忽略的.cache/admin-account.json；不自动提升demo_a。ADMIN_DAILY_REQUEST_LIMIT默认100，ADMIN_DAILY_TOKEN_LIMIT默认200000，ADMIN_MAX_OUTPUT_TOKENS默认1024，使用独立admin_model_budget；普通池不受管理员消耗挤占。参数由运营方在后端环境配置，修改后重启API。
+DEEPSEEK_SEARCH_ENABLED默认true，天气按需调用官方https://api.deepseek.com/v1/tools/search，仍用同一后端Key；失败不自动重试。一次成功天气可能是1个搜索请求+1个模型请求，均计本角色预算。来源附查询时间并可展开，网页预报参考不冒充实况或正式高德快照。关闭开关后无搜索，但模型仍可自然解释缺少实时依据。搜索按USD0.00075/次保守估算，实际收费/免费期以账户与官方当日规则为准。

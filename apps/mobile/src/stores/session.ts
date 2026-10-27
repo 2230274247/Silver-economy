@@ -3,7 +3,7 @@ import { ApiFailure, request } from '../platform/network';
 import { draft } from './ui';
 import { resetChat } from './chat';
 
-export interface User { id: string; login_name: string }
+export interface User { id: string; login_name: string; is_admin?: boolean }
 export const currentUser = ref<User | null>(null);
 export const sessionError = ref('');
 let revision = 0;

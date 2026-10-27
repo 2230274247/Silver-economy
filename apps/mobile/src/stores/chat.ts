@@ -14,6 +14,8 @@ export interface Message {
   memory_status?: string | null;
   memory_refs?: MemoryReference[];
   task_drafts?: TaskDraft[];
+  search_context?: { status: string; city?: string; date?: string; queried_at?: string;
+    results?: { title: string; url: string; summary: string }[] } | null;
 }
 interface Page<T> { items: T[]; next_cursor: string | null }
 export const activeConversation = ref<Conversation | null>(null);

@@ -1,0 +1,45 @@
+{
+  "started_at": "2026-10-27T07:12:19.397Z",
+  "status": "completed",
+  "new_chat_calls": 1,
+  "new_search_calls": 1,
+  "error_code": null,
+  "request_id": "05fdd17f-6dca-46c7-b9c2-74056dec7d38",
+  "conversation_id": "6b0bea47-e6a6-4aa8-bb3e-4637802725ad",
+  "message_id": "192dbaf4-37e0-420d-996c-5f49bf666f72",
+  "search_status": "completed",
+  "search_sources": [
+    {
+      "title": "义乌-天气预报",
+      "url": "https://www.nmc.cn/publish/forecast/AZJ/yiwu.html",
+      "summary": "14:25更新\n\n日出06:08\n\n义乌\n\n19.7℃\n\n日落17:19\n\n降水量\n\n0mm\n\n东北风\n\n3级\n\n相对湿度\n\n70%\n\n体感温度\n\n18.5℃\n\n空气质量：-\n\n舒适度：凉爽，较舒适\n...\n发布时间：10-27 12:00\n\n10/27\n\n周二\n\n多云\n...\n微风\n\n22℃\n\n13℃\n...\n风速\n\n风向\n\n气压\n...\n云量\n\n17:00\n\n19.6℃\n\n2.8m/s\n\n北风\n\n1013.3hPa\n\n70.8%\n\n61.3%\n\n20:00\n\n18.2℃\n\n2.1m/s\n...\n1014.5hPa\n\n81.6%\n\n57%\n\n23:00\n\n16.6℃\n\n3.3m/s\n...\n1014.9hPa\n\n81.6%\n\n10",
+      "published_at": "2026-10-26T16:00:00+00:00"
+    },
+    {
+      "title": "义乌天气预报,义乌7天天气预报,义乌15天天气预报,义乌天气查询",
+      "url": "https://www.weather.com.cn/weather/101210904.shtml?_t=1432727859049",
+      "summary": "05:30更新 | 数据来源 中央气象台\n...\n多云转晴\n...\n<3级\n...\n# 27日（周二）\n...\n23/13℃",
+      "published_at": "2026-10-20T16:00:00+00:00"
+    },
+    {
+      "title": "【义乌市今天天气】_今天义乌市天气_今日天气预报",
+      "url": "https://tianqi.moji.com/today/china/zhejiang/yiwu",
+      "summary": "义乌市， 浙江省， 中国\n\n2026年10月27日 丙午[马]年 九月十八\n\n今日天气\n\n## 今天实况\n\n19  霾\n\n湿度 69% 北风 3级\n\n## 今天白天\n 多云 22° \n日出 06:09\n\n## 今天夜间\n 多云 13° \n日落 17:18\n\n## 15天预报\n10:10更新 \n- 周一 晴\n26° 16°\n\n- 周二 多云\n22° 13°\n\n- 周三 晴\n22° 14°\n\n- 周四 晴\n25° 15°\n\n- 周五 晴\n27° 16°\n\n- 周六 晴\n28° 16°\n\n- 周日 多云\n...\n- 周一 小雨\n...\n- 周二 阴\n18° 12°\n\n- 周三 阴\n19° 11°\n\n- 周四 多云\n20° 13°\n\n- 周",
+      "published_at": "2026-10-26T16:00:00+00:00"
+    }
+  ],
+  "reply": "义乌今天（10月27日）多云，气温大约在13℃到22℃之间，白天比较凉爽舒适；当前实测约19℃左右，北风或东北风3级上下，湿度大概70%。日落比较早，17点19分前后。数据来自中央气象台和中国天气网等页面，发布时间多在今天下午，属于预报/参考信息，不是逐分钟的实况观测。\n\n模型方面，我是 deepseek 提供的 deepseek-flash 模型。",
+  "refresh_persisted": true,
+  "admin_status": {
+    "model": "deepseek-flash",
+    "provider": "deepseek",
+    "search_enabled": true,
+    "daily_request_limit": 100,
+    "daily_token_limit": 200000,
+    "max_output_tokens": 1024,
+    "requests_used": 2,
+    "reserved_tokens": 6589,
+    "budget_scope": "administrator_pool"
+  },
+  "verification_note": "First UI text assertion failed only on whitespace normalization; verified persisted exact API content and source/admin UI without another paid request."
+}

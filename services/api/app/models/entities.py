@@ -25,6 +25,7 @@ class User(Identity, Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     disabled_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
     memory_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Owned:
@@ -69,6 +70,7 @@ class Message(Identity, Updated, Owned, Base):
     provider: Mapped[str | None] = mapped_column(String(32))
     memory_status: Mapped[str | None] = mapped_column(String(32))
     raw_model_output: Mapped[str | None] = mapped_column(Text)
+    search_context: Mapped[dict | None] = mapped_column(JSON)
 
 
 class MemoryFact(Identity, Updated, Owned, Base):
@@ -400,9 +402,16 @@ class ModelUsage(Identity, Owned, Base):
 
 
 class ModelBudget(Base):
-    """Operator account-wide limit, shared by all users and API processes."""
+    """Ordinary-user pool, shared across API processes; operators have a separate pool."""
 
     __tablename__ = "model_budget"
+    day: Mapped[str] = mapped_column(String(10), primary_key=True)
+    requests: Mapped[int] = mapped_column(Integer, default=0)
+    reserved_tokens: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class AdminModelBudget(Base):
+    __tablename__ = "admin_model_budget"
     day: Mapped[str] = mapped_column(String(10), primary_key=True)
     requests: Mapped[int] = mapped_column(Integer, default=0)
     reserved_tokens: Mapped[int] = mapped_column(Integer, default=0)

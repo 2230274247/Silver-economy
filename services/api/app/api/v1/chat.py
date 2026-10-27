@@ -42,6 +42,7 @@ def message_data(item: Message, references=None, drafts=None):
         "client_request_id": item.client_request_id,
         "provider": item.provider,
         "memory_status": item.memory_status,
+        "search_context": item.search_context,
         "memory_refs": references or [],
         "task_drafts": drafts or [],
     }

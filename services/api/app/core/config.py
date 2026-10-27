@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     deepseek_task_max_output_tokens: int = Field(512, ge=256, le=1024)
     deepseek_daily_request_limit: int = Field(10, ge=0, le=100)
     deepseek_daily_token_limit: int = Field(20000, ge=0, le=200000)
+    deepseek_search_enabled: bool = True
+    admin_daily_request_limit: int = Field(100, ge=0, le=10000)
+    admin_daily_token_limit: int = Field(200000, ge=0, le=10000000)
+    admin_max_output_tokens: int = Field(1024, ge=256, le=8192)
     maps_provider: Literal["disabled", "mock", "amap"] = "disabled"
     amap_web_service_key: SecretStr = SecretStr("")
     amap_daily_request_limit: int = Field(20, ge=0, le=1000)

@@ -43,6 +43,7 @@ class MessageOut(BaseModel):
     memory_status: str | None
     memory_refs: list[MemoryReferenceOut] = Field(default_factory=list)
     task_drafts: list[TaskDraftOut] = Field(default_factory=list)
+    search_context: dict | None = None
 
 
 class ConversationPage(BaseModel):

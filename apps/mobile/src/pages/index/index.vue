@@ -10,11 +10,13 @@ import TaskDraftCard from '../../components/TaskDraftCard.vue';
 import { labelTextControl } from '../../platform/accessibility';
 import { bindComposer } from '../../platform/composer';
 import { requestId } from '../../platform/ids';
+import { openWebSource } from '../../platform/navigation';
 import { currentUser, restoreSession, sessionError } from '../../stores/session';
 import { draft } from '../../stores/ui';
 import { activeConversation, messages, busy, loading, chatError, olderCursor, loadChat, loadOlder, sendText, retryReply, modelMode, modelConfigured, type Message, type MemoryReference } from '../../stores/chat';
 import { updateTaskDraft } from '../../stores/chat';
 const scrollTarget = ref('');
+const expandedSearch = ref<Record<string, boolean>>({});
 const composerId = `chat-draft-${requestId()}`;
 let freshRequested = false;
 const focusInput = ref(false);
@@ -155,6 +157,32 @@ onLoad(async options => {
           <text class="message-time">
             {{ message.status === 'sending' ? '发送中，尚未确认保存' : new Date(message.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
           </text>
+          <view
+            v-if="message.search_context?.status === 'completed'"
+            class="memory-reference"
+          >
+            <text>联网天气参考 · {{ message.search_context.city }} · {{ message.search_context.date }}</text>
+            <AccessibleButton
+              secondary
+              :aria-expanded="!!expandedSearch[message.id]"
+              @click="expandedSearch[message.id] = !expandedSearch[message.id]"
+            >
+              {{ expandedSearch[message.id] ? '收起天气来源' : '查看天气来源' }}
+            </AccessibleButton>
+            <view v-if="expandedSearch[message.id]">
+              <text v-if="message.search_context.queried_at">
+                查询时间：{{ message.search_context.queried_at }}
+              </text>
+              <AccessibleButton
+                v-for="source in message.search_context.results || []"
+                :key="source.url"
+                secondary
+                @click="openWebSource(source.url)"
+              >
+                {{ source.title }}
+              </AccessibleButton>
+            </view>
+          </view>
           <TaskDraftCard
             v-for="task in message.task_drafts || []"
             :key="task.id"

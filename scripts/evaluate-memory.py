@@ -62,6 +62,9 @@ def main():
     engine = build_engine(value, test_only=True)
     tracked = [
         "prompts/chat-memory-v3.txt",
+        "prompts/chat-memory-v4.txt",
+        "prompts/chat-v2.txt",
+        "prompts/task-intent-v2.txt",
         "scripts/evaluate-memory.py",
         "services/api/app/memory/eval_dataset.py",
         "services/api/app/memory/evaluator.py",

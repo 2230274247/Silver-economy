@@ -57,6 +57,22 @@
         }
       }
     },
+    "/api/v1/admin/model-status": {
+      "get": {
+        "summary": "Admin Status",
+        "operationId": "admin_status_api_v1_admin_model_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/logout": {
       "post": {
         "summary": "Logout",
@@ -2755,6 +2771,18 @@
             },
             "type": "array",
             "title": "Task Drafts"
+          },
+          "search_context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Context"
           }
         },
         "type": "object",
