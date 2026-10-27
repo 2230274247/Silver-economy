@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T12（设置、隐私、数据导出与授权撤回）本地测试完成，等待提交与远端核验
+- Current task: T13（原 AC-01–18、CR-AC01–13 全链路验收与 UI 质量门禁）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T11E feature `135aa2837f914b00bf0acd7ff5abc66d11c09788`
-- Last verified CI: PASS（run 40454654272；api/security/mobile全部success）
-- 最后核验时间：2026-10-27T13:24:15+08:00。
+- Last remote-confirmed SHA: T12 feature `56ce42b336c49400e3845b2ae75c3cf232a16f99`
+- Last verified CI: PASS（run 40457533355；api/security/mobile全部success）
+- 最后核验时间：2026-10-27T13:55:04+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -32,8 +32,8 @@
 | T11C | DONE_PUSHED | 271后端/69UI/全门禁/独立Worker实进程PASS | `742283e0a6358aa89a193177270eb5576e62b24b` | SHA一致 | PASS（40451532189） | 确定性时间、独立确认、MySQL outbox、租约/重启/取消/隔离；新增模型0、高德0、真实推送0；Mock不能替代真机 |
 | T11D | IMPLEMENTED_BLOCKED_PROVIDER_CONFIGURATION | 275后端/全门禁/10迁移+设备专项PASS | `b82819707813e706ffd6a3ef8fb75be4a9075710` | SHA一致 | PASS（40452632424） | 加密设备登记/撤回/改绑、Worker归属复核、HTTPS桥接与最小通知；0真实推送；缺SDK/HBuilderX/AppID/厂商配置/真机，CR-AC10未通过 |
 | T11E | DONE_PUSHED | 276后端/72UI/全门禁/迁移PASS | `135aa2837f914b00bf0acd7ff5abc66d11c09788` | SHA一致 | PASS（40454654272） | 行程详情、目的地搜索入口、修改/出发/完成、反馈与通知回看；真实高德/推送仍为0 |
-| T12 | LOCAL_PASSED_PENDING_PUSH | 278后端、6专项后端、78完整UI、6专项UI及全门禁PASS | 待实际提交后回填 | 待推送核验 | 待CI | 设置/隐私/本人导出与设备撤回；无迁移；详见T12_PRIVACY_EXPORT.md |
-| T13 | TODO | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
+| T12 | DONE_PUSHED | 278后端、6专项后端、78完整UI、6专项UI及全门禁PASS | `56ce42b336c49400e3845b2ae75c3cf232a16f99` | SHA一致 | PASS（40457533355） | 设置/隐私/本人导出与设备撤回；无迁移；详见T12_PRIVACY_EXPORT.md |
+| T13 | IN_PROGRESS | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
 | T14 | TODO | - | - | - | - | 真实闭环证据、Android 验收、限制、交付与 PR |
 
 ## CR-001 当前影响、依赖与外部准入

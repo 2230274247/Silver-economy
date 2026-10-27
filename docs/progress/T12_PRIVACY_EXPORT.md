@@ -1,6 +1,6 @@
 # T12：设置、隐私、数据导出与授权撤回
 
-状态：本地实现与测试通过，待提交、推送和远端核验。
+状态：DONE_PUSHED。本地测试、远端 SHA 与 GitHub Actions 均已核验。
 
 ## 完成内容
 
@@ -57,7 +57,8 @@
 
 ## 后续动作
 
-1. 提交本任务并推送 `origin/dev/v0.1`。
-2. 核对远端 SHA 与 GitHub Actions。
-3. 追加远端证据和状态同步提交。
-4. 完成后进入 T13 完整验收矩阵。
+1. 功能提交 `56ce42b336c49400e3845b2ae75c3cf232a16f99` 已推送，
+   `origin/dev/v0.1` SHA 与本地一致。
+2. GitHub Actions run `40457533355` 的 api、security、mobile 全部 success；
+   证据见 `docs/testing/T12-remote.json`。
+3. 本状态同步提交独立记录，不改写功能提交；下一项进入 T13 完整验收矩阵。

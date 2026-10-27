@@ -11,7 +11,8 @@
 - 278 项后端、三视口完整 78 项 UI、6 项专项后端、6 项专项 UI 与全门禁通过；
   无数据库迁移，新增 DeepSeek/真实高德/真实推送调用均为 0。
 - `CR-AC10` 仍为 `BLOCKED_PROVIDER_CONFIGURATION`；H5 通知不能替代 Android 真机验收。
-  本次功能提交、push、远端 SHA 与 CI 在完成后另行固化。
+- 功能提交 `56ce42b336c49400e3845b2ae75c3cf232a16f99` 已推送并与远端一致；
+  CI run `40457533355` 的 api/security/mobile 全部通过。下一项 T13。
 
 ## T11E — 2026-10-27（Asia/Hong_Kong）
 
