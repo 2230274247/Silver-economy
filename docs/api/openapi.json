@@ -880,6 +880,194 @@
         }
       }
     },
+    "/api/v1/task-drafts": {
+      "get": {
+        "summary": "List Drafts",
+        "operationId": "list_drafts_api_v1_task_drafts_get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}": {
+      "get": {
+        "summary": "Get Draft",
+        "operationId": "get_draft_api_v1_task_drafts__draft_id__get",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/edit": {
+      "post": {
+        "summary": "Patch Draft",
+        "operationId": "patch_draft_api_v1_task_drafts__draft_id__edit_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskDraftPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/actions": {
+      "post": {
+        "summary": "Draft Action",
+        "operationId": "draft_action_api_v1_task_drafts__draft_id__actions_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskDraftAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Index",
@@ -1504,6 +1692,13 @@
             },
             "type": "array",
             "title": "Memory Refs"
+          },
+          "task_drafts": {
+            "items": {
+              "$ref": "#/components/schemas/TaskDraftOut"
+            },
+            "type": "array",
+            "title": "Task Drafts"
           }
         },
         "type": "object",
@@ -1720,6 +1915,289 @@
           "next_cursor"
         ],
         "title": "SourcePage"
+      },
+      "TaskDraftAction": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "confirm",
+              "defer"
+            ],
+            "title": "Action"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "action"
+        ],
+        "title": "TaskDraftAction"
+      },
+      "TaskDraftOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "source_message_id": {
+            "type": "string",
+            "title": "Source Message Id"
+          },
+          "last_message_id": {
+            "type": "string",
+            "title": "Last Message Id"
+          },
+          "source_excerpt": {
+            "type": "string",
+            "title": "Source Excerpt"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "target_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target At"
+          },
+          "date_text": {
+            "type": "string",
+            "title": "Date Text"
+          },
+          "clock_text": {
+            "type": "string",
+            "title": "Clock Text"
+          },
+          "period_text": {
+            "type": "string",
+            "title": "Period Text"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "time_reference_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Time Reference At"
+          },
+          "resolved_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Date"
+          },
+          "time_semantics": {
+            "type": "string",
+            "title": "Time Semantics"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination"
+          },
+          "transport": {
+            "type": "string",
+            "title": "Transport"
+          },
+          "lead_minutes": {
+            "type": "integer",
+            "title": "Lead Minutes"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Evidence"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "extractor_provider": {
+            "type": "string",
+            "title": "Extractor Provider"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic"
+          },
+          "scheduling_status": {
+            "type": "string",
+            "const": "not_scheduled",
+            "title": "Scheduling Status",
+            "default": "not_scheduled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "conversation_id",
+          "source_message_id",
+          "last_message_id",
+          "source_excerpt",
+          "kind",
+          "title",
+          "status",
+          "revision",
+          "target_at",
+          "date_text",
+          "clock_text",
+          "period_text",
+          "timezone",
+          "time_reference_at",
+          "resolved_date",
+          "time_semantics",
+          "origin",
+          "destination",
+          "transport",
+          "lead_minutes",
+          "missing_fields",
+          "evidence",
+          "confirmed_at",
+          "extractor_provider",
+          "is_synthetic"
+        ],
+        "title": "TaskDraftOut"
+      },
+      "TaskDraftPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskDraftOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "TaskDraftPage"
+      },
+      "TaskDraftPatch": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "time_text": {
+            "type": "string",
+            "maxLength": 160,
+            "title": "Time Text"
+          },
+          "time_semantics": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "arrival",
+              "departure",
+              "at"
+            ],
+            "title": "Time Semantics"
+          },
+          "origin": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Origin"
+          },
+          "destination": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Destination"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "taxi",
+              "driving",
+              "transit",
+              "walking",
+              "cycling"
+            ],
+            "title": "Transport"
+          },
+          "lead_minutes": {
+            "type": "integer",
+            "maximum": 10080.0,
+            "minimum": 0.0,
+            "title": "Lead Minutes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "title",
+          "time_text",
+          "time_semantics",
+          "origin",
+          "destination",
+          "transport",
+          "lead_minutes"
+        ],
+        "title": "TaskDraftPatch"
       },
       "TimelineItem": {
         "properties": {

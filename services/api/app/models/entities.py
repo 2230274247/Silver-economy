@@ -173,6 +173,52 @@ class Reminder(Identity, Updated, Owned, Base):
     status: Mapped[str] = mapped_column(String(24), default="pending")
 
 
+class TaskDraft(Identity, Updated, Owned, Base):
+    __tablename__ = "task_drafts"
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        UniqueConstraint("user_id", "source_message_id", "ordinal"),
+        ForeignKeyConstraint(
+            ["user_id", "conversation_id"], ["conversations.user_id", "conversations.id"]
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "source_message_id"],
+            ["messages.user_id", "messages.id"],
+            name="fk_task_drafts_source_message",
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "last_message_id"],
+            ["messages.user_id", "messages.id"],
+            name="fk_task_drafts_last_message",
+        ),
+        Index("ix_task_drafts_conversation", "user_id", "conversation_id", "created_at", "id"),
+    )
+    conversation_id: Mapped[str] = mapped_column(String(36))
+    source_message_id: Mapped[str] = mapped_column(String(36))
+    last_message_id: Mapped[str] = mapped_column(String(36))
+    ordinal: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(16), default="outing")
+    title: Mapped[str] = mapped_column(String(160))
+    source_excerpt: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), default="draft")
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    date_text: Mapped[str] = mapped_column(String(80), default="")
+    clock_text: Mapped[str] = mapped_column(String(80), default="")
+    period_text: Mapped[str] = mapped_column(String(16), default="")
+    time_reference_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    target_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    timezone: Mapped[str] = mapped_column(String(64), default="Asia/Hong_Kong")
+    time_semantics: Mapped[str] = mapped_column(String(16), default="unknown")
+    origin: Mapped[str] = mapped_column(String(200), default="")
+    destination: Mapped[str] = mapped_column(String(200), default="")
+    transport: Mapped[str] = mapped_column(String(16), default="unknown")
+    lead_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    evidence: Mapped[dict] = mapped_column(JSON, default=dict)
+    confirmed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+    extractor_provider: Mapped[str] = mapped_column(String(32))
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class ModelUsage(Identity, Owned, Base):
     __tablename__ = "model_usage"
     __table_args__ = (UniqueConstraint("user_id", "request_id", "purpose"),)

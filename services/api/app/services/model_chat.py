@@ -1,6 +1,7 @@
 """Persist before the paid call. Unknown outcomes never automatically retry."""
 
 import logging
+import re
 import time
 from datetime import datetime
 from decimal import Decimal
@@ -23,6 +24,10 @@ from app.memory.retriever import (
 )
 from app.memory.updater import MemoryUpdater
 from app.models.entities import MemoryFact, MemoryUse, Message, ModelBudget, ModelUsage, User
+from app.schemas.tasks import TaskEnvelope
+from app.tasks.intent import task_context
+from app.tasks.repository import draft_reply
+from app.tasks.repository import save_candidates as save_task_candidates
 
 logger = logging.getLogger("silver.model")
 SYSTEM_PROMPT = (PROJECT_ROOT / "prompts/chat-v1.txt").read_text(encoding="utf-8").strip()
@@ -84,9 +89,29 @@ def generate_reply(db, item, assistant):
     memory_enabled = owner.memory_enabled
     selected = {}
     prompt = SYSTEM_PROMPT
-    if memory_enabled:
-        retrieved = MemoryRetriever().retrieve(db, item.user_id, item.content, provider=provider)
-        context = ContextBuilder().build(MEMORY_PROMPT, retrieved, item.content)
+    task = task_context(
+        db,
+        item,
+        MEMORY_PROMPT
+        + (
+            "\n当前长期记忆已授权。"
+            if memory_enabled
+            else "\n当前未授权长期记忆，memories和memory_refs必须为空。"
+        ),
+    )
+    if task:
+        prompt = task.prompt
+        settings = settings.model_copy(
+            update={"deepseek_max_output_tokens": settings.deepseek_task_max_output_tokens}
+        )
+    if memory_enabled or task:
+        # Drafts are grounded in the explicit request/pending draft, never an inferred home address.
+        retrieved = (
+            []
+            if task
+            else MemoryRetriever().retrieve(db, item.user_id, item.content, provider=provider)
+        )
+        context = ContextBuilder().build(prompt if task else MEMORY_PROMPT, retrieved, item.content)
         prompt, selected = context.system_prompt, context.selected
     prompts = context_messages(db, item, prompt)
     item.memory_status = "pending" if memory_enabled else "disabled"
@@ -110,8 +135,12 @@ def generate_reply(db, item, assistant):
             user_id=item.user_id,
             provider=provider,
             model=settings.deepseek_model if provider == "deepseek" else "mock-v1",
-            purpose="chat",
-            prompt_version="chat-memory/v3" if memory_enabled else "chat/v1",
+            purpose="chat_task" if task else "chat",
+            prompt_version="chat-task/v1"
+            if task
+            else "chat-memory/v3"
+            if memory_enabled
+            else "chat/v1",
             request_id=item.client_request_id,
             reserved_tokens=tokens,
             status="reserved",
@@ -120,7 +149,9 @@ def generate_reply(db, item, assistant):
         db.commit()  # original + pending reply and quota reservation durable before external I/O
         model = get_provider(settings)
         result = (
-            model.complete(prompts, json_output=True) if memory_enabled else model.complete(prompts)
+            model.complete(prompts, json_output=True)
+            if memory_enabled or task
+            else model.complete(prompts)
         )
         assistant.content = result.content
         assistant.status = "completed"
@@ -139,14 +170,39 @@ def generate_reply(db, item, assistant):
             if provider == "deepseek" and result.model.startswith("deepseek-flash")
             else None
         )
-        if memory_enabled:
+        if memory_enabled or task:
             assistant.raw_model_output = result.content
             try:
-                envelope = MemoryAnswerEnvelope.model_validate_json(result.content)
-                reply, candidates, rejected = MemoryExtractor().parse(
-                    envelope.model_dump_json(exclude={"memory_refs"}), item.content
+                envelope = (TaskEnvelope if task else MemoryAnswerEnvelope).model_validate_json(
+                    result.content
                 )
-                candidates = MemoryUpdater().complete_candidates(item.content, candidates)
+                reply, candidates, rejected = (
+                    MemoryExtractor().parse(
+                        envelope.model_dump_json(exclude={"memory_refs", "outings"}), item.content
+                    )
+                    if memory_enabled
+                    else (envelope.reply, [], 0)
+                )
+                if memory_enabled:
+                    candidates = MemoryUpdater().complete_candidates(item.content, candidates)
+                if task:
+                    factual = [
+                        candidate
+                        for candidate in candidates
+                        if not (
+                            re.search(r"明天|后天|下周|打算|准备", candidate.source_excerpt)
+                            or candidate.kind in {"event", "travel", "date"}
+                            and any(
+                                candidate.source_excerpt in outing.source_excerpt
+                                or outing.source_excerpt in candidate.source_excerpt
+                                for outing in envelope.outings
+                            )
+                        )
+                    ]
+                    rejected += len(candidates) - len(factual)
+                    candidates = factual
+                    if envelope.memory_refs:
+                        raise ProviderFailure("MEMORY_UNSUPPORTED_REFERENCE")
                 assistant.content = reply
                 # Consent may have been withdrawn while the paid call was in flight.
                 owner = db.scalar(
@@ -155,7 +211,7 @@ def generate_reply(db, item, assistant):
                     .with_for_update()
                     .execution_options(populate_existing=True)
                 )
-                if owner.memory_enabled:
+                if memory_enabled and owner.memory_enabled:
                     labels = list(dict.fromkeys(envelope.memory_refs))
                     if any(label not in selected for label in labels):
                         raise ProviderFailure("MEMORY_UNSUPPORTED_REFERENCE")
@@ -196,13 +252,20 @@ def generate_reply(db, item, assistant):
                         item,
                         candidates,
                         provider,
-                        extractor_version="chat-memory/v3+state-rule/v1",
+                        extractor_version=(
+                            "chat-task/v1+state-rule/v1" if task else "chat-memory/v3+state-rule/v1"
+                        ),
                     )
                     item.memory_status = "partial_rejected" if rejected else "captured"
                 else:
                     item.memory_status = "disabled"
                     if selected:
                         raise ProviderFailure("MEMORY_CONSENT_CHANGED")
+                if task:
+                    # A nested transaction prevents a multi-draft operation being half applied.
+                    with db.begin_nested():
+                        drafts = save_task_candidates(db, item, envelope.outings, task, provider)
+                    assistant.content = draft_reply(drafts, provider)
             except (ValidationError, ValueError):
                 item.memory_status = "failed_schema"
                 assistant.content, assistant.status = "", "failed"

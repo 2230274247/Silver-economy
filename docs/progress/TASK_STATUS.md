@@ -2,10 +2,10 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T10E2 CI返修（独立反例已复现、修复后48UI/测试TypeScript通过，待修复push/CI）
+- Current task: T11A（出行意图、追问、持久草案和可编辑确认卡；开发/联调中）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T10E2 `b3903deb40e87d6b43f50b2b814bc7ac53697cd0`
-- Last verified CI: FAIL（run 40414362100；api197测试/security通过，mobile43通过/2失败）
+- Last remote-confirmed SHA: T10E2修复 `e38b2c173c55c127db90dd975fc72587468d38d9`
+- Last verified CI: PASS（run 40417316422；api/security/mobile全部success；首轮失败保留）
 - 最后核验时间：2026-10-27T07:04:40+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
@@ -25,9 +25,9 @@
 | T09 | DONE_PUSHED | 129后端、42UI、全门禁PASS；真实当前状态召回/刷新PASS（首次失败与规则修复保留） | 2ce30e51ede2d7f901eb233b5f17f1ef21908f33 | SHA一致 | PASS（40354267818） | 确认/纠错/审计/权限/失效/删除、明确身体状态；详见T09_MEMORY_CONTROL.md |
 | T10 | DONE_PUSHED | 134后端/45UI/全门禁PASS，运营预览只读持久数据PASS，真实模型新增0 | d7572f9b6f0f2b1c71e5db507bec126ebdc22fb8 | SHA一致 | PASS（40394518915） | 来源关联的确定性时间线，时间精度/纠错删除即时同步；未生成推测摘要 |
 | T10E1 | DONE_PUSHED | 164后端/完整门禁、100/1000/10000真实SQL计数/重复导入PASS，新增模型0 | 423ff6cf37cc12a82eb7027c939b487874d7a5d4 | SHA一致 | PASS（40400713021） | 2026-10-27 05:00:51 +08:00；Synthetic入库不替代召回验收 |
-| T10E2 | PUSHED_CI_FAILED（返修本地通过） | 197后端CI PASS；310题四档/SQL审计PASS；新增延迟退出反例、完整48UI/测试TS PASS | 首轮b3903deb40e87d6b43f50b2b814bc7ac53697cd0；修复SHA事后补记 | 首轮SHA一致；修复待push | 首轮FAIL（40414362100）；修复待运行 | 失败历史保留；仅修正测试同步，下一任务尚未开始 |
+| T10E2 | DONE_PUSHED | 197后端、48UI及四档310题/SQL/资源报告PASS | 功能b3903deb40e87d6b43f50b2b814bc7ac53697cd0；修复e38b2c173c55c127db90dd975fc72587468d38d9 | SHA一致 | PASS（40417316422）；首轮失败保留 | 2026-10-27 07:05:37+08:00；修复仅测试同步，生产评分不变 |
 | T11 | TODO（汇总） | - | - | - | - | CR-001，A–E 全部独立验收 |
-| T11A | TODO | - | - | - | - | 意图识别/追问/可编辑确认卡 |
+| T11A | LOCAL_VERIFIED | 230后端/57UI/9卡片复测/完整门禁/单次真实DeepSeek/四档310题记忆回归 PASS | 本次提交待核验 | 待推送 | 待运行 | 真实草案落库/追问/编辑；信息确认not_scheduled，调度仍待T11C |
 | T11B | TODO | - | - | - | - | 高德地点、路线/天气，真实+Mock |
 | T11C | TODO | - | - | - | - | 确定性时间计算、MySQL outbox、持久 Worker |
 | T11D | TODO | - | - | - | - | Android 测试包、真机后台通知，外部配置准入 |
@@ -43,4 +43,4 @@ T00–T10 保持原任务顺序；最终目标新增 T10E1→E2；再 T11A→B�
 数据库/API/计划/验收详见 docs/changes/CR-001-impact.md 与 ADR-003，不凭文档称建表或功能已完成。
 DeepSeek 本机 Key 已配置且一次真实 H5 验证通过；高德/推送仍待配置，Android 真机未验证。
 这些是后续 live/真机门禁，不阻塞当前文档及 Mock 开发；需要时由用户本机配置，不索取聊天中的密钥。
-当前实际 DeepSeek 累计调用 6 次，2291输入/261输出tokens，保守估算合计 USD 0.00100050（非账单）；T09新增3次，含1次未抽取、1次授权变化拒绝及1次隔离后成功召回，全部保留。高德/推送0。自动回归只用 Mock；未经授权不购买或部署付费服务。
+当前实际 DeepSeek 累计调用7次，3218输入/376输出tokens，保守估算合计USD0.00141660（非账单）。T11A只新增1次927/115tokens、1827ms、估算USD0.00041610，H5编辑/确认/刷新无额外调用；失败历史全部保留。高德/推送0。自动回归只用Mock；未经授权不购买或部署付费服务。

@@ -3,6 +3,8 @@
 所有时间均为 Asia/Hong_Kong（UTC+08:00）。下表时间来自实际 Git 提交元数据，未重写已推送历史。
 后续每项任务同时提供：提交正文、CHANGELOG、专项任务记录与本日志；结果以实际测试和远端核验为准。
 
+T11A本次本地验收（2026-10-27，Asia/Hong_Kong）：出行意图、持久草案、缺项追问、编辑/信息确认/暂不安排、版本/来源/隔离及紧凑H5卡；230后端/57UI/9卡片复测/完整门禁、四档310题质量无回归、增量迁移及1次真实DeepSeek PASS。真实927/115tokens，1827ms，估算USD0.00041610；不自动重发。提醒未调度，地图/天气/Android待B–E。本次SHA/远端/CI须在实际提交后核验，不能预填成功；详见T11A_TASK_DRAFTS.md。
+
 | 提交时间 | 任务/类型 | SHA | 完成或修复的结果 | 测试/远端状态 |
 |---|---|---|---|---|
 | 2026-10-26 15:15:29 +08:00 | T00 环境审计 | 291777e16c7848c5d50ba23a2e9ebf9f45fec720 | 认证复审、私有仓库读写验证、安全克隆、建立 dev/v0.1；保留 main 和原审计 | Git/权限/fetch/分支/Docker 实测 PASS；push/SHA PASS；当时无 CI |
@@ -26,6 +28,8 @@
 | 2026-10-27 05:00:51 +08:00 | T10E1 Synthetic语料 | 423ff6cf37cc12a82eb7027c939b487874d7a5d4 | 参数化9类生成器、可复现原文/事实/来源、独立测试库导入与幂等、时间跨度修复 | 164后端/全门禁/100–10000真实SQL核对PASS；push/SHA一致；CI40400713021全绿 |
 
 | 2026-10-27 06:41:16 +08:00 | T10E2 固定题集/客观评估 | b3903deb40e87d6b43f50b2b814bc7ac53697cd0 | 310题/246问法、四档真实SQL/API与来源评分、失败修复/资源/并发/HTML/JSON/独立人数审计；DeepSeek新增0 | 本地196后端+后补报告用例/45UI PASS；push/SHA一致；CI40414362100 api197/security PASS，mobile43 PASS/2 FAIL，保留失败并另建修复提交 |
+
+| 2026-10-27 07:05:37 +08:00 | T10E2 CI同步修复 | e38b2c173c55c127db90dd975fc72587468d38d9 | 复现旧退出响应清除新Cookie；UI帮助函数等真实退出204和登录表单，保留延迟响应反例及身份断言 | 独立测试TS、48UI/2.4m PASS；push/SHA一致；CI40417316422 api/security/mobile全部success；首轮失败未改写 |
 
 最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。

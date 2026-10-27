@@ -39,6 +39,10 @@ class MockProvider:
                 if CONTEXT_MARKER in messages[0]["content"]
                 else mock_envelope(messages[-1]["content"])
             )
+            from app.tasks.intent import TASK_MARKER, mock_task_output
+
+            if TASK_MARKER in messages[0]["content"]:
+                content = mock_task_output(messages, content)
             return ModelReply(content, "mock-v1", 0, 0)
         return ModelReply(
             "【Mock 测试回复】已收到你的消息；这不是 DeepSeek 的真实回答。", "mock-v1", 0, 0

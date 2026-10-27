@@ -31,6 +31,7 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
         "memory_revisions",
         "life_events",
         "reminders",
+        "task_drafts",
         "model_usage",
         "model_budget",
     }

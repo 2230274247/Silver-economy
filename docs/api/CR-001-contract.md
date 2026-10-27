@@ -3,6 +3,8 @@
 日期：2026-10-26，Asia/Hong_Kong。当前 OpenAPI 尚无这些路由；实现随 T11A–T11E 更新实际 schema 与前端类型。
 继续 /api/v1、JSON、带时区 ISO8601、统一 error.code/message/request_id 与身份隔离。
 
+2026-10-27 T11A实施补充：下表保留最初设计，不表示都已实现。意图提取合并到已有聊天发送的一次Provider调用，未另建`/assist/parse-task`，避免额外用量及原文重复。持久草案实际采用`/task-drafts`读取/编辑/信息确认，见[T11A实际合同](T11A-task-drafts.md)及openapi.json。可执行`/outing-tasks`、地图、预览、调度、设备及通知接口仍待B–E；信息confirmed仍是not_scheduled。
+
 | API | 输入/输出边界 | 任务 |
 |---|---|---|
 | POST /assist/parse-task | 本人消息/本轮文字+用户时区 → assistant_text、task_drafts[]、missing_fields[]、questions[]；只生成候选 | T11A |

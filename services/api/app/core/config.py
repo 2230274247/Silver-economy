@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-flash"
     deepseek_max_output_tokens: int = Field(256, ge=16, le=1024)
+    deepseek_task_max_output_tokens: int = Field(512, ge=256, le=1024)
     deepseek_daily_request_limit: int = Field(10, ge=0, le=100)
     deepseek_daily_token_limit: int = Field(20000, ge=0, le=200000)
 

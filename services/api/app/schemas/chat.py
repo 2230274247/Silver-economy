@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.tasks import TaskDraftOut
+
 
 class MemoryReferenceOut(BaseModel):
     label: str
@@ -40,6 +42,7 @@ class MessageOut(BaseModel):
     provider: str | None
     memory_status: str | None
     memory_refs: list[MemoryReferenceOut] = Field(default_factory=list)
+    task_drafts: list[TaskDraftOut] = Field(default_factory=list)
 
 
 class ConversationPage(BaseModel):

@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { request } from '../platform/network';
 import { requestId } from '../platform/ids';
 import { draft } from './ui';
+import type { TaskDraft } from './task-drafts';
 
 export interface Conversation { id: string; title: string; created_at: string }
 export interface MemoryReference { evidence_text: string; evidence_origin: string; memory_revision: number; changed_since_reply: boolean; label: string; memory_id: string; source_message_id: string; conversation_id: string; source_excerpt: string; recorded_at: string; status: string; confirmed: boolean; is_synthetic: boolean; extractor_provider: string | null }
@@ -12,6 +13,7 @@ export interface Message {
   provider: string | null;
   memory_status?: string | null;
   memory_refs?: MemoryReference[];
+  task_drafts?: TaskDraft[];
 }
 interface Page<T> { items: T[]; next_cursor: string | null }
 export const activeConversation = ref<Conversation | null>(null);
@@ -93,7 +95,10 @@ export async function sendText(content = draft.value, key?: string) {
     if (!messages.value.some(message => message.client_request_id === token)) messages.value.push({ id: localId, role: 'user', content, status: 'sending', error_code: null, created_at: new Date().toISOString(), reply_to_message_id: null, client_request_id: token, provider: null });
     const result = await request<{ user_message: Message; assistant_message: Message }>(`/conversations/${activeConversation.value.id}/messages`, 'POST', { content, client_request_id: token });
     if (started !== epoch) return;
-    const combined = new Map(messages.value.filter(item => item.id !== localId).map(item => [item.id, item]));
+    const movedDrafts = new Set((result.assistant_message.task_drafts || []).map(item => item.id));
+    const combined = new Map<string, Message>(messages.value.filter(item => item.id !== localId).map(item => [item.id, {
+      ...item, task_drafts: item.task_drafts?.filter(task => !movedDrafts.has(task.id)),
+    }]));
     combined.set(result.user_message.id, result.user_message);
     combined.set(result.assistant_message.id, result.assistant_message);
     messages.value = [...combined.values()];
@@ -112,4 +117,10 @@ export function retryReply(item: Message) {
 
 export function invalidateMemoryReferences(id: string, deleted = false) {
   messages.value = messages.value.map(message => ({ ...message, memory_refs: (message.memory_refs || []).flatMap(reference => reference.memory_id !== id ? [reference] : deleted ? [] : [{ ...reference, changed_since_reply: true }]) }));
+}
+
+export function updateTaskDraft(item: TaskDraft) {
+  messages.value = messages.value.map(message => ({ ...message,
+    task_drafts: message.task_drafts?.map(task => task.id === item.id ? item : task),
+  }));
 }

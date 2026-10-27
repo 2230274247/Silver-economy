@@ -12,6 +12,7 @@ from app.memory.references import reference_map
 from app.models.entities import Conversation, Message
 from app.schemas.chat import ConversationOut, ConversationPage, MessagePage, SendResult
 from app.services.model_chat import generate_reply
+from app.tasks.repository import task_map
 
 router = APIRouter(prefix="/api/v1")
 
@@ -29,7 +30,7 @@ def conversation_data(item: Conversation):
     }
 
 
-def message_data(item: Message, references=None):
+def message_data(item: Message, references=None, drafts=None):
     return {
         "id": item.id,
         "role": item.role,
@@ -42,6 +43,7 @@ def message_data(item: Message, references=None):
         "provider": item.provider,
         "memory_status": item.memory_status,
         "memory_refs": references or [],
+        "task_drafts": drafts or [],
     }
 
 
@@ -125,8 +127,12 @@ def list_messages(
     more = len(items) > limit
     items = items[:limit]
     references = reference_map(db, user.id, [item.id for item in items if item.role == "assistant"])
+    drafts = task_map(db, user.id, items)
     return {
-        "items": [message_data(item, references.get(item.id)) for item in reversed(items)],
+        "items": [
+            message_data(item, references.get(item.id), drafts.get(item.id))
+            for item in reversed(items)
+        ],
         "next_cursor": items[-1].id if more else None,
     }
 
@@ -157,7 +163,9 @@ def saved_result(db, user_message, *, replayed=False):
     return {
         "user_message": message_data(user_message),
         "assistant_message": message_data(
-            assistant, reference_map(db, user_message.user_id, [assistant.id]).get(assistant.id)
+            assistant,
+            reference_map(db, user_message.user_id, [assistant.id]).get(assistant.id),
+            task_map(db, user_message.user_id, [assistant]).get(assistant.id),
         ),
         "replayed": replayed,
         "provider": assistant.provider or "not_configured",
