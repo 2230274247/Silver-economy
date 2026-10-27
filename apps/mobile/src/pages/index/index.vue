@@ -137,7 +137,7 @@ onLoad(async options => {
             class="reply-error"
             role="status"
           >
-            <text>{{ message.error_code === 'MODEL_NOT_CONFIGURED' ? '消息已保存，需管理员配置模型服务。' : message.error_code === 'MODEL_BUDGET_EXCEEDED' ? '消息已保存，今日模型预算不足，未调用模型。' : '消息已保存，模型回复失败或结果不明。为避免重复计费，不会自动重试。' }}</text>
+            <text>{{ message.error_code === 'MODEL_NOT_CONFIGURED' ? '消息已保存，需管理员配置模型服务。' : message.error_code === 'MODEL_BUDGET_EXCEEDED' ? '消息已保存，今日模型预算不足，未调用模型。' : message.error_code === 'MODEL_EMPTY_RESPONSE' ? '消息已保存，但模型本次返回了空回复。为避免额外计费，未自动重试。' : message.error_code === 'MODEL_RESPONSE_FORMAT' ? '消息已保存，但本次回复格式无法读取。未自动重试，也未安排提醒。' : message.error_code?.startsWith('MEMORY_') ? '生成期间记忆权限、来源或内容发生变化，本次回复未展示。请核对记忆设置。' : '消息已保存，上游模型或网络返回异常。为避免重复计费，不会自动重试。' }}</text>
             <AccessibleButton
               v-if="['MODEL_NOT_CONFIGURED', 'MODEL_BUDGET_EXCEEDED'].includes(message.error_code || '')"
               class="retry-button"
@@ -221,7 +221,7 @@ onLoad(async options => {
             v-if="message.role === 'user' && message.memory_status && message.memory_status !== 'disabled'"
             class="message-time"
           >
-            {{ message.memory_status === 'captured' ? '已检查候选记忆，可在“我的回忆”核对' : message.memory_status === 'partial_rejected' ? '缺少原文依据的候选已忽略' : '本条记忆提取未完成' }}
+            {{ message.memory_status === 'captured' ? '已检查候选记忆，可在“我的回忆”核对' : message.memory_status === 'partial_rejected' ? '部分记忆候选格式或依据不足，已跳过' : '本条记忆提取未完成' }}
           </text>
         </view>
         <view

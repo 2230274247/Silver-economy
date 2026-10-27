@@ -148,3 +148,69 @@ def test_weather_without_a_city_asks_instead_of_searching():
     assert weather_search.weather_plan("今天天气怎么样")["status"] == "missing_location"
     assert weather_search.weather_plan("义乌明天天气怎么样")["city"] == "义乌"
     assert weather_search.weather_plan("你调用什么模型") is None
+
+
+def test_bad_auxiliary_fields_keep_reply_and_valid_task(clients, monkeypatch):
+    a = clients[0]
+    a.post("/api/v1/memory-consent", json={"enabled": True})
+
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            return ModelReply(
+                json.dumps(
+                    {
+                        "reply": "好的，请核对时间。",
+                        "memories": None,
+                        "memory_refs": [],
+                        "outings": [
+                            {"kind": "unsupported"},
+                            {"kind": "reminder", "source_excerpt": "半小时后提醒我收样品"},
+                        ],
+                        "optional_model_metadata": "ignored",
+                    }
+                ),
+                "mock-v1",
+                0,
+                0,
+            )
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    _, _, response = send(a, "半小时后提醒我收样品")
+    result = response.json()
+    reply = result["assistant_message"]
+    assert reply["status"] == "completed" and "好的，请核对时间" in reply["content"]
+    assert "尚未安排通知" in reply["content"]
+    assert len(reply["task_drafts"]) == 1
+    draft = reply["task_drafts"][0]
+    from datetime import datetime, timedelta
+
+    source_at = datetime.fromisoformat(result["user_message"]["created_at"].replace("Z", "+00:00"))
+    assert datetime.fromisoformat(draft["target_at"]) == source_at + timedelta(minutes=30)
+    assert draft["lead_minutes"] == 0 and draft["missing_fields"] == []
+    assert draft["scheduling_status"] == "not_scheduled"
+    assert result["user_message"]["memory_status"] == "partial_rejected"
+
+
+def test_failed_old_question_is_not_replayed_on_new_topic(clients, db, monkeypatch):
+    from app.models.entities import Message
+
+    a = clients[0]
+    url, _, _ = send(a, "Synthetic旧问题")
+    old = db.scalar(select(Message).where(Message.content == "Synthetic旧问题"))
+    failed = db.scalar(select(Message).where(Message.reply_to_message_id == old.id))
+    failed.status, failed.content = "failed", ""
+    db.commit()
+    captured = []
+
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            captured.extend(prompts)
+            return ModelReply("咖啡很好。", "mock-v1", 0, 0)
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    response = a.post(
+        url, json={"content": "Synthetic咖啡话题", "client_request_id": str(uuid.uuid4())}
+    )
+    assert response.json()["assistant_message"]["content"] == "咖啡很好。"
+    assert captured[-1]["content"] == "Synthetic咖啡话题"
+    assert not any(m["content"] == "Synthetic旧问题" for m in captured)

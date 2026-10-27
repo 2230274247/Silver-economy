@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-10-27T16:06:12.6470615+08:00",
+  "checks": [
+    {
+      "url": "http://127.0.0.1:8000/api/v1/healthz",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8000/api/v1/readyz",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/",
+      "status": 200
+    }
+  ],
+  "paid_calls": 0,
+  "screenshots": "not repeated; no layout change"
+}

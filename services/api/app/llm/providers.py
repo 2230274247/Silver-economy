@@ -10,8 +10,9 @@ from app.core.config import Settings
 
 
 class ProviderFailure(Exception):
-    def __init__(self, code: str):
+    def __init__(self, code: str, result=None):
         self.code = code
+        self.result = result
 
 
 @dataclass
@@ -87,14 +88,17 @@ class DeepSeekProvider:
             data = response.json()
             content = data["choices"][0]["message"]["content"]
             usage = Usage.model_validate(data["usage"])
-            if not isinstance(content, str) or not content.strip() or len(content) > 20000:
+            if not isinstance(content, str) or len(content) > 20000:
                 raise ValueError("Invalid reply")
-            return ModelReply(
+            result = ModelReply(
                 content,
                 str(data.get("model", self.settings.deepseek_model))[:80],
                 usage.prompt_tokens,
                 usage.completion_tokens,
             )
+            if not content.strip():
+                raise ProviderFailure("MODEL_EMPTY_RESPONSE", result)
+            return result
         except httpx.TimeoutException:
             raise ProviderFailure("MODEL_TIMEOUT_UNKNOWN") from None
         except httpx.RequestError:

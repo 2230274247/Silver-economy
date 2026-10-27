@@ -14,6 +14,24 @@ DATE_PATTERN = (
 )
 CLOCK_PATTERN = rf"\d{{1,2}}[:：]\d{{2}}|{NUMBER}[点时](?:半|一刻|三刻|(?:{NUMBER})分?)?"
 PERIOD_PATTERN = r"凌晨|早上|上午|中午|下午|晚上|傍晚"
+RELATIVE_PATTERN = rf"(?:半(?:个)?小时|{NUMBER}(?:个)?小时(?:半)?|{NUMBER}分钟)(?:之)?后"
+
+
+def relative_target(text, reference):
+    matches = list(re.finditer(RELATIVE_PATTERN, text))
+    if len(matches) != 1:
+        return None
+    expression = matches[0][0]
+    if expression.startswith("半"):
+        minutes = 30
+    else:
+        match = re.match(rf"({NUMBER})(?:个)?(小时|分钟)(半)?", expression)
+        minutes = number(match[1]) * (60 if match[2] == "小时" else 1)
+        if match[3]:
+            minutes += 30
+    if not 1 <= minutes <= 10080:
+        return None
+    return expression, reference + timedelta(minutes=minutes)
 
 
 def number(value):
@@ -98,6 +116,9 @@ def clock_value(clock_text, period_text):
 
 
 def parse_target(date_text, clock_text, period_text, reference, timezone=ZONE):
+    if re.fullmatch(RELATIVE_PATTERN, date_text) and not clock_text and not period_text:
+        relative = relative_target(date_text, reference)
+        return relative[1] if relative else None
     zone = timezone_for(timezone)
     day = calendar_day(date_text, reference, zone)
     clock = clock_value(clock_text, period_text)
@@ -119,4 +140,8 @@ def time_parts(text):
         match = re.search(pattern, text)
         return match[0] if match else ""
 
-    return first(DATE_PATTERN), first(CLOCK_PATTERN), first(PERIOD_PATTERN)
+    return (
+        first(DATE_PATTERN) or first(RELATIVE_PATTERN),
+        first(CLOCK_PATTERN),
+        first(PERIOD_PATTERN),
+    )

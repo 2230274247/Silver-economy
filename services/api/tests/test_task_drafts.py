@@ -259,7 +259,9 @@ def test_unknown_existing_id_is_not_treated_as_new_meeting(clients, monkeypatch)
         f"/api/v1/conversations/{conversation}/messages",
         json={"content": "明天下午我有一场会议", "client_request_id": str(uuid.uuid4())},
     ).json()
-    assert result["assistant_message"]["error_code"] == "TASK_UNSUPPORTED_REFERENCE"
+    assert result["assistant_message"]["status"] == "completed"
+    assert "几点开始" in result["assistant_message"]["content"]
+    assert "尚未安排通知" in result["assistant_message"]["content"]
     assert result["assistant_message"]["task_drafts"] == []
 
 

@@ -33,7 +33,7 @@ from app.models.entities import (
     ModelUsage,
     User,
 )
-from app.schemas.tasks import TaskEnvelope
+from app.schemas.tasks import TaskCandidate, TaskEnvelope
 from app.services.weather_search import WEB_CONTEXT_LIMIT, WEB_MARKER, search_weather, weather_plan
 from app.tasks.intent import task_context
 from app.tasks.repository import save_candidates as save_task_candidates
@@ -45,6 +45,13 @@ MEMORY_PROMPT = (PROJECT_ROOT / "prompts/chat-memory-v4.txt").read_text(encoding
 
 def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
     # Bound both message count and UTF-8 bytes; never send every historical message.
+    failed_sources = select(Message.reply_to_message_id).where(
+        Message.user_id == item.user_id,
+        Message.conversation_id == item.conversation_id,
+        Message.role == "assistant",
+        Message.status == "failed",
+        Message.reply_to_message_id.is_not(None),
+    )
     history = db.scalars(
         select(Message)
         .where(
@@ -52,6 +59,7 @@ def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
             Message.conversation_id == item.conversation_id,
             Message.created_at <= item.created_at,
             Message.status.in_(["saved", "completed"]),
+            ~Message.id.in_(failed_sources),
         )
         .order_by(Message.created_at.desc(), Message.id.desc())
         .limit(12)
@@ -66,6 +74,38 @@ def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
         selected.append({"role": message.role, "content": message.content})
         size += cost
     return [{"role": "system", "content": system_prompt}, *reversed(selected)]
+
+
+def parse_envelope(raw, task):
+    """A bad auxiliary candidate must not discard an otherwise valid reply."""
+    text = raw.strip()
+    if text.startswith("```json\n") and text.endswith("```"):
+        text = text[8:-3].strip()
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise ValueError("Expected a reply object")
+    rejected = 0
+    memories = data.get("memories", [])
+    if not isinstance(memories, list):
+        memories, rejected = [], 1
+    rejected += max(0, len(memories) - 3)
+    values = {"reply": data.get("reply"), "memories": memories[:3]}
+    # References remain strict: a reply may depend on revoked/private evidence.
+    values["memory_refs"] = data.get("memory_refs", [])
+    outings_rejected = False
+    if task:
+        values["outings"] = []
+        outings = data.get("outings", [])
+        if not isinstance(outings, list):
+            outings, outings_rejected = [], True
+        outings_rejected |= len(outings) > 3
+        for candidate in outings[:3]:
+            try:
+                values["outings"].append(TaskCandidate.model_validate(candidate))
+            except ValidationError:
+                outings_rejected = True
+    envelope = (TaskEnvelope if task else MemoryAnswerEnvelope).model_validate(values)
+    return envelope, rejected, outings_rejected
 
 
 def reserve_budget(db, settings, tokens, *, budget_model=ModelBudget):
@@ -249,8 +289,8 @@ def generate_reply(db, item, assistant):
         if memory_enabled or task:
             assistant.raw_model_output = result.content
             try:
-                envelope = (TaskEnvelope if task else MemoryAnswerEnvelope).model_validate_json(
-                    result.content
+                envelope, auxiliary_rejected, outings_rejected = parse_envelope(
+                    result.content, task
                 )
                 reply, candidates, rejected = (
                     MemoryExtractor().parse(
@@ -259,6 +299,7 @@ def generate_reply(db, item, assistant):
                     if memory_enabled
                     else (envelope.reply, [], 0)
                 )
+                rejected += auxiliary_rejected
                 if memory_enabled:
                     candidates = MemoryUpdater().complete_candidates(item.content, candidates)
                 if task:
@@ -337,8 +378,20 @@ def generate_reply(db, item, assistant):
                         raise ProviderFailure("MEMORY_CONSENT_CHANGED")
                 if task:
                     # A nested transaction prevents a multi-draft operation being half applied.
-                    with db.begin_nested():
-                        drafts = save_task_candidates(db, item, envelope.outings, task, provider)
+                    try:
+                        with db.begin_nested():
+                            drafts = save_task_candidates(
+                                db, item, envelope.outings, task, provider
+                            )
+                    except ProviderFailure as error:
+                        if error.code not in {
+                            "TASK_UNSUPPORTED_REFERENCE",
+                            "TASK_DUPLICATE_REFERENCE",
+                            "TASK_CHANGED_DURING_REPLY",
+                        }:
+                            raise
+                        drafts, outings_rejected = [], True
+                        usage.error_code = error.code
                     # Keep the model's conversational reply; execution state belongs to the card.
                     assistant.content = re.sub(
                         r"已(?:经)?(?:为你|帮你|替你|为您|帮您)?(?:安排|设置|保存).{0,8}提醒"
@@ -348,10 +401,17 @@ def generate_reply(db, item, assistant):
                     )
                     if drafts:
                         assistant.content += "\n提醒尚未安排，请在下方卡片核对并确认。"
+                    if outings_rejected:
+                        assistant.content += (
+                            "\n本次部分提醒信息未能保存，尚未安排通知；请补充信息或在已有卡片核对。"
+                        )
+                        usage.error_code = usage.error_code or "TASK_CANDIDATE_REJECTED"
+                        usage.status = "completed_partial"
             except (ValidationError, ValueError):
                 item.memory_status = "failed_schema"
                 assistant.content, assistant.status = "", "failed"
                 assistant.error_code = "MODEL_RESPONSE_FORMAT"
+                usage.status, usage.error_code = "completed_rejected", "MODEL_RESPONSE_FORMAT"
     except ProviderFailure as error:
         assistant.status = "failed"
         assistant.error_code = error.code
@@ -361,6 +421,11 @@ def generate_reply(db, item, assistant):
         if usage:
             usage.status = "completed_rejected" if usage.status == "completed" else "unknown"
             usage.error_code = error.code
+            if error.result is not None:
+                usage.model = error.result.model
+                usage.input_tokens = error.result.input_tokens
+                usage.output_tokens = error.result.output_tokens
+                usage.status = "completed_rejected"
         # Keep quota reserved even when outcome is unknown; no blind retries.
     finally:
         if usage:

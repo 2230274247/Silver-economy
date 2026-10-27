@@ -93,6 +93,27 @@ def test_invalid_response_is_unknown():
     assert caught.value.code == "MODEL_INVALID_RESPONSE_UNKNOWN"
 
 
+def test_empty_response_is_distinct_and_keeps_usage_without_retry():
+    calls = []
+
+    def handle(request):
+        calls.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "model": "deepseek-flash",
+                "choices": [{"message": {"content": ""}}],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 3},
+            },
+        )
+
+    with pytest.raises(ProviderFailure) as caught:
+        DeepSeekProvider(settings(), httpx.MockTransport(handle)).complete([], json_output=True)
+    assert caught.value.code == "MODEL_EMPTY_RESPONSE"
+    assert caught.value.result.input_tokens == 20
+    assert caught.value.result.output_tokens == 3 and len(calls) == 1
+
+
 def test_arbitrary_endpoint_is_rejected():
     with pytest.raises(ValueError):
         settings(deepseek_base_url="https://untrusted.invalid")

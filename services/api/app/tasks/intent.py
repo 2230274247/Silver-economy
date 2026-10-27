@@ -3,6 +3,7 @@
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy import select
 
@@ -10,7 +11,7 @@ from app.core.config import PROJECT_ROOT
 from app.memory.context import MAX_CONTEXT_BYTES
 from app.models.entities import TaskDraft
 from app.schemas.tasks import TaskCandidate
-from app.tasks.time_parse import CLOCK_PATTERN, parse_target, time_parts
+from app.tasks.time_parse import CLOCK_PATTERN, parse_target, relative_target, time_parts
 
 TASK_MARKER = "\nTASK_DRAFT_CONTEXT_JSON="
 TASK_PROMPT = (PROJECT_ROOT / "prompts/task-intent-v3.txt").read_text(encoding="utf-8").strip()
@@ -125,6 +126,7 @@ def grounded(candidate: TaskCandidate, source):
     ):
         return None
     item = candidate.model_copy(deep=True)
+    relative = relative_target(item.source_excerpt, datetime.min)
     for field in TEXT_FIELDS:
         value = getattr(item, field)
         if value and value not in item.source_excerpt:
@@ -138,7 +140,11 @@ def grounded(candidate: TaskCandidate, source):
             item.clock_text = clock
         if period and not item.period_text:
             item.period_text = period
-    if item.destination and re.search(r"去|到达|拜访", item.source_excerpt):
+    if relative and not re.search(CLOCK_PATTERN, item.source_excerpt):
+        item.date_text, item.clock_text, item.period_text = relative[0], "", ""
+        if "提醒" in item.source_excerpt:
+            item.kind = "reminder"
+    if item.destination and not relative and re.search(r"去|到达|拜访", item.source_excerpt):
         item.kind = "outing"
     modes = explicit_modes(item.source_excerpt)
     if item.transport != "unknown" and modes != [item.transport]:
