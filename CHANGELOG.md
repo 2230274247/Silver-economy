@@ -7,6 +7,7 @@
 - 新增 HTTPS uni-push 服务端桥接 Provider、Bearer 鉴权、幂等请求、最小化锁屏内容、有限暂时失败重试和 unknown 边界；服务商接受仍明确不等于手机送达。
 - Android 平台适配器封装推送 ID/权限请求；H5 明确不能替代后台通知。迁移新增设备表与通知 job 设备外键。
 - 275 项后端及完整门禁通过。实际 uni-push 调用 0、Android 真机送达 0；本机缺 Android SDK/HBuilderX/AppID/厂商参数/签名/真机，因此 CR-AC10 为 `BLOCKED_PROVIDER_CONFIGURATION`，不得声称通知闭环已真机验收。
+- 功能提交 `b82819707813e706ffd6a3ef8fb75be4a9075710` 已推送并与远端一致；CI run `40452632424` 的 api/security/mobile 全部通过。远端边界证据见 `docs/testing/T11D-remote.json`。
 
 ## T11C — 2026-10-27（Asia/Hong_Kong）
 
