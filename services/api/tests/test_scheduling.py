@@ -283,6 +283,73 @@ def test_edit_cancel_complete_isolate_and_invalidate_future_jobs(clients, db):
     assert completed["notifications"][0]["status"] == "cancelled"
 
 
+def test_trip_detail_navigation_departure_completion_feedback_and_isolation(clients, db):
+    a, b = clients
+    draft = schedule_ready(a)
+    previewed = preview(a, draft).json()
+    task = confirm(a, previewed, str(uuid.uuid4())).json()
+    assert task["navigation_url"].startswith("https://uri.amap.com/search?keyword=")
+    assert task["departed_at"] is None
+
+    detail = a.get(f"/api/v1/outing-tasks/{task['id']}/status")
+    assert detail.status_code == 200
+    assert detail.json()["id"] == task["id"]
+    assert b.get(f"/api/v1/outing-tasks/{task['id']}/status").status_code == 404
+
+    feedback = a.post(
+        f"/api/v1/outing-tasks/{task['id']}/feedback",
+        json={
+            "expected_revision": task["revision"],
+            "feedback": "helpful",
+            "note": "Synthetic feedback",
+        },
+    )
+    assert feedback.status_code == 200
+    assert feedback.json()["revision"] == task["revision"]
+    assert (
+        b.post(
+            f"/api/v1/outing-tasks/{task['id']}/feedback",
+            json={"expected_revision": task["revision"], "feedback": "helpful"},
+        ).status_code
+        == 404
+    )
+
+    departed = a.post(
+        f"/api/v1/outing-tasks/{task['id']}/depart",
+        json={"expected_revision": task["revision"]},
+    )
+    assert departed.status_code == 200
+    departed_task = departed.json()
+    assert departed_task["status"] == "departed"
+    assert departed_task["departed_at"] is not None
+    assert departed_task["notifications"][0]["status"] == "cancelled"
+    repeated = a.post(
+        f"/api/v1/outing-tasks/{task['id']}/depart",
+        json={"expected_revision": task["revision"]},
+    )
+    assert repeated.status_code == 200 and repeated.json()["revision"] == departed_task["revision"]
+    assert (
+        a.post(
+            f"/api/v1/outing-tasks/{task['id']}/cancel",
+            json={"expected_revision": departed_task["revision"]},
+        ).status_code
+        == 409
+    )
+
+    completed = a.post(
+        f"/api/v1/outing-tasks/{task['id']}/complete",
+        json={"expected_revision": departed_task["revision"]},
+    )
+    assert completed.status_code == 200
+    assert completed.json()["status"] == "completed"
+    events = db.scalars(
+        select(TaskAuditLog.event_type).where(TaskAuditLog.outing_task_id == task["id"])
+    ).all()
+    assert "user_feedback" in events
+    assert "task_departed" in events
+    assert "task_completed" in events
+
+
 def worker_factory(db):
     return lambda: nullcontext(db)
 

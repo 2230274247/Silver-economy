@@ -5,9 +5,11 @@ import AccessibleButton from '../../components/AccessibleButton.vue';
 import BottomTabs from '../../components/BottomTabs.vue';
 import EmptyState from '../../components/EmptyState.vue';
 import MobileShell from '../../components/MobileShell.vue';
+import TripDetailCard from '../../components/TripDetailCard.vue';
 import {
   cancelOutingTask,
   completeOutingTask,
+  departOutingTask,
   listOutingTasks,
   type OutingTask,
 } from '../../stores/outings';
@@ -29,14 +31,22 @@ function displayTime(value: string) {
 }
 
 function statusLabel(task: OutingTask) {
-  return task.status === 'scheduled' ? '待提醒' : task.status === 'completed' ? '已完成' : '已取消';
+  if (task.status === 'scheduled') return '待提醒';
+  if (task.status === 'departed') return '已出发';
+  if (task.status === 'completed') return '已完成';
+  return '已取消';
 }
 
 function jobLabel(task: OutingTask) {
   const latest = task.notifications[task.notifications.length - 1];
   if (!latest) return '尚无通知记录';
-  if (latest.status === 'queued') return 'Mock通知 · 等待后台Worker';
-  if (latest.status === 'submitted_to_provider') return 'Mock通知 · 已提交模拟供应商，不能证明手机收到';
+  const mock = latest.is_mock ? 'Mock 通知 · ' : '';
+  if (latest.status === 'queued') return `${mock}等待后台 Worker`;
+  if (latest.status === 'submitted_to_provider') {
+    return latest.is_mock
+      ? 'Mock 通知 · 已提交模拟供应商，不能证明手机收到'
+      : '已提交推送服务商 · 手机送达尚未确认';
+  }
   if (latest.status === 'unknown') return '通知结果未知 · 不自动重发';
   if (latest.status === 'missed') return '已错过发送窗口 · 未补发';
   return `通知状态：${latest.status}`;
@@ -54,15 +64,28 @@ async function load() {
   }
 }
 
-async function act(task: OutingTask, action: 'cancel' | 'complete') {
-  if (busyId.value || task.status !== 'scheduled') return;
+function replaceTask(changed: OutingTask) {
+  tasks.value = tasks.value.map(item => item.id === changed.id ? changed : item);
+}
+
+function showNotice(message: string) {
+  uni.showToast({ title: message, icon: 'none', duration: 2200 });
+}
+
+async function act(task: OutingTask, action: 'cancel' | 'complete' | 'depart') {
+  if (busyId.value) return;
+  if (action === 'cancel' && task.status !== 'scheduled') return;
+  if (action === 'complete' && !['scheduled', 'departed'].includes(task.status)) return;
+  if (action === 'depart' && task.status !== 'scheduled') return;
   busyId.value = task.id;
   error.value = '';
   try {
     const changed = action === 'cancel'
       ? await cancelOutingTask(task)
-      : await completeOutingTask(task);
-    tasks.value = tasks.value.map(item => item.id === changed.id ? changed : item);
+      : action === 'depart'
+        ? await departOutingTask(task)
+        : await completeOutingTask(task);
+    replaceTask(changed);
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : '任务状态更新失败';
   } finally {
@@ -88,7 +111,7 @@ onMounted(load);
         </text><text class="page-description">
           只在您明确确认后安排；路线或模型不会自行创建提醒。
         </text><text class="preview-label">
-          Mock 站内通知 · Android 后台通知待 T11D 真机验证
+          通知状态如实显示；Mock 或服务商接受均不代表 Android 手机已送达
         </text>
       </view>
       <view
@@ -135,8 +158,13 @@ onMounted(load);
         >
           Synthetic 演示任务
         </text>
+        <TripDetailCard
+          :task="task"
+          @updated="replaceTask"
+          @feedback="showNotice"
+        />
         <view
-          v-if="task.status === 'scheduled'"
+          v-if="task.status === 'scheduled' || task.status === 'departed'"
           class="task-actions"
         >
           <AccessibleButton
@@ -147,6 +175,15 @@ onMounted(load);
             标记完成
           </AccessibleButton>
           <AccessibleButton
+            v-if="task.status === 'scheduled'"
+            :loading="busyId === task.id"
+            :disabled="!!busyId"
+            @click="act(task, 'depart')"
+          >
+            我已出发
+          </AccessibleButton>
+          <AccessibleButton
+            v-if="task.status === 'scheduled'"
             :loading="busyId === task.id"
             :disabled="!!busyId"
             @click="act(task, 'cancel')"

@@ -1,7 +1,8 @@
-# CR-001 增量数据库设计（待实现）
+# CR-001 增量数据库设计
 
 - 日期：2026-10-26，Asia/Hong_Kong。
-- 当前无业务数据库迁移执行；以下是后续 Alembic 迁移合同，不是已建表清单。
+- T11A–T11E 已按顺序执行增量 Alembic 迁移；具体实际表和字段见迁移、
+  OpenAPI 与对应专项记录。
 - T03 建立原合同基础表与独立开发/测试 schema；以下增量在 T11A–T11C 分步实现，不改写已发布迁移。
 - 只能使用本项目独立 MySQL，禁止连接/修改 ALE_AI_MySQL。
 
@@ -15,12 +16,12 @@ API 的 user_id 来自已验证会话，不从请求字段信任。
 
 | 表 | 关键字段与约束 | 所属任务 |
 |---|---|---|
-| outing_tasks | id/user_id/source_message_id/reminder_id；title；status；target_at；time_semantics(arrival/departure)；timezone；origin_type/明确确认的地点；destination_text/place_id/坐标；transport_mode；estimated_travel_seconds；pickup_walk_buffer_seconds；contingency_buffer_seconds；preferred_advance_seconds；recommended_departure_at/reminder_at；user_confirmed_at；revision；created_at/updated_at/cancelled_at/completed_at | T11A 基础、T11C 调度字段 |
+| outing_tasks | id/user_id/source_message_id/reminder_id；title；status；target_at；time_semantics(arrival/departure)；timezone；origin_type/明确确认的地点；destination_text/place_id/坐标；transport_mode；estimated_travel_seconds；pickup_walk_buffer_seconds；contingency_buffer_seconds；preferred_advance_seconds；recommended_departure_at/reminder_at；user_confirmed_at；revision；created_at/updated_at/departed_at/cancelled_at/completed_at | T11A 基础、T11C 调度字段、T11E 出发时间 |
 | place_aliases | 可选；本人授权的别名→地点；consented_at/revoked_at；同用户有效别名约束；不推测家庭住址 | T11B，如实施 |
 | route_weather_snapshots | id/user_id/outing_id/task_revision；provider/fetched_at；route_duration_seconds/distance_meters；城市 adcode、forecast_for_at、forecast_issued_at、weather_summary；raw_reference_code/provider_mode；禁止无必要保存完整原始响应 | T11B |
 | notification_jobs | id/user_id/outing_id或reminder_id/task_revision/device_id；purpose/channel/scheduled_at/expires_at/status；retry_count/next_attempt_at；unique idempotency_key；provider_message_id/last_attempt_at/error_code；lease_owner/lease_until；created_at/updated_at | T11C |
 | notification_devices | id/user_id/platform；push_client_id_ciphertext；permission_status/last_seen_at/revoked_at；唯一服务端设备指纹，换号绑定需撤销旧归属；不返回完整加密内容 | T11D |
-| task_audit_log | id/user_id/outing_id/task_revision；action/actor_type/occurred_at/request_id；字段变更摘要/错误码；创建、确认、调度、提交服务商、回执、打开、修改、取消、完成分别记事件 | T11A–T11E |
+| task_audit_logs | id/user_id/outing_id/task_revision；action/actor_type/occurred_at/request_id；字段变更摘要/错误码；创建、确认、调度、提交服务商、回执、打开、修改、取消、完成分别记事件 | T11A–T11E |
 
 target_at + time_semantics 对应 CR 示例的 arrival_at + arrival_or_departure，避免“出发时刻存进到达字段”的歧义。
 草案可以有 unknown/缺字段，但确认状态的持久可执行任务必须明确时间含义。

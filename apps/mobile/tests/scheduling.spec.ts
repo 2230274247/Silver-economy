@@ -123,5 +123,68 @@ test('plain reminder fallback is independently confirmed without inventing route
   await page.getByRole('button', { name: '提醒', exact: true }).click();
   const reminder = page.locator(`[data-task-id="${task.id}"]`);
   await expect(reminder).toContainText('时间提醒');
-  await expect(reminder).toContainText('Mock通知');
+  await expect(reminder).toContainText(/Mock\s*通知/);
+});
+
+test('trip detail supports source inspection, time edit, navigation entry, feedback and departure lifecycle', async ({ page }, info) => {
+  await login(page);
+  await freshChat(page);
+  const { card } = await confirmedOuting(page);
+  const schedule = page.locator('.schedule-panel');
+  const previewResponse = page.waitForResponse(r => r.url().endsWith('/schedule-preview'));
+  await schedule.getByRole('button', { name: '生成提醒预览', exact: true }).click();
+  await previewResponse;
+  const created = page.waitForResponse(r => r.request().method() === 'POST'
+    && new URL(r.url()).pathname.endsWith('/schedule'));
+  await schedule.getByRole('button', { name: '确认并安排提醒', exact: true }).click();
+  const task = await (await created).json();
+
+  await page.getByRole('button', { name: '提醒', exact: true }).click();
+  const reminder = page.locator(`[data-task-id="${task.id}"]`);
+  await reminder.getByRole('button', { name: '查看行程详情', exact: true }).click();
+  const detail = reminder.locator('[data-trip-detail]');
+  await expect(detail).toContainText('路线与来源');
+  await expect(detail).toContainText('Synthetic / Mock');
+  await expect(detail).toContainText('Mock 站内通知');
+  await expect(detail.getByRole('button', { name: '打开高德地图查找目的地', exact: true })).toBeVisible();
+
+  await detail.getByRole('button', { name: '修改行程', exact: true }).click();
+  await detail.getByLabel('行程名称', { exact: true }).locator('input')
+    .fill(`修改后的合成行程 ${info.project.name}`);
+  const nextTarget = new Date(task.target_at);
+  nextTarget.setUTCDate(nextTarget.getUTCDate() + 1);
+  const nextParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Hong_Kong',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(nextTarget);
+  const inputValue = (type: string) => nextParts.find(part => part.type === type)?.value ?? '';
+  const targetInput = `${inputValue('year')}-${inputValue('month')}-${inputValue('day')}T${inputValue('hour')}:${inputValue('minute')}`;
+  await detail.getByLabel('新的到达或出发时间', { exact: true }).locator('input')
+    .fill(targetInput);
+  const modifiedResponse = page.waitForResponse(r => r.request().method() === 'PATCH'
+    && new URL(r.url()).pathname.endsWith(`/outing-tasks/${task.id}`));
+  await detail.getByRole('button', { name: '保存行程修改', exact: true }).click();
+  const modified = await (await modifiedResponse).json();
+  expect(modified.revision).toBe(task.revision + 1);
+  expect(modified.notifications.some((item: { status: string }) => item.status === 'cancelled')).toBe(true);
+  await expect(reminder).toContainText('修改后的合成行程');
+
+  const feedback = page.waitForResponse(r => r.url().endsWith(`/outing-tasks/${task.id}/feedback`));
+  await detail.getByRole('button', { name: '提醒有帮助', exact: true }).click();
+  await feedback;
+  await expect(detail).toContainText('已记录：提醒有帮助');
+
+  await reminder.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.resolve(`../../docs/demos/T11E-trip-${info.project.name}.png`) });
+  const departed = page.waitForResponse(r => r.url().endsWith(`/outing-tasks/${task.id}/depart`));
+  await reminder.getByRole('button', { name: '我已出发', exact: true }).click();
+  await departed;
+  await expect(reminder).toContainText('已出发');
+  await expect(reminder.getByRole('button', { name: '取消提醒', exact: true })).toHaveCount(0);
+  const completed = page.waitForResponse(r => r.url().endsWith(`/outing-tasks/${task.id}/complete`));
+  await reminder.getByRole('button', { name: '标记完成', exact: true }).click();
+  await completed;
+  await expect(reminder).toContainText('已完成');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
 });

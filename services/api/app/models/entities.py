@@ -270,6 +270,7 @@ class OutingTask(Identity, Updated, Owned, Base):
     idempotency_key: Mapped[str] = mapped_column(String(36))
     preview_id: Mapped[str] = mapped_column(String(36))
     confirmed_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    departed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
     cancelled_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
     completed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
 

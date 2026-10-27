@@ -1606,6 +1606,143 @@
         }
       }
     },
+    "/api/v1/outing-tasks/{task_id}/depart": {
+      "post": {
+        "summary": "Depart Task",
+        "operationId": "depart_task_api_v1_outing_tasks__task_id__depart_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutingTaskAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutingTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outing-tasks/{task_id}/status": {
+      "get": {
+        "summary": "Task Status",
+        "operationId": "task_status_api_v1_outing_tasks__task_id__status_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutingTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outing-tasks/{task_id}/feedback": {
+      "post": {
+        "summary": "Task Feedback",
+        "operationId": "task_feedback_api_v1_outing_tasks__task_id__feedback_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutingTaskFeedback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutingTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/notifications/status": {
       "get": {
         "summary": "Notification Status",
@@ -2885,6 +3022,36 @@
         ],
         "title": "OutingTaskAction"
       },
+      "OutingTaskFeedback": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "feedback": {
+            "type": "string",
+            "enum": [
+              "helpful",
+              "not_helpful"
+            ],
+            "title": "Feedback"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "feedback"
+        ],
+        "title": "OutingTaskFeedback"
+      },
       "OutingTaskOut": {
         "properties": {
           "id": {
@@ -2992,6 +3159,18 @@
             "format": "date-time",
             "title": "Confirmed At"
           },
+          "departed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Departed At"
+          },
           "cancelled_at": {
             "anyOf": [
               {
@@ -3015,6 +3194,10 @@
               }
             ],
             "title": "Completed At"
+          },
+          "navigation_url": {
+            "type": "string",
+            "title": "Navigation Url"
           },
           "notifications": {
             "items": {
@@ -3046,8 +3229,10 @@
           "provider",
           "is_synthetic",
           "confirmed_at",
+          "departed_at",
           "cancelled_at",
-          "completed_at"
+          "completed_at",
+          "navigation_url"
         ],
         "title": "OutingTaskOut"
       },

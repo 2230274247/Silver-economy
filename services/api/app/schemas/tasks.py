@@ -132,6 +132,11 @@ class OutingTaskAction(BaseModel):
     expected_revision: int = Field(ge=1)
 
 
+class OutingTaskFeedback(OutingTaskAction):
+    feedback: Literal["helpful", "not_helpful"]
+    note: str = Field(default="", max_length=300)
+
+
 class NotificationJobOut(BaseModel):
     id: str
     status: str
@@ -167,8 +172,10 @@ class OutingTaskOut(BaseModel):
     provider: str
     is_synthetic: bool
     confirmed_at: datetime
+    departed_at: datetime | None
     cancelled_at: datetime | None
     completed_at: datetime | None
+    navigation_url: str
     notifications: list[NotificationJobOut] = Field(default_factory=list)
 
 

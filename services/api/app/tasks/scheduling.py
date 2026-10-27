@@ -1,6 +1,7 @@
 """Deterministic schedule calculation, explicit confirmation and lifecycle operations."""
 
 from datetime import UTC, datetime, timedelta
+from urllib.parse import quote
 
 from sqlalchemy import select, update
 
@@ -66,8 +67,14 @@ def task_data(db, task):
         "provider": task.provider,
         "is_synthetic": task.is_synthetic,
         "confirmed_at": aware(task.confirmed_at),
+        "departed_at": aware(task.departed_at),
         "cancelled_at": aware(task.cancelled_at),
         "completed_at": aware(task.completed_at),
+        "navigation_url": (
+            "https://uri.amap.com/search?keyword="
+            f"{quote(task.destination or '目的地', safe='')}"
+            "&src=silver-economy&coordinate=gaode&callnative=1"
+        ),
         "notifications": [
             {
                 "id": job.id,
@@ -490,7 +497,10 @@ def transition_task(db, user_id, task_id, payload, desired):
         return task_data(db, task)
     if task.revision != payload.expected_revision:
         raise ApiError(409, "TASK_STALE", "任务已更新，请重新读取后再操作")
-    if task.status != "scheduled":
+    allowed = {"scheduled"}
+    if desired == "completed":
+        allowed.add("departed")
+    if task.status not in allowed:
         raise ApiError(409, "TASK_NOT_ACTIVE", "任务当前状态不允许此操作")
     now = utc_now()
     task.status = desired
@@ -530,6 +540,73 @@ def transition_task(db, user_id, task_id, payload, desired):
                 "cancelled_future_jobs": cancelled,
                 "in_flight_or_completed_jobs_preserved": True,
             },
+        )
+    )
+    db.commit()
+    return task_data(db, task)
+
+
+def depart_task(db, user_id, task_id, payload):
+    task = owned_task(db, user_id, task_id, lock=True)
+    if task.status == "departed" and task.revision in {
+        payload.expected_revision,
+        payload.expected_revision + 1,
+    }:
+        return task_data(db, task)
+    if task.revision != payload.expected_revision:
+        raise ApiError(409, "TASK_STALE", "任务已更新，请重新读取后再操作")
+    if task.status != "scheduled":
+        raise ApiError(409, "TASK_NOT_ACTIVE", "任务当前状态不允许标记已出发")
+    now = utc_now()
+    task.status = "departed"
+    task.departed_at = now
+    task.revision += 1
+    cancelled = db.execute(
+        update(NotificationJob)
+        .where(
+            NotificationJob.user_id == user_id,
+            NotificationJob.outing_task_id == task.id,
+            NotificationJob.status.in_(CANCELLABLE_JOB_STATUSES),
+        )
+        .values(status="cancelled", completed_at=now, error_code="USER_ALREADY_DEPARTED")
+    ).rowcount
+    db.execute(
+        update(Reminder)
+        .where(
+            Reminder.user_id == user_id,
+            Reminder.outing_task_id == task.id,
+            Reminder.status.in_(["pending", "failed"]),
+        )
+        .values(status="cancelled")
+    )
+    draft = owned_draft(db, user_id, task.draft_id)
+    draft.status = "departed"
+    db.add(
+        TaskAuditLog(
+            user_id=user_id,
+            outing_task_id=task.id,
+            event_type="task_departed",
+            actor="user",
+            task_revision=task.revision,
+            payload={"cancelled_future_jobs": cancelled},
+        )
+    )
+    db.commit()
+    return task_data(db, task)
+
+
+def record_feedback(db, user_id, task_id, payload):
+    task = owned_task(db, user_id, task_id)
+    if task.revision != payload.expected_revision:
+        raise ApiError(409, "TASK_STALE", "任务已更新，请重新读取后再反馈")
+    db.add(
+        TaskAuditLog(
+            user_id=user_id,
+            outing_task_id=task.id,
+            event_type="user_feedback",
+            actor="user",
+            task_revision=task.revision,
+            payload={"feedback": payload.feedback, "note": payload.note.strip()},
         )
     )
     db.commit()

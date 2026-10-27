@@ -9,16 +9,41 @@ export interface NotificationJob {
   completed_at: string | null; is_mock: boolean;
 }
 
+export interface RouteSnapshot {
+  distance_m?: number;
+  duration_seconds?: number;
+  estimate_basis?: string;
+  status?: string;
+  message?: string;
+}
+
+export interface WeatherSnapshot {
+  status?: string;
+  umbrella_advice?: string;
+  message?: string;
+}
+
+export interface CalculationBasis {
+  formula?: string;
+  inputs?: {
+    access_buffer_minutes?: number;
+    contingency_buffer_minutes?: number;
+    lead_minutes?: number;
+  };
+  [key: string]: unknown;
+}
+
 export interface OutingTask {
   id: string; draft_id: string; kind: 'outing' | 'reminder'; title: string;
-  status: 'scheduled' | 'cancelled' | 'completed';
+  status: 'scheduled' | 'departed' | 'cancelled' | 'completed';
   revision: number; time_semantics: string; target_at: string; timezone: string;
   origin: string; destination: string; transport: string;
   departure_at: string; reminder_at: string;
-  route_snapshot: Record<string, unknown> | null;
-  weather_snapshot: Record<string, unknown> | null;
-  calculation_basis: Record<string, unknown>;
+  route_snapshot: RouteSnapshot | null;
+  weather_snapshot: WeatherSnapshot | null;
+  calculation_basis: CalculationBasis;
   provider: string; is_synthetic: boolean; confirmed_at: string;
+  departed_at: string | null; navigation_url: string;
   cancelled_at: string | null; completed_at: string | null;
   notifications: NotificationJob[];
 }
@@ -55,8 +80,41 @@ export function cancelOutingTask(task: OutingTask) {
   });
 }
 
+export function updateOutingTask(
+  task: OutingTask,
+  values: {
+    title: string;
+    target_at: string;
+    access_buffer_minutes: number;
+    contingency_buffer_minutes: number;
+    lead_minutes: number;
+  },
+) {
+  return request<OutingTask>(`/outing-tasks/${task.id}`, 'PATCH', {
+    expected_revision: task.revision,
+    ...values,
+  });
+}
+
 export function completeOutingTask(task: OutingTask) {
   return request<OutingTask>(`/outing-tasks/${task.id}/complete`, 'POST', {
     expected_revision: task.revision,
+  });
+}
+
+export function departOutingTask(task: OutingTask) {
+  return request<OutingTask>(`/outing-tasks/${task.id}/depart`, 'POST', {
+    expected_revision: task.revision,
+  });
+}
+
+export function sendTaskFeedback(
+  task: OutingTask,
+  feedback: 'helpful' | 'not_helpful',
+) {
+  return request<OutingTask>(`/outing-tasks/${task.id}/feedback`, 'POST', {
+    expected_revision: task.revision,
+    feedback,
+    note: '',
   });
 }

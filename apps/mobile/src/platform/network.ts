@@ -2,11 +2,12 @@ export class ApiFailure extends Error {
   constructor(public code: string, message: string, public status = 0) { super(message); }
 }
 
-export function request<T>(path: string, method: 'GET' | 'POST' | 'DELETE' = 'GET', data?: object): Promise<T> {
+export function request<T>(path: string, method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET', data?: object): Promise<T> {
   return new Promise((resolve, reject) => {
     uni.request({
       url: `/api/v1${path}`,
-      method,
+      // uni-app's typings lag the H5 runtime, which supports PATCH.
+      method: method as unknown as 'GET',
       data,
       withCredentials: true,
       timeout: 45000,

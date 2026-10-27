@@ -18,6 +18,12 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
     command.upgrade(config, "head")
     command.upgrade(config, "head")
     command.check(config)
+    audit_foreign_keys = inspect(mysql_engine).get_foreign_keys("task_audit_logs")
+    assert any(
+        foreign_key["constrained_columns"] == ["user_id"]
+        and foreign_key["referred_table"] == "users"
+        for foreign_key in audit_foreign_keys
+    )
     tables = set(inspect(mysql_engine).get_table_names())
     assert tables == {
         "alembic_version",

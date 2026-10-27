@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query
 from app.core.security import CurrentUser, DatabaseSession
 from app.schemas.tasks import (
     OutingTaskAction,
+    OutingTaskFeedback,
     OutingTaskOut,
     OutingTaskPage,
     OutingTaskPatch,
@@ -57,3 +58,23 @@ def cancel_task(task_id: str, payload: OutingTaskAction, user: CurrentUser, db: 
 @router.post("/outing-tasks/{task_id}/complete", response_model=OutingTaskOut)
 def complete_task(task_id: str, payload: OutingTaskAction, user: CurrentUser, db: DatabaseSession):
     return scheduling.transition_task(db, user.id, task_id, payload, "completed")
+
+
+@router.post("/outing-tasks/{task_id}/depart", response_model=OutingTaskOut)
+def depart_task(task_id: str, payload: OutingTaskAction, user: CurrentUser, db: DatabaseSession):
+    return scheduling.depart_task(db, user.id, task_id, payload)
+
+
+@router.get("/outing-tasks/{task_id}/status", response_model=OutingTaskOut)
+def task_status(task_id: str, user: CurrentUser, db: DatabaseSession):
+    return scheduling.task_data(db, scheduling.owned_task(db, user.id, task_id))
+
+
+@router.post("/outing-tasks/{task_id}/feedback", response_model=OutingTaskOut)
+def task_feedback(
+    task_id: str,
+    payload: OutingTaskFeedback,
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    return scheduling.record_feedback(db, user.id, task_id, payload)
