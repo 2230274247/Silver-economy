@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T13（原 AC-01–18、CR-AC01–13 全链路验收与 UI 质量门禁）
+- Current task: T14 初步演示交付；正式最终验收待开放项关闭
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T12 feature `56ce42b336c49400e3845b2ae75c3cf232a16f99`
-- Last verified CI: PASS（run 40457533355；api/security/mobile全部success）
-- 最后核验时间：2026-10-27T13:55:04+08:00。
+- Last remote-confirmed SHA: T13 feature `048ace16e3521a0afce298a75523b9f8a3ff873a`
+- Last verified CI: PASS（run 40462088539；api/security/mobile全部success）
+- 最后核验时间：2026-10-27T14:43:37+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -33,8 +33,8 @@
 | T11D | IMPLEMENTED_BLOCKED_PROVIDER_CONFIGURATION | 275后端/全门禁/10迁移+设备专项PASS | `b82819707813e706ffd6a3ef8fb75be4a9075710` | SHA一致 | PASS（40452632424） | 加密设备登记/撤回/改绑、Worker归属复核、HTTPS桥接与最小通知；0真实推送；缺SDK/HBuilderX/AppID/厂商配置/真机，CR-AC10未通过 |
 | T11E | DONE_PUSHED | 276后端/72UI/全门禁/迁移PASS | `135aa2837f914b00bf0acd7ff5abc66d11c09788` | SHA一致 | PASS（40454654272） | 行程详情、目的地搜索入口、修改/出发/完成、反馈与通知回看；真实高德/推送仍为0 |
 | T12 | DONE_PUSHED | 278后端、6专项后端、78完整UI、6专项UI及全门禁PASS | `56ce42b336c49400e3845b2ae75c3cf232a16f99` | SHA一致 | PASS（40457533355） | 设置/隐私/本人导出与设备撤回；无迁移；详见T12_PRIVACY_EXPORT.md |
-| T13 | LOCAL_PASSED_ACCEPTANCE_GAPS | 294后端/78完整UI/12调度UI/全门禁PASS | 提交后核验 | 待核验 | 待核验 | 变化刷新/地点替换/时区/可靠性修复；原AC条文及真实高德/Android未验收，见QA_REPORT |
-| T14 | TODO | - | - | - | - | 真实闭环证据、Android 验收、限制、交付与 PR |
+| T13 | ENGINEERING_PUSHED_ACCEPTANCE_GAPS | 294后端/78完整UI/12调度UI/全门禁PASS | `048ace16e3521a0afce298a75523b9f8a3ff873a` | SHA一致 | PASS（40462088539） | 变化刷新/地点替换/时区/可靠性修复；原AC条文及真实高德/Android未验收，见QA_REPORT |
+| T14 | DEMO_READY_FINAL_ACCEPTANCE_PENDING | 本机启动/登录/只读检查、脚本语法PASS；不重复全套 | 提交后核验 | 待核验 | 待核验 | 按用户最新指令先会议演示；P01–P10留续办，备份恢复/首次克隆/真机等未验收 |
 
 ## CR-001 当前影响、依赖与外部准入
 
@@ -44,3 +44,7 @@ T00–T10 保持原任务顺序；最终目标新增 T10E1→E2；再 T11A→B�
 DeepSeek 本机 Key 已配置且一次真实 H5 验证通过；高德/推送仍待配置，Android 真机未验证。
 这些是后续 live/真机门禁，不阻塞当前文档及 Mock 开发；需要时由用户本机配置，不索取聊天中的密钥。
 当前实际 DeepSeek 累计调用7次，3218输入/376输出tokens，保守估算合计USD0.00141660（非账单）。T11A只新增1次927/115tokens、1827ms、估算USD0.00041610，H5编辑/确认/刷新无额外调用；失败历史全部保留。高德/推送0。自动回归只用Mock；未经授权不购买或部署付费服务。
+
+## 2026-10-27 会议演示交付决定
+
+用户明确先用现有功能进行初步展示、未验收内容登记后续继续。运行页面http://127.0.0.1:5173/#/，真实DeepSeek配置有效；地图/通知Mock。T14不标正式完成；开放项与具体续办证据见V01_PENDING_ACCEPTANCE.md，演示步骤见operations/MEETING_DEMO.md。停止非必要重复回归，不删除失败测试或伪造通过。

@@ -39,3 +39,5 @@
 - 真实DeepSeek本任务新增0，历史7次/3218输入376输出tokens/估算USD0.00141660保留，非账单。自动回归不耗真实额度。
 
 后续T14：运行与架构说明、备份恢复演练、首次克隆复现、A–E演示说明、已知问题及draft PR；外部验收缺项持续可见。
+
+远端事后核验：048ace16e3521a0afce298a75523b9f8a3ff873a与origin/dev/v0.1一致；CI40462088539的api/security/mobile全部success，见T13-remote.json。工程门禁通过不改变未验收项。

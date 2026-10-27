@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-10-27T06:38:46.353Z",
+  "scope": "Startup and authenticated read only; no chat send or paid call",
+  "ready": {
+    "status": "ready",
+    "schema_revision": "t13_proactive_updates"
+  },
+  "model": {
+    "provider": "deepseek",
+    "configured": true
+  },
+  "maps": {
+    "provider": "mock",
+    "configured": true,
+    "live_connection_verified": false
+  },
+  "notifications": {
+    "provider": "mock",
+    "configured": true,
+    "device_encryption_configured": false,
+    "physical_delivery_verified": false,
+    "explanation": "Mock 仅验证站内 outbox，不能证明手机收到。"
+  },
+  "conversations_visible": 30,
+  "memories_visible": 2,
+  "tasks_visible": 0
+}

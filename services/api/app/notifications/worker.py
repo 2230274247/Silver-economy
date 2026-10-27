@@ -363,6 +363,7 @@ def main(argv=None):
     parser.add_argument("--interval", type=float, default=5.0)
     parser.add_argument("--limit", type=int, default=20)
     args = parser.parse_args(argv)
+    logging.Formatter.converter = time.gmtime
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s UTC %(levelname)s %(name)s %(message)s",
