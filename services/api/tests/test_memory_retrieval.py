@@ -231,9 +231,10 @@ def test_relogin_new_conversation_reply_cites_source_and_replays_once(clients, d
     assert history[-1]["memory_refs"] == refs
 
 
+@pytest.mark.parametrize("reply_mode", ["labeled", "plain", "unknown_reference"])
 @pytest.mark.parametrize("change", ["value", "deleted", "revoked"])
 def test_changed_evidence_during_generation_blocks_stale_answer(
-    clients, db, accounts, monkeypatch, change
+    clients, db, accounts, monkeypatch, change, reply_mode
 ):
     fact, _, _ = remember(db, accounts[0][0])
 
@@ -247,9 +248,15 @@ def test_changed_evidence_during_generation_blocks_stale_answer(
             else:
                 accounts[0][0].memory_enabled = False
             db.commit()
+            if reply_mode == "plain":
+                return ModelReply("旧来源不应展示", "mock-v1", 0, 0)
             return ModelReply(
                 json.dumps(
-                    {"reply": "旧来源不应展示", "memories": [], "memory_refs": ["M1"]},
+                    {
+                        "reply": "旧来源不应展示",
+                        "memories": [],
+                        "memory_refs": ["M99" if reply_mode == "unknown_reference" else "M1"],
+                    },
                     ensure_ascii=False,
                 ),
                 "mock-v1",
@@ -269,7 +276,9 @@ def test_changed_evidence_during_generation_blocks_stale_answer(
     assert db.scalar(select(func.count()).select_from(MemoryUse)) == 0
 
 
-def test_invented_reference_rejected_without_automatic_retry(clients, db, accounts, monkeypatch):
+def test_invented_reference_omitted_without_losing_reply_or_retry(
+    clients, db, accounts, monkeypatch
+):
     remember(db, accounts[0][0])
     calls = []
 
@@ -277,14 +286,20 @@ def test_invented_reference_rejected_without_automatic_retry(clients, db, accoun
         def complete(self, prompts, *, json_output=False):
             calls.append(1)
             return ModelReply(
-                '{"reply":"不应展示","memories":[],"memory_refs":["M99"]}', "mock-v1", 0, 0
+                '{"reply":"自然回复","memories":[],"memory_refs":["M99"]}', "mock-v1", 0, 0
             )
 
     monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
     url, payload, response = ask(clients[0])
-    assert response.json()["assistant_message"]["error_code"] == "MEMORY_UNSUPPORTED_REFERENCE"
+    result = response.json()
+    assert result["assistant_message"]["status"] == "completed"
+    assert result["assistant_message"]["content"] == "自然回复"
+    assert result["assistant_message"]["memory_refs"] == []
+    assert result["user_message"]["memory_status"] == "partial_rejected"
     clients[0].post(url, json=payload)
-    assert calls == [1] and db.scalar(select(ModelUsage)).status == "completed_rejected"
+    assert calls == [1] and db.scalar(select(ModelUsage)).status == "completed_partial"
+    assert db.scalar(select(ModelUsage)).error_code == "MEMORY_REFERENCE_IGNORED"
+    assert db.scalar(select(func.count()).select_from(MemoryUse)) == 0
 
 
 def test_reference_fk_rejects_another_users_fact_and_false_source_membership(db, accounts):

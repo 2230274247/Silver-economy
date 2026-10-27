@@ -1,10 +1,12 @@
 import json
 import uuid
 
+import httpx
+import pytest
 from sqlalchemy import func, select
 
 from app.core.config import get_settings
-from app.llm.providers import ModelReply
+from app.llm.providers import DeepSeekProvider, ModelReply
 from app.models.entities import AdminModelBudget, ModelBudget, ModelUsage
 from app.services import model_chat, weather_search
 from tests.test_models import send
@@ -214,3 +216,117 @@ def test_failed_old_question_is_not_replayed_on_new_topic(clients, db, monkeypat
     assert response.json()["assistant_message"]["content"] == "咖啡很好。"
     assert captured[-1]["content"] == "Synthetic咖啡话题"
     assert not any(m["content"] == "Synthetic旧问题" for m in captured)
+
+
+@pytest.mark.parametrize("scenario", ["ordinary", "memory", "weather", "task"])
+def test_all_chat_paths_use_text_transport_and_persist_one_reply(clients, monkeypatch, scenario):
+    a = clients[0]
+    text = "Synthetic今天有个好消息，很开心"
+    if scenario != "ordinary":
+        a.post("/api/v1/memory-consent", json={"enabled": True})
+    if scenario == "task":
+        text = "半小时后提醒我收Synthetic样品"
+    elif scenario == "weather":
+        text = "今天北京天气怎么样"
+        monkeypatch.setattr(
+            model_chat,
+            "search_weather",
+            lambda *args: {
+                "status": "available",
+                "city": "北京",
+                "date": "2026-10-27",
+                "results": [],
+            },
+        )
+    calls = []
+
+    def handle(request):
+        body = json.loads(request.content)
+        calls.append(body)
+        assert "response_format" not in body
+        assert body["thinking"] == {"type": "disabled"} and body["stream"] is False
+        assert body["messages"][-1]["content"] == text
+        content = "Synthetic自然回复"
+        if scenario != "ordinary":
+            data = {"reply": content, "memories": [], "memory_refs": []}
+            if scenario == "task":
+                data["outings"] = [{"kind": "reminder", "source_excerpt": text}]
+            content = "```json\n" + json.dumps(data) + "\n```"
+        return httpx.Response(
+            200,
+            json={
+                "model": "deepseek-flash",
+                "choices": [{"message": {"content": content}}],
+                "usage": {"prompt_tokens": 50, "completion_tokens": 25},
+            },
+        )
+
+    monkeypatch.setenv("LLM_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "synthetic-not-real")
+    get_settings.cache_clear()
+    monkeypatch.setattr(
+        model_chat,
+        "get_provider",
+        lambda settings: DeepSeekProvider(settings, httpx.MockTransport(handle)),
+    )
+    url, payload, response = send(a, text)
+    reply = response.json()["assistant_message"]
+    assert reply["status"] == "completed" and "Synthetic自然回复" in reply["content"]
+    assert len(reply["task_drafts"]) == (1 if scenario == "task" else 0)
+    assert a.post(url, json=payload).json()["replayed"] and len(calls) == 1
+    assert a.get(url).json()["items"][-1]["content"] == reply["content"]
+    assert clients[1].get(url).status_code == 404
+
+
+@pytest.mark.parametrize("task", [False, True])
+def test_plain_model_text_survives_auxiliary_format_failure(clients, db, monkeypatch, task):
+    a = clients[0]
+    a.post("/api/v1/memory-consent", json={"enabled": True})
+
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            return ModelReply("很高兴听到这个消息！", "mock-v1", 0, 0)
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    text = "明天上午十点提醒我检查Synthetic结果" if task else "Synthetic项目有进展，很开心"
+    url, payload, response = send(a, text)
+    result = response.json()
+    reply = result["assistant_message"]
+    assert reply["status"] == "completed" and reply["content"].startswith("很高兴听到这个消息！")
+    assert result["user_message"]["memory_status"] == "failed_schema"
+    assert reply["task_drafts"] == [] and reply["memory_refs"] == []
+    if task:
+        assert "尚未安排通知" in reply["content"]
+    assert db.scalar(select(ModelUsage)).status == "completed_partial"
+    assert a.post(url, json=payload).json()["replayed"]
+
+
+@pytest.mark.parametrize("references", [None, {"ref": "M1"}, ["M1"], [{"ref": "M1"}]])
+def test_bad_reference_shape_never_grants_access_or_discards_current_reply(
+    clients, monkeypatch, references
+):
+    a = clients[0]
+    a.post("/api/v1/memory-consent", json={"enabled": True})
+
+    class Provider:
+        def complete(self, prompts, *, json_output=False):
+            return ModelReply(
+                json.dumps(
+                    {
+                        "reply": "恭喜，合成项目测试成功，值得开心！",
+                        "memories": [],
+                        "memory_refs": references,
+                    }
+                ),
+                "mock-v1",
+                0,
+                0,
+            )
+
+    monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
+    _, _, response = send(a, "Synthetic合成项目测试成功，很开心")
+    result = response.json()
+    assert result["assistant_message"]["status"] == "completed"
+    assert "值得开心" in result["assistant_message"]["content"]
+    assert result["assistant_message"]["memory_refs"] == []
+    assert result["user_message"]["memory_status"] == "partial_rejected"

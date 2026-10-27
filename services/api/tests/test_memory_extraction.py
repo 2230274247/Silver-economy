@@ -157,7 +157,7 @@ def test_withdrawal_during_model_call_prevents_capture(clients, db, monkeypatch)
     assert a.get("/api/v1/memories").json()["items"] == []
 
 
-def test_failed_schema_preserves_l0_without_auto_retry(clients, db, monkeypatch):
+def test_broken_json_preserves_l0_without_auto_retry(clients, db, monkeypatch):
     a, _ = clients
     a.post("/api/v1/memory-consent", json={"enabled": True})
     calls = []
@@ -165,7 +165,7 @@ def test_failed_schema_preserves_l0_without_auto_retry(clients, db, monkeypatch)
     class Provider:
         def complete(self, prompts, *, json_output=False):
             calls.append(prompts)
-            return ModelReply("not valid JSON", "mock-v1", 0, 0)
+            return ModelReply('{"reply":"unfinished', "mock-v1", 0, 0)
 
     monkeypatch.setattr(model_chat, "get_provider", lambda _: Provider())
     url, body, response = send(a)
@@ -206,7 +206,7 @@ def test_structured_provider_request_remains_one_capped_call():
     def handle(request):
         calls.append(request)
         body = json.loads(request.content)
-        assert body["response_format"] == {"type": "json_object"}
+        assert "response_format" not in body  # Avoid vendor JSON-mode empty replies.
         assert body["max_tokens"] == 256 and body["thinking"]["type"] == "disabled"
         return httpx.Response(
             200,

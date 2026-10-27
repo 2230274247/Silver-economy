@@ -79,9 +79,17 @@ def context_messages(db, item, system_prompt=SYSTEM_PROMPT):
 def parse_envelope(raw, task):
     """A bad auxiliary candidate must not discard an otherwise valid reply."""
     text = raw.strip()
-    if text.startswith("```json\n") and text.endswith("```"):
-        text = text[8:-3].strip()
-    data = json.loads(text)
+    if match := re.fullmatch(r"```(?:json)?\s*\n(.*?)\n?```", text, re.DOTALL):
+        text = match[1].strip()
+    plain_reply = False
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        # Preserve plain model text, never broken JSON with auxiliary fields.
+        if not text or text.startswith(("{", "[", "```")):
+            raise
+        data = {"reply": text, "memories": [], "memory_refs": []}
+        plain_reply = True
     if not isinstance(data, dict):
         raise ValueError("Expected a reply object")
     rejected = 0
@@ -90,8 +98,12 @@ def parse_envelope(raw, task):
         memories, rejected = [], 1
     rejected += max(0, len(memories) - 3)
     values = {"reply": data.get("reply"), "memories": memories[:3]}
-    # References remain strict: a reply may depend on revoked/private evidence.
-    values["memory_refs"] = data.get("memory_refs", [])
+    references = data.get("memory_refs", [])
+    if not isinstance(references, list):
+        references, rejected = [], rejected + 1
+    labels = [label for label in references if isinstance(label, str)]
+    rejected += len(references) - len(labels) + max(0, len(labels) - 5)
+    values["memory_refs"] = labels[:5]
     outings_rejected = False
     if task:
         values["outings"] = []
@@ -105,7 +117,7 @@ def parse_envelope(raw, task):
             except ValidationError:
                 outings_rejected = True
     envelope = (TaskEnvelope if task else MemoryAnswerEnvelope).model_validate(values)
-    return envelope, rejected, outings_rejected
+    return envelope, rejected, outings_rejected or (plain_reply and bool(task)), plain_reply
 
 
 def reserve_budget(db, settings, tokens, *, budget_model=ModelBudget):
@@ -289,7 +301,7 @@ def generate_reply(db, item, assistant):
         if memory_enabled or task:
             assistant.raw_model_output = result.content
             try:
-                envelope, auxiliary_rejected, outings_rejected = parse_envelope(
+                envelope, auxiliary_rejected, outings_rejected, plain_reply = parse_envelope(
                     result.content, task
                 )
                 reply, candidates, rejected = (
@@ -300,7 +312,7 @@ def generate_reply(db, item, assistant):
                     else (envelope.reply, [], 0)
                 )
                 rejected += auxiliary_rejected
-                if memory_enabled:
+                if memory_enabled and not plain_reply:
                     candidates = MemoryUpdater().complete_candidates(item.content, candidates)
                 if task:
                     factual = [
@@ -328,11 +340,13 @@ def generate_reply(db, item, assistant):
                 )
                 if memory_enabled and owner.memory_enabled:
                     labels = list(dict.fromkeys(envelope.memory_refs))
-                    if any(label not in selected for label in labels):
-                        raise ProviderFailure("MEMORY_UNSUPPORTED_REFERENCE")
+                    ignored_refs = any(label not in selected for label in labels)
+                    labels = [label for label in labels if label in selected]
                     # Editing/deleting/revoking while generation is in flight must
                     # not return an answer grounded in stale private evidence.
-                    for label in labels:
+                    # Any supplied fact can influence natural text, even when
+                    # labels are missing. Labels only determine explicit citations.
+                    for label in selected:
                         memory = selected[label]
                         fact = db.scalar(
                             select(MemoryFact)
@@ -372,6 +386,14 @@ def generate_reply(db, item, assistant):
                         ),
                     )
                     item.memory_status = "partial_rejected" if rejected else "captured"
+                    if ignored_refs:
+                        item.memory_status = "partial_rejected"
+                        usage.status, usage.error_code = (
+                            "completed_partial",
+                            "MEMORY_REFERENCE_IGNORED",
+                        )
+                    if plain_reply:
+                        item.memory_status = "failed_schema"
                 else:
                     item.memory_status = "disabled"
                     if selected:
@@ -407,6 +429,9 @@ def generate_reply(db, item, assistant):
                         )
                         usage.error_code = usage.error_code or "TASK_CANDIDATE_REJECTED"
                         usage.status = "completed_partial"
+                if plain_reply:
+                    usage.status = "completed_partial"
+                    usage.error_code = usage.error_code or "MODEL_AUXILIARY_FORMAT"
             except (ValidationError, ValueError):
                 item.memory_status = "failed_schema"
                 assistant.content, assistant.status = "", "failed"

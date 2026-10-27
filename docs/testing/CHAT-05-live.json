@@ -1,0 +1,33 @@
+{
+  "started_at": "2026-10-27T08:16:35.750Z",
+  "mode": "LIVE_DEEPSEEK_TEXT_TRANSPORT",
+  "synthetic": true,
+  "max_chat_calls": 2,
+  "search_calls": 0,
+  "attempts": [
+    {
+      "kind": "ordinary_with_memory",
+      "status": "failed",
+      "error_code": "MEMORY_UNSUPPORTED_REFERENCE",
+      "request_id": "8ed3d89b-0a80-482d-9331-6481cb8288d2",
+      "memory_status": "model_failed",
+      "reply_length": 0,
+      "drafts": 0
+    },
+    {
+      "kind": "relative_reminder",
+      "status": "completed",
+      "error_code": null,
+      "request_id": "b607e065-c018-47ff-ba86-208bbc6b8631",
+      "memory_status": "captured",
+      "reply_length": 81,
+      "drafts": 1,
+      "relative_offset_seconds": 1800,
+      "scheduling_status": "not_scheduled",
+      "refresh_persisted": true
+    }
+  ],
+  "status": "SECOND_LIVE_PASS_FIRST_FAILURE_RETAINED",
+  "finished_at": "2026-10-27T08:20:18.084Z",
+  "first_attempt_failure": "Live reply not completed; no retry"
+}

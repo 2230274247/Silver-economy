@@ -1,5 +1,6 @@
 """Small synchronous provider interface; no retries, SDK telemetry or prompt logging."""
 
+import logging
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -7,6 +8,8 @@ import httpx
 from pydantic import BaseModel, Field, ValidationError
 
 from app.core.config import Settings
+
+logger = logging.getLogger("silver.model.provider")
 
 
 class ProviderFailure(Exception):
@@ -80,7 +83,8 @@ class DeepSeekProvider:
                         "max_tokens": self.settings.deepseek_max_output_tokens,
                         "thinking": {"type": "disabled"},
                         "stream": False,
-                        **({"response_format": {"type": "json_object"}} if json_output else {}),
+                        # Prompt-guided JSON is validated locally. Vendor json_object
+                        # mode can emit empty content even well below the output cap.
                     },
                 )
             if response.status_code != 200:
@@ -97,6 +101,13 @@ class DeepSeekProvider:
                 usage.completion_tokens,
             )
             if not content.strip():
+                logger.warning(
+                    "empty_response model=%s finish_reason=%s input_tokens=%s output_tokens=%s",
+                    result.model,
+                    data["choices"][0].get("finish_reason"),
+                    result.input_tokens,
+                    result.output_tokens,
+                )
                 raise ProviderFailure("MODEL_EMPTY_RESPONSE", result)
             return result
         except httpx.TimeoutException:
