@@ -227,6 +227,16 @@ def generate_reply(db, item, assistant):
         )
         prompt, selected = context.system_prompt, context.selected
     prompts = context_messages(db, item, prompt)
+    logger.info(
+        "request_id=%s stage=context_ready provider=%s memory_enabled=%s "
+        "memory_count=%s task_intent=%s context_messages=%s",
+        item.client_request_id,
+        provider,
+        memory_enabled,
+        len(selected),
+        bool(task),
+        len(prompts),
+    )
     item.memory_status = "pending" if memory_enabled else "disabled"
     usage = None
     started = time.monotonic()
@@ -261,6 +271,11 @@ def generate_reply(db, item, assistant):
         )
         db.add(usage)
         db.commit()  # original + pending reply and quota reservation durable before external I/O
+        logger.info(
+            "request_id=%s stage=request_persisted reserved_tokens=%s",
+            item.client_request_id,
+            tokens,
+        )
         if weather:
             live = search_weather(
                 db,
@@ -275,11 +290,23 @@ def generate_reply(db, item, assistant):
             assistant.search_context = live
             prompt = prompt.replace(WEB_MARKER, json.dumps(live, ensure_ascii=False))
             prompts = context_messages(db, item, prompt)
+            logger.info(
+                "request_id=%s stage=weather_ready status=%s",
+                item.client_request_id,
+                live.get("status"),
+            )
         model = get_provider(settings)
+        logger.info("request_id=%s stage=model_call_started", item.client_request_id)
         result = (
             model.complete(prompts, json_output=True)
             if memory_enabled or task
             else model.complete(prompts)
+        )
+        logger.info(
+            "request_id=%s stage=model_call_returned input_tokens=%s output_tokens=%s",
+            item.client_request_id,
+            result.input_tokens,
+            result.output_tokens,
         )
         assistant.content = result.content
         assistant.status = "completed"
@@ -457,11 +484,14 @@ def generate_reply(db, item, assistant):
             usage.latency_ms = int((time.monotonic() - started) * 1000)
         db.commit()
     logger.info(
-        "request_id=%s provider=%s status=%s latency_ms=%s "
+        "request_id=%s stage=reply_persisted provider=%s status=%s error_code=%s "
+        "memory_status=%s latency_ms=%s "
         "input_tokens=%s output_tokens=%s estimated_usd=%s",
         item.client_request_id,
         provider,
         assistant.status,
+        assistant.error_code,
+        item.memory_status,
         int((time.monotonic() - started) * 1000),
         usage.input_tokens if usage else None,
         usage.output_tokens if usage else None,

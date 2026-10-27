@@ -2,10 +2,10 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: CHAT-05 共用聊天空返回与引用误拦截修复；T14开放项保留
+- Current task: DEV-01 PyCharm运行与聊天调试支持；T14开放项保留
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: CHAT-04 `9a87657ddbd31b9687505eea7b8e44c8ac2f7853`
-- Last verified CI: PASS（run 40471287566/40471293311；api/security/mobile全部success）
+- Last remote-confirmed SHA: CHAT-05 `fe4942e2a7663e4346a18c48f1521a463be754df`
+- Last verified CI: PASS（run 40473225092/40473233834；api/security/mobile全部success）
 - 最后核验时间：2026-10-27T14:43:37+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
@@ -62,3 +62,5 @@ CHAT-03（2026-10-27T15:45:21+08:00）：修复新任务占位编号与复合日
 CHAT-04（2026-10-27T16:05:57+08:00）：144专项通过；聊天保留与辅助候选降级、失败旧问上下文隔离、相对提醒时间与上游空回复分类，真实付费新增0。TS/Lint/H5通过，详见CHAT-04_REPLY_RESILIENCE.md；按用户要求上传全部项目代码，排除密钥/私有数据。当前SHA/push/CI提交后核验。
 
 CHAT-05（2026-10-27T16:23:08+08:00）：移除共用聊天强制JSON模式；自然语言降级与无效引用不再清空reply；真实记忆撤回/证据版本保护保留。160相关回归通过，最终引用保护另10项复核；真实两次（一失败促成引用修复、一提醒通过），1409/211 tokens，估算USD0.00067590，0自动重试。详见CHAT-05_EMPTY_RESPONSE.md；未宣称第三方永不故障或全V0.1完成，当前SHA/push/CI事后核验。
+
+DEV-01（2026-10-27T16:51:56+08:00）：PyCharm共享Mock/Live API和Mock Worker配置、脱敏聊天阶段日志与断点手册；35专项及XML/临时8001实际Mock聊天持久/幂等通过，0付费调用，无迁移。未验证IDE实际断点，保留现有.idea及当前服务；详见DEV-01_PYCHARM.md，当前提交SHA/CI事后核验。

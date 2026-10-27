@@ -249,3 +249,11 @@ def test_model_logs_only_metadata(clients, monkeypatch, caplog):
     assert "input_tokens=0" in caplog.text and "output_tokens=0" in caplog.text
     assert "PRIVATE_SYNTHETIC_CONTENT" not in caplog.text
     assert "synthetic-not-real" not in caplog.text
+    for stage in (
+        "context_ready",
+        "request_persisted",
+        "model_call_started",
+        "model_call_returned",
+        "reply_persisted",
+    ):
+        assert f"stage={stage}" in caplog.text
