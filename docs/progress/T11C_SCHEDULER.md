@@ -1,6 +1,6 @@
 # T11C：确定性时间与持久调度
 
-状态：LOCAL_PASS_PENDING_REMOTE。前项 T11B `c44766fa863f968463099976faab6f4c35e8cc01` 远端一致，CI `40445595994` 全部 success；其真实高德仍为 LIVE_PENDING，不能据此宣称真实出行链通过。
+状态：DONE_PUSHED（本地测试、推送与远端 CI 均已核验）。功能提交 `742283e0a6358aa89a193177270eb5576e62b24b` 已在 `dev/v0.1` 远端一致；CI run `40451532189` 的 api、security、mobile 三项全部 success。前项 T11B `c44766fa863f968463099976faab6f4c35e8cc01` 远端一致，CI `40445595994` 全部 success；其真实高德仍为 LIVE_PENDING，不能据此宣称真实出行链通过。
 
 ## 目标、实现边界
 
@@ -36,6 +36,7 @@
 - 独立 Worker 实进程首轮 `claimed=1, submitted=1`；次轮 `claimed=0, submitted=0`。数据库核对 job/reminder 为 `submitted_to_provider`、attempt=1、provider message id 存在，审计为 `task_scheduled` 与 `notification_submitted`。
 - 证据：[T11C-local.json](../testing/T11C-local.json)；截图：[360](../demos/T11C-scheduled-360.png)、[390](../demos/T11C-scheduled-390.png)、[430](../demos/T11C-scheduled-430.png)。
 - 本任务新增 DeepSeek 0 次、真实高德 0 次、真实推送 0 次；自动测试只使用 Mock。
+- 远端核验：`git ls-remote origin refs/heads/dev/v0.1` 与功能 SHA 一致；CI run `40451532189` 全部 success。远端证据另存 [T11C-remote.json](../testing/T11C-remote.json)。
 
 ## 风险与未完成边界
 
