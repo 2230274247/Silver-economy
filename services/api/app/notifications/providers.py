@@ -70,7 +70,6 @@ class UniPushBridgeProvider:
         except httpx.HTTPError:
             raise NotificationFailure(
                 "PROVIDER_CONNECTION_UNKNOWN",
-                retryable=True,
             ) from None
         finally:
             if owns_client:

@@ -54,7 +54,7 @@ test('location consent, explicit second choice, route/weather provenance and ref
   expect(externalActions).toBe(3); // Two searches and one preview; no queries on opening or reload.
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
   await panel.locator('.map-result').scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T11B-mock-${info.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/T11B-mock-${info.project.name}.png`) });
   await panel.getByRole('button', { name: '撤回位置用途并清理查询结果', exact: true }).click();
   await expect(panel.locator('.map-result')).toHaveCount(0);
   const withdrawn = await (await page.request.get(`/api/v1/task-drafts/${draft.id}`)).json();

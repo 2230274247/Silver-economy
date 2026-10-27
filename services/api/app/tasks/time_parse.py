@@ -4,7 +4,8 @@ import re
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-ZONE = ZoneInfo("Asia/Hong_Kong")
+DEFAULT_TIMEZONE = "Asia/Hong_Kong"
+ZONE = ZoneInfo(DEFAULT_TIMEZONE)
 DIGITS = dict(zip("零〇一二两三四五六七八九", (0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9), strict=True))
 NUMBER = r"[0-9零〇一二两三四五六七八九十]+"
 DATE_PATTERN = (
@@ -28,8 +29,12 @@ def number(value):
     return DIGITS.get(value, -1)
 
 
-def calendar_day(date_text, reference):
-    local = reference.replace(tzinfo=UTC).astimezone(ZONE)
+def timezone_for(value=DEFAULT_TIMEZONE):
+    return value if isinstance(value, ZoneInfo) else ZoneInfo(value or DEFAULT_TIMEZONE)
+
+
+def calendar_day(date_text, reference, timezone=ZONE):
+    local = reference.replace(tzinfo=UTC).astimezone(timezone_for(timezone))
     day = None
     if date_text in {"今天", "明天", "后天"}:
         day = local.date() + timedelta(days={"今天": 0, "明天": 1, "后天": 2}[date_text])
@@ -92,17 +97,21 @@ def clock_value(clock_text, period_text):
     return hour, minute
 
 
-def parse_target(date_text, clock_text, period_text, reference):
-    day = calendar_day(date_text, reference)
+def parse_target(date_text, clock_text, period_text, reference, timezone=ZONE):
+    zone = timezone_for(timezone)
+    day = calendar_day(date_text, reference, zone)
     clock = clock_value(clock_text, period_text)
     if day is None or clock is None:
         return None
     hour, minute = clock
-    return (
-        datetime(day.year, day.month, day.day, hour, minute, tzinfo=ZONE)
-        .astimezone(UTC)
-        .replace(tzinfo=None)
-    )
+    local = datetime(day.year, day.month, day.day, hour, minute, tzinfo=zone)
+    # Never silently move a nonexistent DST time or choose one side of an
+    # ambiguous DST time. The caller can ask the user to confirm the offset.
+    if local.astimezone(UTC).astimezone(zone).replace(tzinfo=None) != local.replace(tzinfo=None):
+        return None
+    if local.utcoffset() != local.replace(fold=1).utcoffset():
+        return None
+    return local.astimezone(UTC).replace(tzinfo=None)
 
 
 def time_parts(text):

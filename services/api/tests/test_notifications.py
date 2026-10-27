@@ -1,6 +1,7 @@
 import json
 from contextlib import nullcontext
 
+import httpx
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -161,3 +162,48 @@ def test_notification_status_distinguishes_configuration_from_real_delivery(monk
     # Keep the ORM import exercised here so a schema/model mismatch fails early.
     assert NotificationDevice.__tablename__ == "notification_devices"
     assert NotificationJob.__tablename__ == "notification_jobs"
+
+
+def test_bridge_timeout_never_blindly_retries_an_unknown_delivery(clients, db, monkeypatch):
+    configure_notifications(monkeypatch, provider="unipush_bridge")
+    monkeypatch.setenv("UNI_PUSH_BRIDGE_URL", "https://bridge.example.invalid/push")
+    monkeypatch.setenv("UNI_PUSH_BRIDGE_TOKEN", BRIDGE_TOKEN)
+    get_settings.cache_clear()
+    a, _ = clients
+    register(a)
+    job, _ = make_due(db, a)
+
+    class Client:
+        def post(self, *args, **kwargs):
+            raise httpx.ReadTimeout("Synthetic provider outcome unknown")
+
+    result = process_once(
+        factory=lambda: nullcontext(db),
+        provider=UniPushBridgeProvider(get_settings(), Client()),
+    )
+    assert result["unknown"] == 1
+    assert job.status == "unknown"
+    assert process_once(factory=lambda: nullcontext(db))["claimed"] == 0
+
+
+def test_revoked_device_is_not_used_by_future_worker_attempt(clients, db, monkeypatch):
+    configure_notifications(monkeypatch, provider="unipush_bridge")
+    monkeypatch.setenv("UNI_PUSH_BRIDGE_URL", "https://bridge.example.invalid/push")
+    monkeypatch.setenv("UNI_PUSH_BRIDGE_TOKEN", BRIDGE_TOKEN)
+    get_settings.cache_clear()
+    a, _ = clients
+    device = register(a).json()
+    assert a.delete(f"/api/v1/notification-devices/{device['id']}").status_code == 200
+    job, _ = make_due(db, a)
+
+    class Client:
+        def post(self, *args, **kwargs):
+            raise AssertionError("Revoked device must never reach bridge")
+
+    result = process_once(
+        factory=lambda: nullcontext(db),
+        provider=UniPushBridgeProvider(get_settings(), Client()),
+    )
+    assert result["failed"] == 1
+    assert job.error_code == "NO_ACTIVE_DEVICE"
+    assert job.provider_message_id is None

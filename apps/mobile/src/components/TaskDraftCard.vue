@@ -90,6 +90,12 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
     <text class="task-note">
       {{ item.status === 'scheduled' ? '任务与提醒已持久保存；当前为 Mock 站内通知，不能证明手机后台已收到。' : item.status === 'confirmed' ? '信息确认不会自动安排提醒；请在下方单独生成并确认计算预览。' : '当前只保存信息。地点、路线和天气需在下方主动核实，调度前还有独立确认。' }}
     </text>
+    <text
+      v-if="item.evidence.replaces_task"
+      class="task-note"
+    >
+      这是地点或交通修改草案。确认安排新提醒之前，原提醒保留；确认后会取消原提醒。
+    </text>
     <view
       v-if="!editing"
       class="task-summary"

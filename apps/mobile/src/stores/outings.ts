@@ -3,7 +3,7 @@ import { requestId } from '../platform/ids';
 import type { TaskDraft } from './task-drafts';
 
 export interface NotificationJob {
-  id: string; status: string; channel: string; scheduled_at: string;
+  id: string; purpose: 'reminder' | 'internal_refresh' | 'schedule_change'; status: string; channel: string; scheduled_at: string;
   attempts: number; provider: string; provider_message_id: string | null;
   last_attempt_at: string | null; error_code: string | null;
   completed_at: string | null; is_mock: boolean;
@@ -43,6 +43,8 @@ export interface OutingTask {
   weather_snapshot: WeatherSnapshot | null;
   calculation_basis: CalculationBasis;
   provider: string; is_synthetic: boolean; confirmed_at: string;
+  proactive_updates_enabled: boolean; proactive_change_threshold_minutes: number;
+  proactive_refresh_at: string | null; last_proactive_refresh_at: string | null;
   departed_at: string | null; navigation_url: string;
   cancelled_at: string | null; completed_at: string | null;
   notifications: NotificationJob[];
@@ -72,6 +74,12 @@ export function confirmSchedule(
 
 export function listOutingTasks() {
   return request<{ items: OutingTask[] }>('/outing-tasks');
+}
+
+export function replacementDraft(task: OutingTask) {
+  return request<TaskDraft>(`/outing-tasks/${task.id}/replacement-draft`, 'POST', {
+    expected_revision: task.revision,
+  });
 }
 
 export function cancelOutingTask(task: OutingTask) {
@@ -116,5 +124,17 @@ export function sendTaskFeedback(
     expected_revision: task.revision,
     feedback,
     note: '',
+  });
+}
+
+export function updateProactivePreference(
+  task: OutingTask,
+  enabled: boolean,
+  changeThresholdMinutes: number,
+) {
+  return request<OutingTask>(`/outing-tasks/${task.id}/proactive-updates`, 'PATCH', {
+    expected_revision: task.revision,
+    enabled,
+    change_threshold_minutes: changeThresholdMinutes,
   });
 }

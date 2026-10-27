@@ -10,7 +10,14 @@ from app.core.security import utc_now
 from app.llm.providers import ProviderFailure
 from app.models.entities import TaskDraft, User
 from app.tasks.intent import NEW_TASK, TEXT_FIELDS, grounded, negated_modes
-from app.tasks.time_parse import calendar_day, clock_value, number, parse_target, time_parts
+from app.tasks.time_parse import (
+    calendar_day,
+    clock_value,
+    number,
+    parse_target,
+    time_parts,
+    timezone_for,
+)
 
 
 def stamp(value):
@@ -20,12 +27,21 @@ def stamp(value):
 def missing_fields(draft):
     missing = []
     if draft.target_at is None:
-        if calendar_day(draft.date_text, draft.time_reference_at) is None:
+        if (
+            calendar_day(
+                draft.date_text,
+                draft.time_reference_at,
+                timezone_for(draft.timezone),
+            )
+            is None
+        ):
             missing.append("明确的日期")
         if not draft.clock_text:
             missing.append("具体时刻")
         elif clock_value(draft.clock_text, draft.period_text) is None:
             missing.append("上午/下午或明确的24小时制时刻")
+        if not missing:
+            missing.append("有效且无夏令时歧义的当地时刻")
     elif draft.target_at <= utc_now():
         missing.append("尚未过去的时间")
     if draft.kind == "outing":
@@ -40,7 +56,11 @@ def missing_fields(draft):
 
 
 def draft_data(draft):
-    day = calendar_day(draft.date_text, draft.time_reference_at)
+    day = calendar_day(
+        draft.date_text,
+        draft.time_reference_at,
+        timezone_for(draft.timezone),
+    )
     data = {
         name: getattr(draft, name)
         for name in (
@@ -229,7 +249,11 @@ def save_candidates(db, message, candidates, context, provider):
                 }
         draft.evidence = evidence
         draft.target_at = parse_target(
-            draft.date_text, draft.clock_text, draft.period_text, draft.time_reference_at
+            draft.date_text,
+            draft.clock_text,
+            draft.period_text,
+            draft.time_reference_at,
+            timezone_for(draft.timezone),
         )
         draft.last_message_id = message.id
         invalidate_map_snapshot(draft)
@@ -266,7 +290,11 @@ def update_draft(db, user_id, draft_id, payload):
         draft.time_reference_at = now
     draft.date_text, draft.clock_text, draft.period_text = date, clock, period
     draft.target_at = parse_target(
-        draft.date_text, draft.clock_text, draft.period_text, draft.time_reference_at
+        draft.date_text,
+        draft.clock_text,
+        draft.period_text,
+        draft.time_reference_at,
+        timezone_for(draft.timezone),
     )
     draft.time_semantics = "at" if draft.kind == "reminder" else payload.time_semantics
     for field in ("origin", "destination", "transport", "lead_minutes"):

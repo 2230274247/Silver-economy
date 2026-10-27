@@ -127,6 +127,13 @@ class OutingTaskPatch(BaseModel):
         return value.strip()
 
 
+class ProactiveUpdatePreference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int = Field(ge=1)
+    enabled: bool
+    change_threshold_minutes: int = Field(default=10, ge=5, le=60)
+
+
 class OutingTaskAction(BaseModel):
     model_config = ConfigDict(extra="forbid")
     expected_revision: int = Field(ge=1)
@@ -139,6 +146,7 @@ class OutingTaskFeedback(OutingTaskAction):
 
 class NotificationJobOut(BaseModel):
     id: str
+    purpose: str
     status: str
     channel: str
     scheduled_at: datetime
@@ -172,6 +180,10 @@ class OutingTaskOut(BaseModel):
     provider: str
     is_synthetic: bool
     confirmed_at: datetime
+    proactive_updates_enabled: bool
+    proactive_change_threshold_minutes: int
+    proactive_refresh_at: datetime | None
+    last_proactive_refresh_at: datetime | None
     departed_at: datetime | None
     cancelled_at: datetime | None
     completed_at: datetime | None

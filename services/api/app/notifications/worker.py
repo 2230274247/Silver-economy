@@ -27,6 +27,7 @@ from app.models.entities import (
     TaskAuditLog,
 )
 from app.notifications.providers import NotificationFailure, get_notification_provider
+from app.tasks import scheduling
 
 logger = logging.getLogger("silver.worker")
 
@@ -63,11 +64,12 @@ def recover_worker_state(db, *, now, grace_minutes):
         job.error_code = "LEASE_EXPIRED_UNKNOWN_OUTCOME"
         job.completed_at = now
         job.lease_owner = job.lease_token = job.lease_expires_at = None
-        db.execute(
-            update(Reminder)
-            .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
-            .values(status="unknown")
-        )
+        if job.payload.get("job_type", "reminder") == "reminder":
+            db.execute(
+                update(Reminder)
+                .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
+                .values(status="unknown")
+            )
         _audit(db, job, "notification_unknown", error_code=job.error_code)
 
     missed = db.scalars(
@@ -82,11 +84,12 @@ def recover_worker_state(db, *, now, grace_minutes):
         job.status = "missed"
         job.error_code = "DELIVERY_WINDOW_EXPIRED"
         job.completed_at = now
-        db.execute(
-            update(Reminder)
-            .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
-            .values(status="expired")
-        )
+        if job.payload.get("job_type", "reminder") == "reminder":
+            db.execute(
+                update(Reminder)
+                .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
+                .values(status="expired")
+            )
         _audit(db, job, "notification_missed", error_code=job.error_code)
     return {"recovered_unknown": len(expired), "missed": len(missed)}
 
@@ -152,16 +155,78 @@ def _process_claim(factory, provider, job_id, token):
             .order_by(NotificationDevice.last_seen_at.desc(), NotificationDevice.id.desc())
             .limit(1)
         )
+        purpose = job.payload.get("job_type", "reminder")
+        if purpose == "internal_refresh":
+            if (
+                task is None
+                or task.status != "scheduled"
+                or task.revision != job.task_revision
+                or reminder is None
+            ):
+                job.status = "cancelled"
+                job.error_code = "TASK_NO_LONGER_ACTIVE"
+                job.completed_at = utc_now()
+                _audit(db, job, "notification_cancelled", error_code=job.error_code)
+                db.commit()
+                return "cancelled"
+            outcome = scheduling.refresh_proactive_task(
+                db,
+                job,
+                task,
+                reminder,
+                utc_now(),
+            )
+            current_job = db.scalar(
+                select(NotificationJob)
+                .where(
+                    NotificationJob.id == job_id,
+                    NotificationJob.user_id == task.user_id,
+                )
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if (
+                current_job is None
+                or current_job.status != "claimed"
+                or current_job.lease_token != token
+            ):
+                db.rollback()
+                return "lease_lost"
+            if outcome in {"updated", "unchanged"}:
+                current_job.status = "completed"
+                current_job.provider = "internal"
+                current_job.error_code = None
+                current_job.completed_at = utc_now()
+                _audit(db, current_job, "proactive_refresh_completed")
+                db.commit()
+                return "submitted"
+            if outcome in {"disabled", "rate_limited", "not_applicable", "stale"}:
+                current_job.status = "cancelled"
+                current_job.error_code = outcome.upper()
+                current_job.completed_at = utc_now()
+                _audit(db, current_job, "notification_cancelled", error_code=current_job.error_code)
+                db.commit()
+                return "cancelled"
+            current_job.status = "failed"
+            current_job.error_code = outcome[:64]
+            current_job.completed_at = utc_now()
+            _audit(db, current_job, "proactive_refresh_failed", error_code=current_job.error_code)
+            db.commit()
+            return "failed"
         if task is None or task.status != "scheduled":
             job.status = "cancelled"
             job.error_code = "TASK_NO_LONGER_ACTIVE"
             job.completed_at = utc_now()
-            if reminder and reminder.status == "pending":
+            if purpose == "reminder" and reminder and reminder.status == "pending":
                 reminder.status = "cancelled"
             _audit(db, job, "notification_cancelled", error_code=job.error_code)
             db.commit()
             return "cancelled"
-        if task.revision != job.task_revision or reminder is None or reminder.status != "pending":
+        if (
+            task.revision != job.task_revision
+            or reminder is None
+            or reminder.status not in {"pending", "retry_scheduled"}
+        ):
             job.status = "cancelled"
             job.error_code = "STALE_TASK_REVISION"
             job.completed_at = utc_now()
@@ -190,7 +255,11 @@ def _process_claim(factory, provider, job_id, token):
             now = utc_now()
             job.lease_owner = job.lease_token = job.lease_expires_at = None
             job.error_code = failure.code
-            if failure.retryable and job.attempts < job.max_attempts:
+            if failure.code == "PROVIDER_CONNECTION_UNKNOWN":
+                job.status = "unknown"
+                job.completed_at = now
+                reminder_status = "unknown"
+            elif failure.retryable and job.attempts < job.max_attempts:
                 job.status = "retry_scheduled"
                 job.next_attempt_at = now + timedelta(minutes=job.attempts)
                 reminder_status = "retry_scheduled"
@@ -198,11 +267,12 @@ def _process_claim(factory, provider, job_id, token):
                 job.status = "failed"
                 job.completed_at = now
                 reminder_status = "failed"
-            db.execute(
-                update(Reminder)
-                .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
-                .values(status=reminder_status)
-            )
+            if purpose == "reminder":
+                db.execute(
+                    update(Reminder)
+                    .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
+                    .values(status=reminder_status)
+                )
             _audit(db, job, "notification_failed", error_code=failure.code)
             db.commit()
             return job.status
@@ -221,11 +291,12 @@ def _process_claim(factory, provider, job_id, token):
             job.error_code = "PROVIDER_OUTCOME_UNKNOWN"
             job.completed_at = utc_now()
             job.lease_owner = job.lease_token = job.lease_expires_at = None
-            db.execute(
-                update(Reminder)
-                .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
-                .values(status="unknown")
-            )
+            if purpose == "reminder":
+                db.execute(
+                    update(Reminder)
+                    .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
+                    .values(status="unknown")
+                )
             _audit(db, job, "notification_unknown", error_code=job.error_code)
             db.commit()
             return "unknown"
@@ -245,11 +316,12 @@ def _process_claim(factory, provider, job_id, token):
         job.provider_message_id = result["provider_message_id"]
         job.error_code = None
         job.lease_owner = job.lease_token = job.lease_expires_at = None
-        db.execute(
-            update(Reminder)
-            .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
-            .values(status="submitted_to_provider")
-        )
+        if purpose == "reminder":
+            db.execute(
+                update(Reminder)
+                .where(Reminder.user_id == job.user_id, Reminder.id == job.reminder_id)
+                .values(status="submitted_to_provider")
+            )
         _audit(db, job, "notification_submitted")
         db.commit()
         return "submitted"

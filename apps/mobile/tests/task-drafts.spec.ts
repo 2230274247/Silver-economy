@@ -43,7 +43,7 @@ test('trip clarification, editable information confirmation and refresh are pers
   await expect(card).toContainText('Synthetic 可编辑做客安排');
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
   await card.getByText('信息已确认 · 尚未调度', { exact: true }).scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T11A-confirmed-${info.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/T11A-confirmed-${info.project.name}.png`) });
 });
 
 test('draft validation, save error, preserved input, duplicate guard and defer use real API state', async ({ page }) => {

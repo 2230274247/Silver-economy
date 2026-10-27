@@ -7,6 +7,7 @@ from app.schemas.tasks import (
     OutingTaskOut,
     OutingTaskPage,
     OutingTaskPatch,
+    ProactiveUpdatePreference,
     ScheduleConfirm,
     SchedulePreviewRequest,
     TaskDraftOut,
@@ -14,6 +15,13 @@ from app.schemas.tasks import (
 from app.tasks import scheduling
 
 router = APIRouter(prefix="/api/v1")
+
+
+@router.post("/outing-tasks/{task_id}/replacement-draft", response_model=TaskDraftOut)
+def replacement_draft(
+    task_id: str, payload: OutingTaskAction, user: CurrentUser, db: DatabaseSession
+):
+    return scheduling.create_replacement_draft(db, user.id, task_id, payload)
 
 
 @router.post("/task-drafts/{draft_id}/schedule-preview", response_model=TaskDraftOut)
@@ -78,3 +86,13 @@ def task_feedback(
     db: DatabaseSession,
 ):
     return scheduling.record_feedback(db, user.id, task_id, payload)
+
+
+@router.patch("/outing-tasks/{task_id}/proactive-updates", response_model=OutingTaskOut)
+def proactive_updates(
+    task_id: str,
+    payload: ProactiveUpdatePreference,
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    return scheduling.set_proactive_preference(db, user.id, task_id, payload)

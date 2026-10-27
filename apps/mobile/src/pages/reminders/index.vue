@@ -38,7 +38,7 @@ function statusLabel(task: OutingTask) {
 }
 
 function jobLabel(task: OutingTask) {
-  const latest = task.notifications[task.notifications.length - 1];
+  const latest = [...task.notifications].reverse().find(item => item.purpose === 'reminder');
   if (!latest) return '尚无通知记录';
   const mock = latest.is_mock ? 'Mock 通知 · ' : '';
   if (latest.status === 'queued') return `${mock}等待后台 Worker`;

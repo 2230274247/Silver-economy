@@ -1282,6 +1282,55 @@
         }
       }
     },
+    "/api/v1/outing-tasks/{task_id}/replacement-draft": {
+      "post": {
+        "summary": "Replacement Draft",
+        "operationId": "replacement_draft_api_v1_outing_tasks__task_id__replacement_draft_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutingTaskAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/task-drafts/{draft_id}/schedule-preview": {
       "post": {
         "summary": "Schedule Preview",
@@ -1715,6 +1764,55 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/OutingTaskFeedback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutingTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outing-tasks/{task_id}/proactive-updates": {
+      "patch": {
+        "summary": "Proactive Updates",
+        "operationId": "proactive_updates_api_v1_outing_tasks__task_id__proactive_updates_patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProactiveUpdatePreference"
               }
             }
           }
@@ -2781,6 +2879,10 @@
             "type": "string",
             "title": "Id"
           },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -2856,6 +2958,7 @@
         "type": "object",
         "required": [
           "id",
+          "purpose",
           "status",
           "channel",
           "scheduled_at",
@@ -3175,6 +3278,38 @@
             "format": "date-time",
             "title": "Confirmed At"
           },
+          "proactive_updates_enabled": {
+            "type": "boolean",
+            "title": "Proactive Updates Enabled"
+          },
+          "proactive_change_threshold_minutes": {
+            "type": "integer",
+            "title": "Proactive Change Threshold Minutes"
+          },
+          "proactive_refresh_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proactive Refresh At"
+          },
+          "last_proactive_refresh_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Proactive Refresh At"
+          },
           "departed_at": {
             "anyOf": [
               {
@@ -3245,6 +3380,10 @@
           "provider",
           "is_synthetic",
           "confirmed_at",
+          "proactive_updates_enabled",
+          "proactive_change_threshold_minutes",
+          "proactive_refresh_at",
+          "last_proactive_refresh_at",
           "departed_at",
           "cancelled_at",
           "completed_at",
@@ -3508,6 +3647,33 @@
           "candidate_id"
         ],
         "title": "PlaceSelection"
+      },
+      "ProactiveUpdatePreference": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "change_threshold_minutes": {
+            "type": "integer",
+            "maximum": 60.0,
+            "minimum": 5.0,
+            "title": "Change Threshold Minutes",
+            "default": 10
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "enabled"
+        ],
+        "title": "ProactiveUpdatePreference"
       },
       "RevisionOut": {
         "properties": {

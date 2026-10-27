@@ -4,7 +4,9 @@ import AccessibleButton from './AccessibleButton.vue';
 import { openExternalMap } from '../platform/navigation';
 import {
   sendTaskFeedback,
+  updateProactivePreference,
   updateOutingTask,
+  replacementDraft,
   type OutingTask,
 } from '../stores/outings';
 
@@ -19,6 +21,9 @@ const editing = ref(false);
 const busy = ref(false);
 const error = ref('');
 const feedbackSent = ref('');
+const preferenceBusy = ref(false);
+const preferenceError = ref('');
+const proactiveThreshold = ref(10);
 const form = reactive({
   title: '',
   target_at: '',
@@ -61,8 +66,15 @@ function startEdit() {
   form.access_buffer_minutes = Number(props.task.calculation_basis.inputs?.access_buffer_minutes ?? 10);
   form.contingency_buffer_minutes = Number(props.task.calculation_basis.inputs?.contingency_buffer_minutes ?? 15);
   form.lead_minutes = Number(props.task.calculation_basis.inputs?.lead_minutes ?? 30);
+  proactiveThreshold.value = Number(props.task.proactive_change_threshold_minutes ?? 10);
   editing.value = true;
   error.value = '';
+}
+
+function purposeLabel(purpose: string) {
+  if (purpose === 'internal_refresh') return '出发前路线天气复核';
+  if (purpose === 'schedule_change') return '变化提醒';
+  return '主要提醒';
 }
 
 async function save() {
@@ -100,6 +112,42 @@ async function feedback(value: 'helpful' | 'not_helpful') {
     error.value = reason instanceof Error ? reason.message : '反馈提交失败';
   } finally {
     busy.value = false;
+  }
+}
+
+async function changePlace() {
+  if (busy.value) return;
+  busy.value = true;
+  error.value = '';
+  try {
+    const draft = await replacementDraft(props.task);
+    uni.navigateTo({ url: `/pages/index/index?id=${encodeURIComponent(draft.conversation_id)}` });
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : '地点修改草案读取失败，请重试';
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function setProactive(enabled: boolean) {
+  if (preferenceBusy.value) return;
+  preferenceBusy.value = true;
+  preferenceError.value = '';
+  try {
+    const changed = await updateProactivePreference(
+      props.task,
+      enabled,
+      Number(proactiveThreshold.value),
+    );
+    emit('updated', changed);
+    emit(
+      'feedback',
+      enabled ? '已开启出行变化提醒。' : '已关闭出行变化提醒，普通提醒不受影响。',
+    );
+  } catch (reason) {
+    preferenceError.value = reason instanceof Error ? reason.message : '偏好保存失败';
+  } finally {
+    preferenceBusy.value = false;
   }
 }
 </script>
@@ -148,6 +196,18 @@ async function feedback(value: 'helpful' | 'not_helpful') {
         >
           打开高德地图查找目的地
         </AccessibleButton>
+        <text v-if="task.status === 'scheduled'">
+          修改地点会打开新的核对卡；新卡确认安排前，原提醒保留。确认后原提醒失效。
+        </text>
+        <AccessibleButton
+          v-if="task.status === 'scheduled'"
+          secondary
+          :loading="busy"
+          :disabled="busy"
+          @click="changePlace"
+        >
+          修改地点和交通方式
+        </AccessibleButton>
       </view>
 
       <view class="detail-block">
@@ -171,12 +231,54 @@ async function feedback(value: 'helpful' | 'not_helpful') {
           :key="job.id"
           class="notification-line"
         >
-          <text>{{ displayTime(job.scheduled_at) }} · {{ job.status }}</text>
-          <text>{{ job.is_mock ? 'Mock 站内通知，不能证明手机收到' : `${job.provider} 已提交，送达未确认` }}</text>
+          <text>{{ purposeLabel(job.purpose) }} · {{ displayTime(job.scheduled_at) }} · {{ job.status }}</text>
+          <text v-if="job.purpose === 'internal_refresh'">
+            仅复核一次路线与天气；不随每分钟输入持续查询。
+          </text>
+          <text v-else>
+            {{ job.is_mock ? 'Mock 站内通知，不能证明手机收到' : `${job.provider} 已提交，送达未确认` }}
+          </text>
           <text v-if="job.error_code">
             原因：{{ job.error_code }}
           </text>
         </view>
+      </view>
+
+      <view
+        v-if="task.kind === 'outing' && task.status === 'scheduled'"
+        class="detail-block"
+      >
+        <text class="detail-heading">
+          出行变化提醒
+        </text>
+        <text>
+          {{ task.proactive_updates_enabled ? '已开启：出发前只复核一次，超过阈值才通知。' : '已关闭：普通提醒仍会按原时间保留。' }}
+        </text>
+        <label class="field-label">
+          <text>车程变化通知阈值（分钟）</text>
+          <input
+            v-model.number="proactiveThreshold"
+            aria-label="车程变化通知阈值分钟数"
+            type="number"
+            min="5"
+            max="60"
+          >
+        </label>
+        <AccessibleButton
+          secondary
+          :loading="preferenceBusy"
+          :disabled="preferenceBusy"
+          @click="setProactive(!task.proactive_updates_enabled)"
+        >
+          {{ task.proactive_updates_enabled ? '关闭出行变化提醒' : '开启出行变化提醒' }}
+        </AccessibleButton>
+        <text
+          v-if="preferenceError"
+          role="alert"
+          class="detail-error"
+        >
+          {{ preferenceError }}
+        </text>
       </view>
 
       <view

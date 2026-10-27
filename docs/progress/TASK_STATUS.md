@@ -33,7 +33,7 @@
 | T11D | IMPLEMENTED_BLOCKED_PROVIDER_CONFIGURATION | 275后端/全门禁/10迁移+设备专项PASS | `b82819707813e706ffd6a3ef8fb75be4a9075710` | SHA一致 | PASS（40452632424） | 加密设备登记/撤回/改绑、Worker归属复核、HTTPS桥接与最小通知；0真实推送；缺SDK/HBuilderX/AppID/厂商配置/真机，CR-AC10未通过 |
 | T11E | DONE_PUSHED | 276后端/72UI/全门禁/迁移PASS | `135aa2837f914b00bf0acd7ff5abc66d11c09788` | SHA一致 | PASS（40454654272） | 行程详情、目的地搜索入口、修改/出发/完成、反馈与通知回看；真实高德/推送仍为0 |
 | T12 | DONE_PUSHED | 278后端、6专项后端、78完整UI、6专项UI及全门禁PASS | `56ce42b336c49400e3845b2ae75c3cf232a16f99` | SHA一致 | PASS（40457533355） | 设置/隐私/本人导出与设备撤回；无迁移；详见T12_PRIVACY_EXPORT.md |
-| T13 | IN_PROGRESS | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
+| T13 | LOCAL_PASSED_ACCEPTANCE_GAPS | 294后端/78完整UI/12调度UI/全门禁PASS | 提交后核验 | 待核验 | 待核验 | 变化刷新/地点替换/时区/可靠性修复；原AC条文及真实高德/Android未验收，见QA_REPORT |
 | T14 | TODO | - | - | - | - | 真实闭环证据、Android 验收、限制、交付与 PR |
 
 ## CR-001 当前影响、依赖与外部准入

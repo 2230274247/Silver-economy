@@ -11,11 +11,11 @@ async function send(page: Page, text: string) {
   return result.assistant_message.task_drafts[0];
 }
 
-async function pick(page: Page, field: 'origin' | 'destination') {
+async function pick(page: Page, field: 'origin' | 'destination', query?: string) {
   const panel = page.locator('.map-panel');
   await panel.getByRole('button', { name: field === 'origin' ? '搜索出发地' : '搜索目的地', exact: true }).click();
   await panel.getByLabel('地点所在城市', { exact: true }).fill('北京');
-  await panel.getByLabel('具体地点或完整地址', { exact: true }).fill(field === 'origin' ? '合成广场' : '合成书屋');
+  await panel.getByLabel('具体地点或完整地址', { exact: true }).fill(query ?? (field === 'origin' ? '合成广场' : '合成书屋'));
   const result = page.waitForResponse(r => r.url().endsWith('/places/search'));
   await panel.getByRole('button', { name: '查询地点候选', exact: true }).click();
   const data = await (await result).json();
@@ -88,13 +88,60 @@ test('route-based schedule is previewed, explicitly confirmed, persisted at 09:0
   await expect(reminder).toContainText('待提醒');
   await expect(reminder).toContainText('08:30');
   await reminder.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T11C-scheduled-${info.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/T11C-scheduled-${info.project.name}.png`) });
   const cancelled = page.waitForResponse(r => r.url().endsWith(`/outing-tasks/${task.id}/cancel`));
   await reminder.getByRole('button', { name: '取消提醒', exact: true }).click();
   await cancelled;
   await expect(reminder).toContainText('已取消');
   await expect(reminder.getByRole('button', { name: '取消提醒', exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
+});
+
+test('changing a scheduled destination preserves the old reminder until the replacement is confirmed', async ({ page }, info) => {
+  await login(page);
+  await freshChat(page);
+  await confirmedOuting(page);
+  const panel = page.locator('.schedule-panel');
+  const previewed = page.waitForResponse(r => r.url().endsWith('/schedule-preview'));
+  await panel.getByRole('button', { name: '生成提醒预览', exact: true }).click();
+  await previewed;
+  const created = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/schedule'));
+  await panel.getByRole('button', { name: '确认并安排提醒', exact: true }).click();
+  const old = await (await created).json();
+  await page.getByRole('button', { name: '提醒', exact: true }).click();
+  const reminder = page.locator(`[data-task-id="${old.id}"]`);
+  await reminder.getByRole('button', { name: '查看行程详情', exact: true }).click();
+  const replacement = page.waitForResponse(r => r.url().endsWith('/replacement-draft'));
+  await reminder.getByRole('button', { name: '修改地点和交通方式', exact: true }).click();
+  expect((await replacement).status()).toBe(200);
+  const card = page.locator('.task-card').filter({ hasText: '这是地点或交通修改草案' });
+  await expect(card).toBeVisible();
+  expect((await (await page.request.get(`/api/v1/outing-tasks/${old.id}`)).json()).status).toBe('scheduled');
+  const maps = card.locator('.map-panel');
+  await maps.getByRole('button', { name: '核实地点、路线和天气', exact: true }).click();
+  await maps.getByRole('button', { name: '同意本次行程的位置查询用途', exact: true }).click();
+  await pick(page, 'origin');
+  await pick(page, 'destination', '合成新公园');
+  const mapReady = page.waitForResponse(r => r.url().endsWith('/map-preview'));
+  await maps.getByRole('button', { name: '查询路线和天气', exact: true }).click();
+  await mapReady;
+  await card.getByRole('button', { name: '确认信息', exact: true }).click();
+  const schedule = card.locator('.schedule-panel');
+  const calculated = page.waitForResponse(r => r.url().endsWith('/schedule-preview'));
+  await schedule.getByRole('button', { name: '生成提醒预览', exact: true }).click();
+  await calculated;
+  const saved = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/schedule'));
+  await schedule.getByRole('button', { name: '确认并安排提醒', exact: true }).click();
+  const fresh = await (await saved).json();
+  expect(fresh.destination).toContain('合成新公园');
+  const prior = await (await page.request.get(`/api/v1/outing-tasks/${old.id}`)).json();
+  expect(prior.status).toBe('cancelled');
+  expect(prior.notifications.every((j: { status: string }) => j.status === 'cancelled')).toBe(true);
+  await page.reload();
+  await expect(page.locator('.task-card').filter({ hasText: '合成新公园' })).toContainText('提醒已安排');
+  if (info.project.name === '390') {
+    await page.screenshot({ path: path.resolve('../../docs/demos/T13-location-390.png') });
+  }
 });
 
 test('plain reminder fallback is independently confirmed without inventing route or weather facts', async ({ page }, info) => {
@@ -147,6 +194,17 @@ test('trip detail supports source inspection, time edit, navigation entry, feedb
   await expect(detail).toContainText('Synthetic / Mock');
   await expect(detail).toContainText('Mock 站内通知');
   await expect(detail.getByRole('button', { name: '打开高德地图查找目的地', exact: true })).toBeVisible();
+  await expect(detail).toContainText('已开启：出发前只复核一次');
+  const preference = page.waitForResponse(r => r.request().method() === 'PATCH'
+    && new URL(r.url()).pathname.endsWith(`/outing-tasks/${task.id}/proactive-updates`));
+  await detail.getByRole('button', { name: '关闭出行变化提醒', exact: true }).click();
+  const preferenceResult = await (await preference).json();
+  expect(preferenceResult.proactive_updates_enabled).toBe(false);
+  await expect(reminder).toContainText('已关闭：普通提醒仍会按原时间保留');
+  if (info.project.name === '390') {
+    await detail.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.resolve('../../docs/demos/T13-acceptance-390.png') });
+  }
 
   await detail.getByRole('button', { name: '修改行程', exact: true }).click();
   await detail.getByLabel('行程名称', { exact: true }).locator('input')
@@ -176,7 +234,7 @@ test('trip detail supports source inspection, time edit, navigation entry, feedb
   await expect(detail).toContainText('已记录：提醒有帮助');
 
   await reminder.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.resolve(`../../docs/demos/T11E-trip-${info.project.name}.png`) });
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/T11E-trip-${info.project.name}.png`) });
   const departed = page.waitForResponse(r => r.url().endsWith(`/outing-tasks/${task.id}/depart`));
   await reminder.getByRole('button', { name: '我已出发', exact: true }).click();
   await departed;

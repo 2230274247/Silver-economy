@@ -3,6 +3,7 @@
 import hashlib
 import json
 import time
+import uuid
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select, update
@@ -14,7 +15,7 @@ from app.core.security import utc_now
 from app.maps.providers import MapFailure, get_maps_provider
 from app.models.entities import MapBudget, MapRequest
 from app.tasks.repository import draft_data, missing_fields, owned_draft, stamp
-from app.tasks.time_parse import ZONE
+from app.tasks.time_parse import ZONE, timezone_for
 
 ERRORS = {
     "MAP_NOT_CONFIGURED": "地图天气服务尚未配置；可继续保存信息，不能宣称已查询",
@@ -28,9 +29,21 @@ ERRORS = {
 }
 
 
-def checked_draft(db, user_id, draft_id, revision, *, consent=True, allow_deferred=False):
+def checked_draft(
+    db,
+    user_id,
+    draft_id,
+    revision,
+    *,
+    consent=True,
+    allow_deferred=False,
+    allow_scheduled=False,
+):
     draft = owned_draft(db, user_id, draft_id, lock=True)
-    if draft.status in {"scheduled", "cancelled", "completed"}:
+    blocked_statuses = {"cancelled", "completed"}
+    if not allow_scheduled:
+        blocked_statuses.add("scheduled")
+    if draft.status in blocked_statuses:
         raise ApiError(409, "TASK_DRAFT_ALREADY_SCHEDULED", "此草案已进入任务流程")
     if draft.revision != revision:
         raise ApiError(409, "TASK_DRAFT_STALE", "草案已更新，请重新读取后核对")
@@ -72,10 +85,28 @@ def consent(db, user_id, draft_id, payload):
     return draft_data(draft)
 
 
-def query(db, draft, client_key, operation, parameters, context, invoke, *, expected_revision=None):
+def query(
+    db,
+    draft,
+    client_key,
+    operation,
+    parameters,
+    context,
+    invoke,
+    *,
+    expected_revision=None,
+    allow_scheduled=False,
+    force_refresh=False,
+):
     revision = draft.revision if expected_revision is None else expected_revision
     # Each external stage reacquires the owner lock after the previous durable receipt committed.
-    draft = checked_draft(db, draft.user_id, draft.id, revision)
+    draft = checked_draft(
+        db,
+        draft.user_id,
+        draft.id,
+        revision,
+        allow_scheduled=allow_scheduled,
+    )
     settings = get_settings()
     provider = get_maps_provider(settings)
     fingerprint = hashlib.sha256(
@@ -97,19 +128,21 @@ def query(db, draft, client_key, operation, parameters, context, invoke, *, expe
             raise MapFailure(existing.error_code or "MAP_NETWORK_UNKNOWN")
         return existing
     now = utc_now()
-    cached = db.scalar(
-        select(MapRequest)
-        .where(
-            MapRequest.user_id == draft.user_id,
-            MapRequest.draft_id == draft.id,
-            MapRequest.operation == operation,
-            MapRequest.fingerprint == fingerprint,
-            MapRequest.expires_at > now,
-            MapRequest.status.in_(["reserved", "completed", "failed", "unknown"]),
+    cached = None
+    if not force_refresh:
+        cached = db.scalar(
+            select(MapRequest)
+            .where(
+                MapRequest.user_id == draft.user_id,
+                MapRequest.draft_id == draft.id,
+                MapRequest.operation == operation,
+                MapRequest.fingerprint == fingerprint,
+                MapRequest.expires_at > now,
+                MapRequest.status.in_(["reserved", "completed", "failed", "unknown"]),
+            )
+            .order_by(MapRequest.created_at.desc(), MapRequest.id.desc())
+            .limit(1)
         )
-        .order_by(MapRequest.created_at.desc(), MapRequest.id.desc())
-        .limit(1)
-    )
     if cached and cached.status != "completed":
         raise MapFailure(cached.error_code or "MAP_NETWORK_UNKNOWN")
     if not cached and provider.name == "amap":
@@ -298,3 +331,70 @@ def preview(db, user_id, draft_id, payload):
     }
     db.commit()
     return draft_data(draft)
+
+
+def refresh_task_snapshot(db, draft, task):
+    """One bounded T-2h refresh for an already scheduled owned draft."""
+    if (
+        draft.status != "scheduled"
+        or not draft.location_consent
+        or not draft.origin_place
+        or not draft.destination_place
+    ):
+        raise MapFailure("MAP_LOCATION_UNAVAILABLE")
+    settings = get_settings()
+    if any(
+        place.get("provider") != settings.maps_provider
+        for place in (draft.origin_place, draft.destination_place)
+    ):
+        raise MapFailure("MAP_PROVIDER_CHANGED")
+    origin = draft.origin_place
+    destination = draft.destination_place
+    mode = draft.transport
+    if mode == "transit" and (not origin["citycode"] or not destination["citycode"]):
+        raise MapFailure("MAP_CITY_REQUIRED")
+    day = (
+        task.target_at.replace(tzinfo=UTC)
+        .astimezone(timezone_for(task.timezone))
+        .date()
+        .isoformat()
+    )
+    route = query(
+        db,
+        draft,
+        uuid.uuid5(uuid.NAMESPACE_URL, f"silver:{task.id}:{task.revision}:route"),
+        "route",
+        {
+            "origin": {key: origin[key] for key in ("location", "citycode")},
+            "destination": {key: destination[key] for key in ("location", "citycode")},
+            "mode": mode,
+        },
+        {"purpose": "proactive_refresh"},
+        lambda provider: provider.route(origin, destination, mode),
+        expected_revision=draft.revision,
+        allow_scheduled=True,
+        force_refresh=True,
+    ).result
+    try:
+        weather = query(
+            db,
+            draft,
+            uuid.uuid5(uuid.NAMESPACE_URL, f"silver:{task.id}:{task.revision}:weather"),
+            "weather",
+            {"adcode": destination["adcode"], "day": day},
+            {"purpose": "proactive_refresh"},
+            lambda provider: provider.weather(destination, day),
+            expected_revision=draft.revision,
+            allow_scheduled=True,
+            force_refresh=True,
+        ).result
+    except MapFailure as failure:
+        weather = {"status": "unavailable", "reason": failure.code}
+    return {
+        "provider": settings.maps_provider,
+        "is_synthetic": settings.maps_provider == "mock",
+        "route": route,
+        "weather": weather,
+        "expires_at": route.get("expires_at", stamp(utc_now())),
+        "refreshed_at": stamp(utc_now()),
+    }
