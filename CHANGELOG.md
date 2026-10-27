@@ -10,7 +10,9 @@
   OpenAPI、移动端类型和 H5 提醒页同步。
 - 276 项后端、72 项三视口 UI 与完整门禁通过；新增 DeepSeek、真实高德、真实推送
   调用均为 0。`CR-AC10` 仍为 `BLOCKED_PROVIDER_CONFIGURATION`。
-- 功能提交推送后核对远端 SHA 与 CI，再以独立状态提交固化证据；下一项 T12。
+- 功能提交 `135aa2837f914b00bf0acd7ff5abc66d11c09788` 已推送并与远端一致；
+  CI run `40454654272` 的 api/security/mobile 全部通过。远端证据已独立固化，
+  下一项 T12。
 
 ## T11D — 2026-10-27（Asia/Hong_Kong）
 

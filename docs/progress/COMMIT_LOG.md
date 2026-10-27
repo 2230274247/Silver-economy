@@ -43,6 +43,7 @@ T11A本次本地验收（2026-10-27，Asia/Hong_Kong）：出行意图、持久�
 | 2026-10-27 11:41:42 +08:00 | T11B 地点/路线天气 | c44766fa863f968463099976faab6f4c35e8cc01 | 位置用途/明确候选、高德Provider+Mock、持久预览/来源、额度/幂等/撤回、折叠H5；跨阶段变更在天气扣额前拒绝，补高德Key扫描 | 本地263完整门禁+34最终地图/63UI+6复测PASS；push/SHA一致；CI40445595994 264后端/63UI及安全全部success；真实高德仍待Key/权限，模型新增0 |
 | 2026-10-27 12:51:00 +08:00 | T11C 远端状态同步 | 本文档同步提交 | 将确定性调度、MySQL outbox、29项调度/Worker测试及69项UI证据固化到状态看板与变更记录 | 功能SHA `742283e0a6358aa89a193177270eb5576e62b24b` 与远端一致；CI `40451532189` api/security/mobile全部success；本同步提交的SHA/CI按规则事后核验 |
 | 2026-10-27 12:58:01 +08:00 | T11D 设备通道与推送桥 | `b82819707813e706ffd6a3ef8fb75be4a9075710` | 设备登记/改绑/撤回、推送ID服务端加密、Worker本人设备复核、HTTPS uni-push桥接与最小锁屏内容；0真实推送、0 Android送达 | 275后端/完整门禁/专项PASS；push/SHA一致；CI `40452632424` api/security/mobile全部success；CR-AC10仍为BLOCKED_PROVIDER_CONFIGURATION |
+| 2026-10-27 13:19:12 +08:00 | T11E 行程详情与生命周期 | `135aa2837f914b00bf0acd7ff5abc66d11c09788` | 行程来源/通知详情、高德目的地搜索入口、时间修改重排、出发/完成、反馈审计；增量迁移新增departed_at并补齐历史审计外键 | 276后端/72UI/全门禁/迁移PASS；push/SHA一致；CI `40454654272` api/security/mobile全部success；外部真实高德与推送0 |
 
 最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。

@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T11E（实现与本地门禁完成，待远端提交与 CI 固化）
+- Current task: T12（设置、隐私、数据导出与授权撤回）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T11D feature `b82819707813e706ffd6a3ef8fb75be4a9075710`
-- Last verified CI: PASS（run 40452632424；api/security/mobile全部success）
-- 最后核验时间：2026-10-27T13:08:26+08:00。
+- Last remote-confirmed SHA: T11E feature `135aa2837f914b00bf0acd7ff5abc66d11c09788`
+- Last verified CI: PASS（run 40454654272；api/security/mobile全部success）
+- 最后核验时间：2026-10-27T13:24:15+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -26,13 +26,13 @@
 | T10 | DONE_PUSHED | 134后端/45UI/全门禁PASS，运营预览只读持久数据PASS，真实模型新增0 | d7572f9b6f0f2b1c71e5db507bec126ebdc22fb8 | SHA一致 | PASS（40394518915） | 来源关联的确定性时间线，时间精度/纠错删除即时同步；未生成推测摘要 |
 | T10E1 | DONE_PUSHED | 164后端/完整门禁、100/1000/10000真实SQL计数/重复导入PASS，新增模型0 | 423ff6cf37cc12a82eb7027c939b487874d7a5d4 | SHA一致 | PASS（40400713021） | 2026-10-27 05:00:51 +08:00；Synthetic入库不替代召回验收 |
 | T10E2 | DONE_PUSHED | 197后端、48UI及四档310题/SQL/资源报告PASS | 功能b3903deb40e87d6b43f50b2b814bc7ac53697cd0；修复e38b2c173c55c127db90dd975fc72587468d38d9 | SHA一致 | PASS（40417316422）；首轮失败保留 | 2026-10-27 07:05:37+08:00；修复仅测试同步，生产评分不变 |
-| T11 | IN_PROGRESS（汇总） | A–D 已推送，E 本地通过 | - | - | - | CR-001，A–E 全部独立验收 |
+| T11 | ENGINEERING_DONE_EXTERNAL_BLOCKED（汇总） | A–E 工程测试通过 | A–E 各自 SHA | 各功能 SHA 一致 | PASS | CR-001 工程闭环完成；T11D Android真机仍为外部阻塞 |
 | T11A | DONE_PUSHED | 230后端/57UI/全门禁/真实1次/四档310题PASS；输入反例先失败后通过，返修57UI PASS | 功能829bbc6530784175878f3eba0cd11df388c0251d；修复67f9235be1c501cc00567b2ed4272ccbea91d345 | SHA一致 | PASS（40442118042）；首轮40440860292失败保留 | 信息确认not_scheduled，调度仍待T11C；2026-10-27 11:04:33+08:00 |
 | T11B | IMPLEMENTED_PUSHED（LIVE_PENDING） | 本地263完整门禁+最终34地图/6UI专项；完整63UI；CI264后端/63UI PASS | c44766fa863f968463099976faab6f4c35e8cc01 | SHA一致 | PASS（40445595994） | 2026-10-27 11:41:42+08:00；Mock/合同/实现通过，真实Key未配置，LIVE_NOT_VERIFIED，不能当真实验收 |
 | T11C | DONE_PUSHED | 271后端/69UI/全门禁/独立Worker实进程PASS | `742283e0a6358aa89a193177270eb5576e62b24b` | SHA一致 | PASS（40451532189） | 确定性时间、独立确认、MySQL outbox、租约/重启/取消/隔离；新增模型0、高德0、真实推送0；Mock不能替代真机 |
 | T11D | IMPLEMENTED_BLOCKED_PROVIDER_CONFIGURATION | 275后端/全门禁/10迁移+设备专项PASS | `b82819707813e706ffd6a3ef8fb75be4a9075710` | SHA一致 | PASS（40452632424） | 加密设备登记/撤回/改绑、Worker归属复核、HTTPS桥接与最小通知；0真实推送；缺SDK/HBuilderX/AppID/厂商配置/真机，CR-AC10未通过 |
-| T11E | IMPLEMENTED_PENDING_REMOTE_VERIFICATION | 276后端/72UI/全门禁/迁移PASS | 本次功能提交待生成 | 待核验 | 待核验 | 行程详情、目的地搜索入口、修改/出发/完成、反馈与通知回看；真实高德/推送仍为0 |
-| T12 | TODO | - | - | - | - | 设置/隐私/导出 |
+| T11E | DONE_PUSHED | 276后端/72UI/全门禁/迁移PASS | `135aa2837f914b00bf0acd7ff5abc66d11c09788` | SHA一致 | PASS（40454654272） | 行程详情、目的地搜索入口、修改/出发/完成、反馈与通知回看；真实高德/推送仍为0 |
+| T12 | IN_PROGRESS | - | - | - | - | 设置/隐私/导出 |
 | T13 | TODO | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
 | T14 | TODO | - | - | - | - | 真实闭环证据、Android 验收、限制、交付与 PR |
 

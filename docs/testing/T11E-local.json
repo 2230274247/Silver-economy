@@ -1,7 +1,7 @@
 {
   "checked_at_hk": "2026-10-27T13:17:58+08:00",
   "task": "T11E",
-  "status": "IMPLEMENTED_PENDING_REMOTE_VERIFICATION",
+  "status": "LOCAL_PASSED",
   "commands": {
     "focused_backend": ".venv\\Scripts\\python.exe -m pytest -q tests\\test_scheduling.py tests\\test_notifications.py",
     "migration": ".venv\\Scripts\\python.exe -m pytest -q tests\\test_database.py tests\\test_notifications.py",

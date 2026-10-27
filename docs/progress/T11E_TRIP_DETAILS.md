@@ -1,6 +1,6 @@
 # T11E：行程详情与任务生命周期
 
-状态：IMPLEMENTED_PENDING_REMOTE_VERIFICATION。
+状态：DONE_PUSHED。本地门禁、远端 SHA 与 GitHub Actions 均已核验。
 
 ## 完成内容
 
@@ -40,7 +40,10 @@
   `CR-AC10` 继续保持 `BLOCKED_PROVIDER_CONFIGURATION`。
 - 导航按钮只提供目的地搜索入口；路线时长仍来自已经保存、带来源和有效期的快照。
 
-## 下一步
+## 远端核验
 
-推送功能提交后核对 `origin/dev/v0.1` SHA 与 GitHub Actions；远端门禁通过后，
-以独立状态提交固化证据，再进入 T12 设置、隐私和导出。
+- 功能提交 `135aa2837f914b00bf0acd7ff5abc66d11c09788` 已推送，
+  `origin/dev/v0.1` SHA 与本地一致。
+- GitHub Actions run `40454654272` 的 api、security、mobile 全部 success；
+  mobile 包含完整三视口 UI 回归。证据见 `docs/testing/T11E-remote.json`。
+- 本状态同步提交独立记录，不改写功能提交。下一项进入 T12 设置、隐私和导出。

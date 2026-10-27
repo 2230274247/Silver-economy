@@ -1,0 +1,27 @@
+{
+  "checked_at_hk": "2026-10-27T13:24:15+08:00",
+  "task": "T11E",
+  "status": "DONE_PUSHED",
+  "branch": "dev/v0.1",
+  "feature_sha": "135aa2837f914b00bf0acd7ff5abc66d11c09788",
+  "remote_sha": "135aa2837f914b00bf0acd7ff5abc66d11c09788",
+  "remote_sha_match": true,
+  "ci": {
+    "run_id": "40454654272",
+    "url": "https://github.com/2230274247/Silver-economy/actions/runs/40454654272",
+    "head_sha": "135aa2837f914b00bf0acd7ff5abc66d11c09788",
+    "conclusion": "success",
+    "jobs": {
+      "api": "success",
+      "security": "success",
+      "mobile": "success"
+    }
+  },
+  "delivery_boundary": {
+    "deepseek_new_calls": 0,
+    "amap_live_calls": 0,
+    "unipush_live_calls": 0,
+    "android_delivery_verified": false,
+    "cr_ac10": "BLOCKED_PROVIDER_CONFIGURATION"
+  }
+}
