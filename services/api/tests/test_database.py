@@ -34,6 +34,8 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
         "task_drafts",
         "model_usage",
         "model_budget",
+        "map_requests",
+        "map_budget",
     }
     with mysql_engine.connect() as connection:
         assert connection.execute(text("SELECT @@session.time_zone")).scalar_one() == "+00:00"

@@ -217,6 +217,38 @@ class TaskDraft(Identity, Updated, Owned, Base):
     confirmed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
     extractor_provider: Mapped[str] = mapped_column(String(32))
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
+    location_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    origin_place: Mapped[dict | None] = mapped_column(JSON)
+    destination_place: Mapped[dict | None] = mapped_column(JSON)
+    map_snapshot: Mapped[dict | None] = mapped_column(JSON)
+
+
+class MapRequest(Identity, Owned, Base):
+    __tablename__ = "map_requests"
+    __table_args__ = (
+        UniqueConstraint("user_id", "client_request_id", "operation"),
+        ForeignKeyConstraint(["user_id", "draft_id"], ["task_drafts.user_id", "task_drafts.id"]),
+        Index(
+            "ix_map_requests_cache", "user_id", "draft_id", "operation", "fingerprint", "created_at"
+        ),
+    )
+    draft_id: Mapped[str] = mapped_column(String(36))
+    client_request_id: Mapped[str] = mapped_column(String(36))
+    operation: Mapped[str] = mapped_column(String(16))
+    provider: Mapped[str] = mapped_column(String(16))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(24))
+    error_code: Mapped[str | None] = mapped_column(String(48))
+    result: Mapped[dict | None] = mapped_column(JSON)
+    context: Mapped[dict] = mapped_column(JSON, default=dict)
+    expires_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class MapBudget(Base):
+    __tablename__ = "map_budget"
+    day: Mapped[str] = mapped_column(String(10), primary_key=True)
+    requests: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class ModelUsage(Identity, Owned, Base):

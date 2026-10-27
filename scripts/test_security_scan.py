@@ -21,6 +21,14 @@ class SecurityScanTests(unittest.TestCase):
     def test_regular_source_is_allowed(self):
         self.assertEqual(violations("services/api/app/main.py", "import fastapi"), [])
 
+    def test_amap_key_assignment_is_rejected_without_rejecting_empty_config(self):
+        fake = "a" * 32
+        self.assertTrue(violations("config.py", 'amap_web_service_key="' + fake + '"'))
+        self.assertTrue(
+            violations("config.json", '{"AMAP_WEB_SERVICE_KEY":"' + fake + '"}')
+        )
+        self.assertEqual(violations(".env.example", "AMAP_WEB_SERVICE_KEY="), [])
+
 
 if __name__ == "__main__":
     unittest.main()

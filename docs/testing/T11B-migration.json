@@ -1,0 +1,49 @@
+{
+  "checked_at_hk": "2026-10-27T11:22:18+08:00",
+  "migration": "t11a_draft -> t11b_maps",
+  "existing_columns_unchanged": true,
+  "before": {
+    "messages": {
+      "rows": 1036,
+      "sha256": "af6ba23a8e3d038895ef99975c942ef779171a8841e0c8c4ab8ef9b604b4ccda"
+    },
+    "memory_facts": {
+      "rows": 180,
+      "sha256": "28353f93ccf377e10b2492f6c240f4c8de4a9883c82cee77678e60fd161680a3"
+    },
+    "conversations": {
+      "rows": 508,
+      "sha256": "a597c255caf9e968f9584df226ddea5672b214bd3d9f6fed87d0f2484d364d90"
+    },
+    "model_usage": {
+      "rows": 496,
+      "sha256": "a221bf82e3b9b9174d88308d18572076dc39056c0acad9993e77c2f036f3877f"
+    },
+    "task_drafts": {
+      "rows": 44,
+      "sha256": "15f99d59db7d12aadcb23e8f1fb64d3c178e45590c0d85b35dc0cffc0dcdd442"
+    }
+  },
+  "after": {
+    "messages": {
+      "rows": 1036,
+      "sha256": "af6ba23a8e3d038895ef99975c942ef779171a8841e0c8c4ab8ef9b604b4ccda"
+    },
+    "memory_facts": {
+      "rows": 180,
+      "sha256": "28353f93ccf377e10b2492f6c240f4c8de4a9883c82cee77678e60fd161680a3"
+    },
+    "conversations": {
+      "rows": 508,
+      "sha256": "a597c255caf9e968f9584df226ddea5672b214bd3d9f6fed87d0f2484d364d90"
+    },
+    "model_usage": {
+      "rows": 496,
+      "sha256": "a221bf82e3b9b9174d88308d18572076dc39056c0acad9993e77c2f036f3877f"
+    },
+    "task_drafts": {
+      "rows": 44,
+      "sha256": "15f99d59db7d12aadcb23e8f1fb64d3c178e45590c0d85b35dc0cffc0dcdd442"
+    }
+  }
+}

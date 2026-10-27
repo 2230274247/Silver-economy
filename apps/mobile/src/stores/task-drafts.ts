@@ -1,4 +1,5 @@
 import { request } from '../platform/network';
+import type { Place, MapSnapshot } from './maps';
 
 export interface TaskDraft {
   id: string; conversation_id: string; source_message_id: string; last_message_id: string;
@@ -12,6 +13,7 @@ export interface TaskDraft {
   lead_minutes: number; missing_fields: string[]; confirmed_at: string | null;
   evidence: Record<string, { origin: string; value: unknown }>;
   extractor_provider: string; is_synthetic: boolean; scheduling_status: 'not_scheduled';
+  location_consent: boolean; origin_place: Place | null; destination_place: Place | null; map_snapshot: MapSnapshot | null;
 }
 export interface TaskForm {
   title: string; time_text: string; time_semantics: TaskDraft['time_semantics'];

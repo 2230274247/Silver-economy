@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import AccessibleButton from './AccessibleButton.vue';
 import AppButton from './AppButton.vue';
+import MapPreviewPanel from './MapPreviewPanel.vue';
 import { labelTextControl } from '../platform/accessibility';
 import { bindComposer } from '../platform/composer';
 import { draftTimeText } from '../platform/task-time';
@@ -9,6 +10,8 @@ import { readTaskDraft, saveTaskDraft, taskAction, type TaskDraft } from '../sto
 const props = defineProps<{ item: TaskDraft }>();
 const emit = defineEmits<{ changed: [item: TaskDraft] }>();
 const busy = ref(false); const error = ref(''); const sourceVisible = ref(false);
+const mapBusy = ref(false);
+const blocked = computed(() => busy.value || mapBusy.value);
 const editing = ref(false);
 const form = reactive({ title: '', time_text: '', origin: '', destination: '', lead: '',
   time_semantics: 'unknown' as TaskDraft['time_semantics'], transport: 'unknown' as TaskDraft['transport'] });
@@ -49,7 +52,7 @@ const dirty = computed(() => form.title !== props.item.title || form.time_text !
   || Number(form.lead) !== props.item.lead_minutes);
 async function discardEdits() { editing.value = false; await sync(); }
 async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
-  if (busy.value) return;
+  if (blocked.value) return;
   busy.value = true; error.value = '';
   try {
     let item = props.item;
@@ -84,7 +87,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       {{ item.status === 'confirmed' ? '信息已确认' : item.status === 'deferred' ? '已暂不安排' : '待核对' }} · 提醒尚未安排
     </text>
     <text class="task-note">
-      当前只保存信息，不会主动通知。车程、天气和实际提醒尚未接通，地点尚未核实。
+      当前只保存信息，不会主动通知。地点、路线和天气请在下方主动核实；后台提醒尚未接通。
     </text>
     <view
       v-if="!editing"
@@ -104,7 +107,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       <input
         :id="controlId('title')"
         v-model="form.title"
-        :disabled="busy || item.status === 'deferred'"
+        :disabled="blocked || item.status === 'deferred'"
         :maxlength="160"
       >
       <label :for="controlId('time')">日期和时间（北京时间）</label>
@@ -112,7 +115,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
         :id="controlId('time')"
         v-model="form.time_text"
         placeholder="如：明天上午10点"
-        :disabled="busy || item.status === 'deferred'"
+        :disabled="blocked || item.status === 'deferred'"
         :maxlength="160"
       >
       <template v-if="item.kind === 'outing'">
@@ -124,14 +127,14 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
         >
           <AccessibleButton
             :aria-pressed="form.time_semantics === 'arrival'"
-            :disabled="busy || item.status === 'deferred'"
+            :disabled="blocked || item.status === 'deferred'"
             @click="form.time_semantics = 'arrival'"
           >
             到达时间
           </AccessibleButton>
           <AccessibleButton
             :aria-pressed="form.time_semantics === 'departure'"
-            :disabled="busy || item.status === 'deferred'"
+            :disabled="blocked || item.status === 'deferred'"
             @click="form.time_semantics = 'departure'"
           >
             出发时间
@@ -142,7 +145,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
           :id="controlId('origin')"
           v-model="form.origin"
           placeholder="从哪里出发？"
-          :disabled="busy || item.status === 'deferred'"
+          :disabled="blocked || item.status === 'deferred'"
           :maxlength="200"
         >
         <label :for="controlId('destination')">目的地</label>
@@ -150,7 +153,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
           :id="controlId('destination')"
           v-model="form.destination"
           placeholder="要去哪里？"
-          :disabled="busy || item.status === 'deferred'"
+          :disabled="blocked || item.status === 'deferred'"
           :maxlength="200"
         >
         <text>交通方式</text>
@@ -163,7 +166,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
             v-for="mode in modes"
             :key="mode.value"
             :aria-pressed="form.transport === mode.value"
-            :disabled="busy || item.status === 'deferred'"
+            :disabled="blocked || item.status === 'deferred'"
             @click="form.transport = mode.value"
           >
             {{ mode.label }}
@@ -175,7 +178,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
         :id="controlId('lead')"
         v-model="form.lead"
         type="number"
-        :disabled="busy || item.status === 'deferred'"
+        :disabled="blocked || item.status === 'deferred'"
         :maxlength="5"
       >
     </view>
@@ -193,6 +196,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       <text>{{ error }}</text>
       <AccessibleButton
         :loading="busy"
+        :disabled="mapBusy"
         @click="run('reload')"
       >
         重新读取最新草案
@@ -205,7 +209,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       <AppButton
         v-if="!editing"
         secondary
-        :disabled="busy"
+        :disabled="blocked"
         @click="editing = true"
       >
         补充或修改信息
@@ -214,6 +218,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
         v-if="editing"
         secondary
         :loading="busy"
+        :disabled="mapBusy"
         :error="!!error"
         @click="run('save')"
       >
@@ -222,7 +227,7 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       <AppButton
         v-if="item.status === 'draft'"
         :loading="busy"
-        :disabled="!editing && item.missing_fields.length > 0"
+        :disabled="mapBusy || !editing && item.missing_fields.length > 0"
         :error="!!error"
         @click="run('confirm')"
       >
@@ -230,18 +235,26 @@ async function run(action: 'save' | 'confirm' | 'defer' | 'reload') {
       </AppButton>
       <AccessibleButton
         v-if="editing"
-        :disabled="busy"
+        :disabled="blocked"
         @click="discardEdits"
       >
         放弃未保存修改
       </AccessibleButton>
       <AccessibleButton
         :loading="busy"
+        :disabled="mapBusy"
         @click="run('defer')"
       >
         暂不安排
       </AccessibleButton>
     </view>
+    <MapPreviewPanel
+      v-if="item.kind === 'outing' && !editing"
+      :item="item"
+      :disabled="busy"
+      @changed="emit('changed', $event)"
+      @busy="mapBusy = $event"
+    />
     <AccessibleButton
       :aria-expanded="sourceVisible"
       @click="sourceVisible = !sourceVisible"

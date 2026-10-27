@@ -1068,6 +1068,220 @@
         }
       }
     },
+    "/api/v1/maps-status": {
+      "get": {
+        "summary": "Maps Status",
+        "operationId": "maps_status_api_v1_maps_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapsStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/location-consent": {
+      "post": {
+        "summary": "Location Consent",
+        "operationId": "location_consent_api_v1_task_drafts__draft_id__location_consent_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationConsent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/places/search": {
+      "post": {
+        "summary": "Search Places",
+        "operationId": "search_places_api_v1_task_drafts__draft_id__places_search_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceSearch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceSearchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/places/select": {
+      "post": {
+        "summary": "Select Place",
+        "operationId": "select_place_api_v1_task_drafts__draft_id__places_select_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceSelection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-drafts/{draft_id}/map-preview": {
+      "post": {
+        "summary": "Map Preview",
+        "operationId": "map_preview_api_v1_task_drafts__draft_id__map_preview_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapPreview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDraftOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Index",
@@ -1233,6 +1447,26 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "LocationConsent": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "enabled"
+        ],
+        "title": "LocationConsent"
+      },
       "Login": {
         "properties": {
           "login_name": {
@@ -1257,6 +1491,56 @@
           "password"
         ],
         "title": "Login"
+      },
+      "MapPreview": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "client_request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Client Request Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "client_request_id"
+        ],
+        "title": "MapPreview"
+      },
+      "MapsStatus": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "mock",
+              "amap"
+            ],
+            "title": "Provider"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "live_connection_verified": {
+            "type": "boolean",
+            "const": false,
+            "title": "Live Connection Verified",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "configured"
+        ],
+        "title": "MapsStatus"
       },
       "MemoryConfirmation": {
         "properties": {
@@ -1744,6 +2028,198 @@
         ],
         "title": "MessagePage"
       },
+      "PlaceCandidate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "district": {
+            "type": "string",
+            "title": "District"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location"
+          },
+          "adcode": {
+            "type": "string",
+            "title": "Adcode"
+          },
+          "citycode": {
+            "type": "string",
+            "title": "Citycode"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "vendor_id": {
+            "type": "string",
+            "title": "Vendor Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "address",
+          "district",
+          "location",
+          "adcode",
+          "citycode",
+          "level",
+          "vendor_id"
+        ],
+        "title": "PlaceCandidate"
+      },
+      "PlaceSearch": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "client_request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Client Request Id"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "destination"
+            ],
+            "title": "Field"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Query"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 2,
+            "title": "City"
+          },
+          "search_kind": {
+            "type": "string",
+            "enum": [
+              "poi",
+              "address"
+            ],
+            "title": "Search Kind",
+            "default": "poi"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "client_request_id",
+          "field",
+          "query",
+          "city"
+        ],
+        "title": "PlaceSearch"
+      },
+      "PlaceSearchOut": {
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Query Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlaceCandidate"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Items"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "amap"
+            ],
+            "title": "Provider"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic"
+          },
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fetched At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query_id",
+          "items",
+          "provider",
+          "is_synthetic",
+          "fetched_at",
+          "expires_at"
+        ],
+        "title": "PlaceSearchOut"
+      },
+      "PlaceSelection": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "destination"
+            ],
+            "title": "Field"
+          },
+          "query_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Query Id"
+          },
+          "candidate_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "field",
+          "query_id",
+          "candidate_id"
+        ],
+        "title": "PlaceSelection"
+      },
       "RevisionOut": {
         "properties": {
           "revision": {
@@ -2073,6 +2549,47 @@
           "is_synthetic": {
             "type": "boolean",
             "title": "Is Synthetic"
+          },
+          "location_consent": {
+            "type": "boolean",
+            "title": "Location Consent",
+            "default": false
+          },
+          "origin_place": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Place"
+          },
+          "destination_place": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination Place"
+          },
+          "map_snapshot": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Snapshot"
           },
           "scheduling_status": {
             "type": "string",

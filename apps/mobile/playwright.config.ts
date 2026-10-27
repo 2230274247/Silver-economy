@@ -20,7 +20,7 @@ export default defineConfig({
     {
       command: `${python} -m uvicorn app.main:app --host 127.0.0.1 --port 18000 --no-access-log`,
       cwd: '../../services/api', url: 'http://127.0.0.1:18000/api/v1/healthz',
-      env: { LLM_PROVIDER: 'mock', UI_TEST_MODE: 'true' }, reuseExistingServer: false,
+      env: { LLM_PROVIDER: 'mock', MAPS_PROVIDER: 'mock', UI_TEST_MODE: 'true' }, reuseExistingServer: false,
     },
     {
       command: 'npx uni --host 127.0.0.1 --port 5174 --strictPort',

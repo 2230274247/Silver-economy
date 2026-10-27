@@ -19,6 +19,7 @@ from app.models.entities import User
 @pytest.fixture(autouse=True)
 def model_test_mode(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "mock")
+    monkeypatch.setenv("MAPS_PROVIDER", "mock")
     get_settings.cache_clear()
 
     def deny_network(*args, **kwargs):

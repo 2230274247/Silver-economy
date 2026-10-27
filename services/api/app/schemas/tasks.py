@@ -79,6 +79,10 @@ class TaskDraftOut(BaseModel):
     confirmed_at: datetime | None
     extractor_provider: str
     is_synthetic: bool
+    location_consent: bool = False
+    origin_place: dict | None = None
+    destination_place: dict | None = None
+    map_snapshot: dict | None = None
     scheduling_status: Literal["not_scheduled"] = "not_scheduled"
 
 

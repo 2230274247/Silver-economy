@@ -33,7 +33,12 @@ def validated_database_url(value: str, *, test_only: bool = False) -> URL:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(PROJECT_ROOT / ".env", PROJECT_ROOT / ".env.deepseek"), extra="ignore"
+        env_file=(
+            PROJECT_ROOT / ".env",
+            PROJECT_ROOT / ".env.deepseek",
+            PROJECT_ROOT / ".env.amap",
+        ),
+        extra="ignore",
     )
 
     database_url: SecretStr = SecretStr("")
@@ -49,6 +54,9 @@ class Settings(BaseSettings):
     deepseek_task_max_output_tokens: int = Field(512, ge=256, le=1024)
     deepseek_daily_request_limit: int = Field(10, ge=0, le=100)
     deepseek_daily_token_limit: int = Field(20000, ge=0, le=200000)
+    maps_provider: Literal["disabled", "mock", "amap"] = "disabled"
+    amap_web_service_key: SecretStr = SecretStr("")
+    amap_daily_request_limit: int = Field(20, ge=0, le=1000)
 
     @field_validator("deepseek_base_url")
     @classmethod

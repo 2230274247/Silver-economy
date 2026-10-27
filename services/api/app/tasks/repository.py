@@ -1,7 +1,7 @@
 """Owned, revisioned information drafts. Confirmation here never schedules a job."""
 
 import re
-from datetime import UTC
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 
@@ -65,6 +65,10 @@ def draft_data(draft):
             "evidence",
             "extractor_provider",
             "is_synthetic",
+            "location_consent",
+            "origin_place",
+            "destination_place",
+            "map_snapshot",
         )
     }
     data.update(
@@ -75,6 +79,12 @@ def draft_data(draft):
         time_reference_at=stamp(draft.time_reference_at),
         resolved_date=day.isoformat() if day else None,
     )
+    if draft.map_snapshot:
+        expires = datetime.fromisoformat(draft.map_snapshot["expires_at"])
+        data["map_snapshot"] = {
+            **draft.map_snapshot,
+            "expired": expires <= utc_now().replace(tzinfo=UTC),
+        }
     return data
 
 
@@ -214,6 +224,7 @@ def save_candidates(db, message, candidates, context, provider):
             draft.date_text, draft.clock_text, draft.period_text, draft.time_reference_at
         )
         draft.last_message_id = message.id
+        invalidate_map_snapshot(draft)
         saved.append(draft)
     db.flush()
     return saved
@@ -259,8 +270,17 @@ def update_draft(db, user_id, draft_id, payload):
     }
     draft.status, draft.confirmed_at = "draft", None
     draft.revision += 1
+    invalidate_map_snapshot(draft)
     db.commit()
     return draft_data(draft)
+
+
+def invalidate_map_snapshot(draft):
+    draft.map_snapshot = None
+    for field in ("origin", "destination"):
+        place = getattr(draft, field + "_place")
+        if place and place["name"] != getattr(draft, field):
+            setattr(draft, field + "_place", None)
 
 
 def act_on_draft(db, user_id, draft_id, payload):
@@ -280,5 +300,11 @@ def act_on_draft(db, user_id, draft_id, payload):
     draft.status = desired
     draft.confirmed_at = utc_now() if desired == "confirmed" else None
     draft.revision += 1
+    if draft.map_snapshot:
+        draft.map_snapshot = (
+            {**draft.map_snapshot, "draft_revision": draft.revision}
+            if desired == "confirmed"
+            else None
+        )
     db.commit()
     return draft_data(draft)

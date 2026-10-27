@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
+from app.api.v1.maps import router as maps_router
 from app.api.v1.memories import router as memories_router
 from app.api.v1.tasks import router as tasks_router
 from app.core.config import get_settings
@@ -32,6 +33,7 @@ app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(memories_router)
 app.include_router(tasks_router)
+app.include_router(maps_router)
 
 
 @app.middleware("http")

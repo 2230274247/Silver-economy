@@ -10,6 +10,9 @@ SECRET = re.compile(
     r"gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|"
     r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"
 )
+AMAP_SECRET = re.compile(
+    r"(?i:\b(?:AMAP_WEB_SERVICE_KEY|AMAP_KEY)\b[\"']?\s*[:=]\s*[\"']?[a-f0-9]{32}\b)"
+)
 PRIVATE_DIRS = {"uploads", "user_media", "backups", "logs", ".venv", "node_modules"}
 
 
@@ -25,7 +28,7 @@ def violations(path: str, content: str) -> list[str]:
         or PRIVATE_DIRS.intersection(parts)
     ):
         issues.append("private file must not be tracked")
-    if SECRET.search(content):
+    if SECRET.search(content) or AMAP_SECRET.search(content):
         issues.append("credential-like content detected (value suppressed)")
     return issues
 
