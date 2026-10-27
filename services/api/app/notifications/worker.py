@@ -19,7 +19,13 @@ from sqlalchemy import or_, select, update
 from app.core.config import get_settings
 from app.core.database import session_factory
 from app.core.security import utc_now
-from app.models.entities import NotificationJob, OutingTask, Reminder, TaskAuditLog
+from app.models.entities import (
+    NotificationDevice,
+    NotificationJob,
+    OutingTask,
+    Reminder,
+    TaskAuditLog,
+)
 from app.notifications.providers import NotificationFailure, get_notification_provider
 
 logger = logging.getLogger("silver.worker")
@@ -136,6 +142,16 @@ def _process_claim(factory, provider, job_id, token):
                 Reminder.id == job.reminder_id,
             )
         )
+        device = db.scalar(
+            select(NotificationDevice)
+            .where(
+                NotificationDevice.user_id == job.user_id,
+                NotificationDevice.permission_status.in_(["granted", "provisional"]),
+                NotificationDevice.revoked_at.is_(None),
+            )
+            .order_by(NotificationDevice.last_seen_at.desc(), NotificationDevice.id.desc())
+            .limit(1)
+        )
         if task is None or task.status != "scheduled":
             job.status = "cancelled"
             job.error_code = "TASK_NO_LONGER_ACTIVE"
@@ -152,11 +168,15 @@ def _process_claim(factory, provider, job_id, token):
             _audit(db, job, "notification_cancelled", error_code=job.error_code)
             db.commit()
             return "cancelled"
+        job.device_id = device.id if device else None
         # Claim state is committed before external I/O, so a crash remains observable.
         db.commit()
 
     try:
-        result = provider.send(task, job)
+        if provider.name == "unipush_bridge":
+            result = provider.send(task, job, device)
+        else:
+            result = provider.send(task, job)
     except NotificationFailure as failure:
         with factory() as db:
             job = db.scalar(
@@ -220,6 +240,8 @@ def _process_claim(factory, provider, job_id, token):
         if job is None or job.status != "claimed" or job.lease_token != token:
             return "lease_lost"
         job.status = "submitted_to_provider"
+        job.provider = provider.name
+        job.channel = "in_app_mock" if provider.name == "mock" else "android_device"
         job.provider_message_id = result["provider_message_id"]
         job.error_code = None
         job.lease_owner = job.lease_token = job.lease_expires_at = None

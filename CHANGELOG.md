@@ -1,5 +1,13 @@
 # 变更记录
 
+## T11D — 2026-10-27（Asia/Hong_Kong）
+
+- 新增设备登记、列表、改绑与撤回 API；推送客户端 ID 由服务端加密保存，公开响应不含密文、指纹或完整 ID。同一设备改绑账户时撤销旧归属，撤回只允许本人。
+- Worker 在每次真实发送前选择并持久绑定本人当前有效 Android 设备；无设备时记录 `NO_ACTIVE_DEVICE`，不生成成功回执。
+- 新增 HTTPS uni-push 服务端桥接 Provider、Bearer 鉴权、幂等请求、最小化锁屏内容、有限暂时失败重试和 unknown 边界；服务商接受仍明确不等于手机送达。
+- Android 平台适配器封装推送 ID/权限请求；H5 明确不能替代后台通知。迁移新增设备表与通知 job 设备外键。
+- 275 项后端及完整门禁通过。实际 uni-push 调用 0、Android 真机送达 0；本机缺 Android SDK/HBuilderX/AppID/厂商参数/签名/真机，因此 CR-AC10 为 `BLOCKED_PROVIDER_CONFIGURATION`，不得声称通知闭环已真机验收。
+
 ## T11C — 2026-10-27（Asia/Hong_Kong）
 
 - 新增确定性到达/出发时间计算、信息确认与最终安排分离、可编辑缓冲和提前量预览；未确认或过期修订不能创建有效提醒。

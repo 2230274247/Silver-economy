@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -37,6 +38,7 @@ class Settings(BaseSettings):
             PROJECT_ROOT / ".env",
             PROJECT_ROOT / ".env.deepseek",
             PROJECT_ROOT / ".env.amap",
+            PROJECT_ROOT / ".env.notifications",
         ),
         extra="ignore",
     )
@@ -57,7 +59,10 @@ class Settings(BaseSettings):
     maps_provider: Literal["disabled", "mock", "amap"] = "disabled"
     amap_web_service_key: SecretStr = SecretStr("")
     amap_daily_request_limit: int = Field(20, ge=0, le=1000)
-    notifications_provider: Literal["mock", "disabled"] = "mock"
+    notifications_provider: Literal["mock", "disabled", "unipush_bridge"] = "mock"
+    notification_device_encryption_key: SecretStr = SecretStr("")
+    uni_push_bridge_url: str = ""
+    uni_push_bridge_token: SecretStr = SecretStr("")
     worker_lease_seconds: int = Field(60, ge=15, le=600)
     worker_delivery_grace_minutes: int = Field(15, ge=1, le=1440)
 
@@ -67,6 +72,16 @@ class Settings(BaseSettings):
         if value.rstrip("/") not in {"https://api.deepseek.com", "https://api.deepseek.com/v1"}:
             raise ValueError("Only the official DeepSeek HTTPS endpoint is allowed")
         return value.rstrip("/")
+
+    @field_validator("uni_push_bridge_url")
+    @classmethod
+    def https_bridge_only(cls, value):
+        if not value:
+            return ""
+        parsed = urlparse(value)
+        if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
+            raise ValueError("Uni-push bridge must use an HTTPS URL without embedded credentials")
+        return value
 
 
 @lru_cache

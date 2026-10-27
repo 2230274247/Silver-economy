@@ -38,6 +38,7 @@ def test_empty_schema_upgrade_repeat_downgrade_upgrade(mysql_engine):
         "map_budget",
         "outing_tasks",
         "notification_jobs",
+        "notification_devices",
         "task_audit_logs",
     }
     with mysql_engine.connect() as connection:

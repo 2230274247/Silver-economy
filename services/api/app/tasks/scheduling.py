@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select, update
 
+from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.security import utc_now
 from app.models.entities import (
@@ -273,6 +274,7 @@ def _payload_for_job(task, reminder, draft):
 
 
 def _add_reminder_and_job(db, task):
+    settings = get_settings()
     reminder = Reminder(
         user_id=task.user_id,
         outing_task_id=task.id,
@@ -289,14 +291,14 @@ def _add_reminder_and_job(db, task):
         outing_task_id=task.id,
         reminder_id=reminder.id,
         task_revision=task.revision,
-        channel="in_app_mock",
+        channel="in_app_mock" if settings.notifications_provider == "mock" else "android_device",
         scheduled_at=task.reminder_at,
         status="queued",
         attempts=0,
         max_attempts=3,
         idempotency_key=f"{task.id}:revision-{task.revision}:reminder",
         payload={},
-        provider="mock",
+        provider=settings.notifications_provider,
     )
     db.add(job)
     return reminder, job

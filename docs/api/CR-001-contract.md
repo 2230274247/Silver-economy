@@ -7,6 +7,8 @@
 
 2026-10-27 T11B实施补充：位置同意/搜索/选择及路线天气预览实际归属于`/task-drafts/{id}`，复用已有身份/草案版本；见[T11B实际合同](T11B-maps.md)与OpenAPI。表中GET /places/search仍是旧设计，不另建无草案上下文的查询入口。当前Mock/HTTP合同测试不代表高德live验证，出门时间运算/调度/设备仍待C–E。
 
+2026-10-27 T11D实施补充：设备登记、列表、撤回、通知列表与能力状态实际采用`/notification-devices`、`/notifications`和`/notifications/status`，见OpenAPI与[Android通知配置](../operations/ANDROID_NOTIFICATIONS.md)。推送客户端ID服务端加密，API不回传；真实商为`unipush_bridge`时仍只把服务商接受与手机送达分开记录。当前缺AppID、厂商配置、HTTPS桥接、签名包和真机，状态为BLOCKED_PROVIDER_CONFIGURATION。
+
 | API | 输入/输出边界 | 任务 |
 |---|---|---|
 | POST /assist/parse-task | 本人消息/本轮文字+用户时区 → assistant_text、task_drafts[]、missing_fields[]、questions[]；只生成候选 | T11A |

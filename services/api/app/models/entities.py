@@ -283,6 +283,11 @@ class NotificationJob(Identity, Updated, Owned, Base):
             ["user_id", "outing_task_id"], ["outing_tasks.user_id", "outing_tasks.id"]
         ),
         ForeignKeyConstraint(["user_id", "reminder_id"], ["reminders.user_id", "reminders.id"]),
+        ForeignKeyConstraint(
+            ["user_id", "device_id"],
+            ["notification_devices.user_id", "notification_devices.id"],
+            name="fk_notification_jobs_device",
+        ),
         Index(
             "ix_notification_jobs_due",
             "status",
@@ -292,6 +297,7 @@ class NotificationJob(Identity, Updated, Owned, Base):
     )
     outing_task_id: Mapped[str] = mapped_column(String(36))
     reminder_id: Mapped[str] = mapped_column(String(36))
+    device_id: Mapped[str | None] = mapped_column(String(36))
     task_revision: Mapped[int] = mapped_column(Integer)
     channel: Mapped[str] = mapped_column(String(24), default="in_app_mock")
     scheduled_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
@@ -309,6 +315,23 @@ class NotificationJob(Identity, Updated, Owned, Base):
     last_attempt_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
     error_code: Mapped[str | None] = mapped_column(String(64))
     completed_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
+
+
+class NotificationDevice(Identity, Updated, Owned, Base):
+    __tablename__ = "notification_devices"
+    __table_args__ = (
+        UniqueConstraint("user_id", "id"),
+        UniqueConstraint("user_id", "fingerprint"),
+        Index("ix_notification_devices_last_seen", "user_id", "revoked_at", "last_seen_at"),
+    )
+    platform: Mapped[str] = mapped_column(String(16), default="android")
+    push_client_id_ciphertext: Mapped[str] = mapped_column(Text)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    permission_status: Mapped[str] = mapped_column(String(24))
+    app_version: Mapped[str] = mapped_column(String(64), default="")
+    device_label: Mapped[str] = mapped_column(String(80), default="")
+    last_seen_at: Mapped[datetime] = mapped_column(UTC_DATETIME)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME)
 
 
 class TaskAuditLog(Identity, Owned, Base):

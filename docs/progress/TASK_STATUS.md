@@ -2,9 +2,9 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: T11D（Android 真机通知）
+- Current task: T11E（行程详情与用户反馈；T11D 工程合同完成，外部真机门禁阻塞）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T11C `742283e0a6358aa89a193177270eb5576e62b24b`
+- Last remote-confirmed SHA: T11C evidence sync `11091cb0c331733953d23a46f7103f1b418e98c7`
 - Last verified CI: PASS（run 40451532189；api/security/mobile全部success）
 - 最后核验时间：2026-10-27T12:50:00+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
@@ -30,7 +30,7 @@
 | T11A | DONE_PUSHED | 230后端/57UI/全门禁/真实1次/四档310题PASS；输入反例先失败后通过，返修57UI PASS | 功能829bbc6530784175878f3eba0cd11df388c0251d；修复67f9235be1c501cc00567b2ed4272ccbea91d345 | SHA一致 | PASS（40442118042）；首轮40440860292失败保留 | 信息确认not_scheduled，调度仍待T11C；2026-10-27 11:04:33+08:00 |
 | T11B | IMPLEMENTED_PUSHED（LIVE_PENDING） | 本地263完整门禁+最终34地图/6UI专项；完整63UI；CI264后端/63UI PASS | c44766fa863f968463099976faab6f4c35e8cc01 | SHA一致 | PASS（40445595994） | 2026-10-27 11:41:42+08:00；Mock/合同/实现通过，真实Key未配置，LIVE_NOT_VERIFIED，不能当真实验收 |
 | T11C | DONE_PUSHED | 271后端/69UI/全门禁/独立Worker实进程PASS | `742283e0a6358aa89a193177270eb5576e62b24b` | SHA一致 | PASS（40451532189） | 确定性时间、独立确认、MySQL outbox、租约/重启/取消/隔离；新增模型0、高德0、真实推送0；Mock不能替代真机 |
-| T11D | IN_PROGRESS（环境审计） | 当前PATH无adb/java/gradle，未发现HBuilderX或Android SDK | - | - | - | Android测试包、真机后台通知；必须保留BLOCKED_PROVIDER_CONFIGURATION/设备门禁，不能用Mock替代 |
+| T11D | IMPLEMENTED_BLOCKED_PROVIDER_CONFIGURATION | 275后端/全门禁/10迁移+设备专项PASS | 待提交 | 待推送 | 待运行 | 加密设备登记/撤回/改绑、Worker归属复核、HTTPS桥接与最小通知；0真实推送；缺SDK/HBuilderX/AppID/厂商配置/真机，CR-AC10未通过 |
 | T11E | TODO | - | - | - | - | 行程详情、导航、修改/取消/完成反馈 |
 | T12 | TODO | - | - | - | - | 设置/隐私/导出 |
 | T13 | TODO | - | - | - | - | 原 AC + CR-AC01–13、时间/隔离/重启/真机 |
