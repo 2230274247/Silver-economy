@@ -14,3 +14,8 @@
 修复：独立Worker日志时间曾为本地时刻却标UTC；统一使用gmtime，重启本项目Worker验证UTC输出。没有更改调度时间或用户数据。
 
 远端核验（2026-10-27T14:47:01+08:00）：交付提交71c345244c33d11edfb341298c502f37631cdb64与origin/dev/v0.1一致；CI40462849750当前IN_PROGRESS，各job实时结果见T14-remote.json及GitHub Checks。Draft PR https://github.com/2230274247/Silver-economy/pull/1 已创建；base main、head dev/v0.1、未合并。main仍9f43350cbc23932e17de459729fca3f07b446e54。
+
+### P05补充（2026-10-27T14:55:21+08:00）
+
+完成独立测试库Synthetic逻辑备份恢复演练，20表行数与内容摘要完全一致；已提交Mock通知不重发，同确认键不新增任务/job。新增备份命令、仅测试库恢复命令、路径/容器/端口/manifest校验及运维说明。只跑该项必要实测与Ruff/安全检查，不重复整套回归。未做开发库覆盖恢复或真实供应商对账，T14仍未正式全验收。
+已确认交付CI40462849750及同步CI40463163808/40463168956最终success；证据另存T14-ci-final.json，先前in-progress历史不改写。

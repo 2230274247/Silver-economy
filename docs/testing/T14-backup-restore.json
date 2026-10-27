@@ -1,0 +1,105 @@
+{
+  "checked_at_hk": "2026-10-27T14:51:51.343969+08:00",
+  "schema": "silver_memory_demo_v01_test",
+  "development_schema_modified": false,
+  "ale_ai_mysql_accessed": false,
+  "real_model_calls": 0,
+  "real_map_calls": 0,
+  "real_push_calls": 0,
+  "status": "PASS",
+  "table_snapshots": {
+    "alembic_version": {
+      "rows": 1,
+      "sha256": "d569ff46be03cb4fb85fb95a1c893fe6007357668b77afe3cf40124e1ba080fc"
+    },
+    "auth_sessions": {
+      "rows": 1,
+      "sha256": "ba0b1387e38f902f8f57bdda1979edfeade084e286491accc7bc0432bdcc257f"
+    },
+    "conversations": {
+      "rows": 3,
+      "sha256": "1bc4ffdd03c564a9043f4700b1761791f6c4fe1b730ebccf259be10806fe99a4"
+    },
+    "life_events": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "map_budget": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "map_requests": {
+      "rows": 4,
+      "sha256": "301c04f0137ffaad8f997c05d1cc5d57caf4a066fb9219224d56ef1bd31bfc45"
+    },
+    "memory_facts": {
+      "rows": 1,
+      "sha256": "619857522230d3435ea631e2961852f41e2e3b18e59afd0d3ab02bb95ac37099"
+    },
+    "memory_revisions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "memory_sources": {
+      "rows": 1,
+      "sha256": "9f1bb4d914052f590267200905d81d1e32b377ccfd16b8778c84dafa02d652f8"
+    },
+    "memory_uses": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "messages": {
+      "rows": 6,
+      "sha256": "5f33b180d338bc600e35e6b9b4ba4cd5d95bb2b026043007d6605b5361adaed5"
+    },
+    "model_budget": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "model_usage": {
+      "rows": 3,
+      "sha256": "b3b107cda145b9d6785cf2210faca38925d893d0f23de7014fd4ad0456df4379"
+    },
+    "notification_devices": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "notification_jobs": {
+      "rows": 3,
+      "sha256": "4d410cf9a76af932f0d52fb84270c046d85cb5a72c4055150d876b5acd1ce652"
+    },
+    "outing_tasks": {
+      "rows": 2,
+      "sha256": "bf203d94124ae1d27a0a655c0864036671ce295ac71640588cd47db97065d170"
+    },
+    "reminders": {
+      "rows": 2,
+      "sha256": "42d904ac4d46df6a77efa343e7adee51912132a4fef9ac1c4292fb22ae08f322"
+    },
+    "task_audit_logs": {
+      "rows": 3,
+      "sha256": "5ab682b8b2b09222007535b0d227bb55479ef80c34a2b80d999d09eb85f21050"
+    },
+    "task_drafts": {
+      "rows": 2,
+      "sha256": "7bf4d3f0149459936545826119d51009359be590ec379c409fb6ab4422cdb00a"
+    },
+    "users": {
+      "rows": 1,
+      "sha256": "d1c5191c569cb6b686fb4a77caf32e5bf84ca355168b30a0eb0fd87e7c71e83f"
+    }
+  },
+  "all_table_content_hashes_equal": true,
+  "mutation_observed": true,
+  "submitted_notification_preserved": true,
+  "restart_claimed_jobs": 0,
+  "idempotent_confirm_returned_same_task": true,
+  "backup_path": "backups/P05-synthetic-20261027-145153.sql",
+  "backup_manifest_path": "backups/P05-synthetic-20261027-145153.manifest.json",
+  "commands": [
+    "database-backup.py backup --schema test --output backups/P05-synthetic-20261027-145153.sql",
+    "database-backup.py restore-test --input backups/P05-synthetic-20261027-145153.sql --replace-test-data"
+  ],
+  "path_guards_passed": true,
+  "project_container_and_loopback_port_guard_passed": true
+}

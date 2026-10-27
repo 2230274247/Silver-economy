@@ -19,7 +19,7 @@
 | 出行任务 | 意图/追问、可编辑卡、独立信息确认与调度确认；确定性时间、持久Worker、修改/替换/取消/完成 |
 | 地图天气 | Provider与Mock合同完成；当前Mock，真实高德未验收 |
 | 通知 | outbox/设备加密/撤回/桥接合同；当前Mock，Android后台实际送达未验收 |
-| 数据控制 | 账户隔离、本人JSON导出、记忆授权/设备撤回；数据库备份恢复演练未完成 |
+| 数据控制 | 账户隔离、本人JSON导出、记忆授权/设备撤回；独立测试库逻辑恢复已验证，开发库覆盖恢复未验收 |
 
 未实现的语音、附件、图片生成不作为可用能力。Mock/Synthetic均标识；不把服务商接受写成已送达。
 完整未验收清单与续办步骤：[V01_PENDING_ACCEPTANCE](docs/progress/V01_PENDING_ACCEPTANCE.md)；
@@ -40,7 +40,7 @@ cd ../..
 
 锁定Python依赖services/api/requirements.lock，前端apps/mobile/package-lock.json。初始化不覆盖已有.env，不打印凭据。
 独立项目MySQL仅127.0.0.1:13306，开发库silver_memory_demo_v01，测试库silver_memory_demo_v01_test。
-不得对开发库自动执行downgrade/base或docker compose down -v。备份恢复与新机复现待验收，见P05/P06。
+不得对开发库自动执行downgrade/base或docker compose down -v。独立测试库逻辑恢复已验证，见[备份恢复说明](docs/operations/BACKUP_RESTORE.md)；开发库覆盖恢复与新机完整复现仍待验收。
 
 ## 启动
 
