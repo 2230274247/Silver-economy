@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import AccessibleButton from './AccessibleButton.vue';
 import AppButton from './AppButton.vue';
 import { labelTextControl } from '../platform/accessibility';
+import { bindComposer } from '../platform/composer';
 import { draftTimeText } from '../platform/task-time';
 import { readTaskDraft, saveTaskDraft, taskAction, type TaskDraft } from '../stores/task-drafts';
 const props = defineProps<{ item: TaskDraft }>();
@@ -15,11 +16,22 @@ const modes: { value: TaskDraft['transport']; label: string }[] = [
   { value: 'taxi', label: '打车' }, { value: 'transit', label: '公交地铁' },
   { value: 'driving', label: '自己开车' }, { value: 'walking', label: '步行' }, { value: 'cycling', label: '骑车' },
 ];
-const labels = { title: '事项', time: '日期和时间', origin: '出发地', destination: '目的地', lead: '提前分钟数' };
+const controls = [
+  ['title', '事项', 'title'], ['time', '日期和时间', 'time_text'], ['origin', '出发地', 'origin'],
+  ['destination', '目的地', 'destination'], ['lead', '提前分钟数', 'lead'],
+] as const;
+let cleanups: (() => void)[] = [];
+function cleanup() { cleanups.forEach(fn => fn()); cleanups = []; }
+onUnmounted(cleanup);
 function controlId(name: string) { return `task-${props.item.id}-${name}`; }
 async function bindLabels() {
   await nextTick();
-  for (const [key, label] of Object.entries(labels)) labelTextControl(controlId(key), label);
+  cleanup();
+  for (const [id, label, field] of controls) {
+    labelTextControl(controlId(id), label);
+    // Match the existing composer/memory editor: H5 input must reach state before an immediate save.
+    cleanups.push(bindComposer(controlId(id), () => {}, () => {}, value => { form[field] = value; }, 'input'));
+  }
 }
 async function sync() {
   const item = props.item;

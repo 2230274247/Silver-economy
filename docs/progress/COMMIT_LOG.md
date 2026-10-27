@@ -30,6 +30,7 @@ T11A本次本地验收（2026-10-27，Asia/Hong_Kong）：出行意图、持久�
 | 2026-10-27 06:41:16 +08:00 | T10E2 固定题集/客观评估 | b3903deb40e87d6b43f50b2b814bc7ac53697cd0 | 310题/246问法、四档真实SQL/API与来源评分、失败修复/资源/并发/HTML/JSON/独立人数审计；DeepSeek新增0 | 本地196后端+后补报告用例/45UI PASS；push/SHA一致；CI40414362100 api197/security PASS，mobile43 PASS/2 FAIL，保留失败并另建修复提交 |
 
 | 2026-10-27 07:05:37 +08:00 | T10E2 CI同步修复 | e38b2c173c55c127db90dd975fc72587468d38d9 | 复现旧退出响应清除新Cookie；UI帮助函数等真实退出204和登录表单，保留延迟响应反例及身份断言 | 独立测试TS、48UI/2.4m PASS；push/SHA一致；CI40417316422 api/security/mobile全部success；首轮失败未改写 |
+| 2026-10-27 10:51:20 +08:00 | T11A 草案功能 | 829bbc6530784175878f3eba0cd11df388c0251d | 一次模型意图/当前事实、任务草案/缺项追问/来源/编辑确认/暂不安排/隔离、H5紧凑卡；信息确认不调度 | 本地230后端/57UI/四档310题/1次真实及全门禁PASS；push/SHA一致；CI40440860292 api/security成功，mobile55通过/2失败，保留失败并另建输入同步修复 |
 
 最新核验时间：2026-10-26 19:59:43 +08:00。已通过 GitHub Commit API 核对 CR-001 的远端正文包含时间、完成/修正、测试、未实现范围及下一步。
 远端 CI：[T01](https://github.com/2230274247/Silver-economy/actions/runs/40285949407)、[T02 首轮失败](https://github.com/2230274247/Silver-economy/actions/runs/40288362756)、[T02 修复通过](https://github.com/2230274247/Silver-economy/actions/runs/40288604220)、[CR-001 通过](https://github.com/2230274247/Silver-economy/actions/runs/40289773428)。

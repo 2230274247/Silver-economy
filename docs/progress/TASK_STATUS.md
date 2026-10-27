@@ -4,9 +4,9 @@
 - Default dev branch: dev/v0.1
 - Current task: T11A（出行意图、追问、持久草案和可编辑确认卡；开发/联调中）
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: T10E2修复 `e38b2c173c55c127db90dd975fc72587468d38d9`
-- Last verified CI: PASS（run 40417316422；api/security/mobile全部success；首轮失败保留）
-- 最后核验时间：2026-10-27T07:04:40+08:00。
+- Last remote-confirmed SHA: T11A功能 `829bbc6530784175878f3eba0cd11df388c0251d`
+- Last verified CI: FAIL（run 40440860292；api/security通过，mobile55通过/2失败；正在独立修复）
+- 最后核验时间：2026-10-27T11:00:38+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -27,7 +27,7 @@
 | T10E1 | DONE_PUSHED | 164后端/完整门禁、100/1000/10000真实SQL计数/重复导入PASS，新增模型0 | 423ff6cf37cc12a82eb7027c939b487874d7a5d4 | SHA一致 | PASS（40400713021） | 2026-10-27 05:00:51 +08:00；Synthetic入库不替代召回验收 |
 | T10E2 | DONE_PUSHED | 197后端、48UI及四档310题/SQL/资源报告PASS | 功能b3903deb40e87d6b43f50b2b814bc7ac53697cd0；修复e38b2c173c55c127db90dd975fc72587468d38d9 | SHA一致 | PASS（40417316422）；首轮失败保留 | 2026-10-27 07:05:37+08:00；修复仅测试同步，生产评分不变 |
 | T11 | TODO（汇总） | - | - | - | - | CR-001，A–E 全部独立验收 |
-| T11A | LOCAL_VERIFIED | 230后端/57UI/9卡片复测/完整门禁/单次真实DeepSeek/四档310题记忆回归 PASS | 本次提交待核验 | 待推送 | 待运行 | 真实草案落库/追问/编辑；信息确认not_scheduled，调度仍待T11C |
+| T11A | PUSHED_CI_FAILED | 首轮本地230后端/57UI/完整门禁/真实1次/四档310题PASS；输入节流返修中 | 829bbc6530784175878f3eba0cd11df388c0251d | SHA一致 | 40440860292 api/security PASS，mobile55 PASS/2 FAIL | 保留失败；修复快速改值后保存读到旧值，未进入T11B |
 | T11B | TODO | - | - | - | - | 高德地点、路线/天气，真实+Mock |
 | T11C | TODO | - | - | - | - | 确定性时间计算、MySQL outbox、持久 Worker |
 | T11D | TODO | - | - | - | - | Android 测试包、真机后台通知，外部配置准入 |

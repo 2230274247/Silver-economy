@@ -60,10 +60,17 @@ test('draft validation, save error, preserved input, duplicate guard and defer u
   await card.getByLabel('提前分钟数', { exact: true }).fill('-1');
   await card.getByRole('button', { name: '保存修改', exact: true }).click();
   await expect(card.getByRole('alert')).toContainText('提前分钟数');
-  await card.getByLabel('提前分钟数', { exact: true }).fill('30');
   const editUrl = `**/api/v1/task-drafts/${id}/edit`;
   await page.route(editUrl, route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { code: 'SYNTHETIC_FAILURE', message: '合成暂时不可用' } }) }), { times: 1 });
-  await card.getByRole('button', { name: '保存修改', exact: true }).click();
+  // Correct and save in the same event loop: do not hide uni-app's 100ms input throttle with a test sleep.
+  await card.evaluate(node => {
+    const input = node.querySelector<HTMLInputElement>('input[aria-label="提前分钟数"]')!;
+    input.value = '-1'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.value = '30'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    const save = Array.from(node.querySelectorAll<HTMLElement>('[role="button"]')).find(button => button.textContent?.trim() === '保存修改');
+    if (!save) throw new Error('Save button missing');
+    save.click();
+  });
   await expect(card.getByRole('alert')).toContainText('合成暂时不可用');
   await expect(card.getByLabel('出发地', { exact: true })).toHaveValue('合成起点东门');
   let release = () => {};
