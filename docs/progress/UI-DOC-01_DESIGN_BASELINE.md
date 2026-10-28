@@ -14,3 +14,5 @@
 
 
 归档修正：首轮暂存检查发现原件的 8 处 Markdown 双空格换行触发 trailing-whitespace，且默认 text 规则会将 CRLF 归一化。首个提交 28075c593eed09d5a1f78197144bd7c9e1841b08 已推送并核对远端 SHA，保留历史；未将首轮暂存检查写为通过。修正沿用既有 docs/changes/*.source.md 规则，在 .gitattributes 对 docs/design/*.source.md 设置 -text whitespace=-blank-at-eol，原件内容不改。随后重新暂存并核验 Git blob 与附件字节及哈希，而非只检查工作区。
+
+第二轮说明：167e3c1 仅更新属性；普通 git add 未刷新原有索引 blob，字节断言仍失败，其提交正文误写该检查 PASS，以此记录纠正。实际执行 git add --renormalize 后，暂存原件与附件字节及 SHA-256 断言通过；历史提交均保留。
