@@ -11,3 +11,6 @@
 实际验证：附件与原件字节相等及 SHA-256 核验 PASS；AGENTS/README/设计入口共 21 个本地链接存在性检查 PASS；git diff --check PASS；.venv/Scripts/python.exe scripts/security_scan.py PASS。仅文档变更，不运行与本次无关的后端/UI 全套回归；不声称已验收九主题或真实设备。
 
 提交、远端 SHA 与 CI：待实际提交后核验。
+
+
+归档修正：首轮暂存检查发现原件的 8 处 Markdown 双空格换行触发 trailing-whitespace，且默认 text 规则会将 CRLF 归一化。首个提交 28075c593eed09d5a1f78197144bd7c9e1841b08 已推送并核对远端 SHA，保留历史；未将首轮暂存检查写为通过。修正沿用既有 docs/changes/*.source.md 规则，在 .gitattributes 对 docs/design/*.source.md 设置 -text whitespace=-blank-at-eol，原件内容不改。随后重新暂存并核验 Git blob 与附件字节及哈希，而非只检查工作区。

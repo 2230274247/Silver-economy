@@ -102,3 +102,5 @@ DEV-01（2026-10-27T16:51:56+08:00）：新增3个共享PyCharm运行配置、�
 DEV-02（2026-10-28T10:47:51+08:00）：新增root main.py、受控H5/Worker/Compose子进程及Windows Job强停清理，自动开网页和Mock参数；H5开发断点等待10分钟（生产45秒不变），共享main配置与GBrowser指引。10标准库测试及-S兼容、正常8成员/强停10进程真实退出、API同PID trace/Mock保存幂等、前端TS/Lint/H5/Ruff安全通过，0付费；详情命令及证据DEV-02_ONE_CLICK.md。MySQL保留无迁移，不碰其他项目；未声称实际IDE插件点击验收。DEV-01两CI均success；本次commit/push/SHA/CI事后核验。
 
 UI-DOC-01（2026-10-28T11:08:16+08:00）：用户 UI/UX V1.0 原件按字节归档至 docs/design，建立职责分工、版本维护与后续验收入口，并接入 AGENTS/README。保留适老化字号与现有业务约束。仅文档；未安装 Skills，未实现或验收全局 UI/九主题/AI 生图。验证与远端结果见 UI-DOC-01_DESIGN_BASELINE.md，当前 commit/push/SHA/CI 提交后核验。
+
+UI-DOC-01 归档修正（2026-10-28，Asia/Hong_Kong）：28075c5 已远端核验；补充原件 Git 属性以保留 CRLF 与 Markdown 换行空格，首轮暂存检查失败保留记录；修正后核验 Git blob 与附件，CI 以实际终态为准。

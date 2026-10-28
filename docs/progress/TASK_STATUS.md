@@ -68,3 +68,5 @@ DEV-01（2026-10-27T16:51:56+08:00）：PyCharm共享Mock/Live API和Mock Worker
 DEV-02（2026-10-28T10:47:51+08:00）：根main.py一键启动API/H5/Worker及浏览器，API同进程支持断点，Windows Job强制停止后业务子进程全退出；MySQL持久保留。10单元（含-S）/实际正常及强停/前端类型Lint构建/Ruff安全通过，0付费。GBrowser指引已核对，IDE插件实际操作未验收；详见DEV-02_ONE_CLICK.md。当前SHA/push/CI事后核验。
 
 UI-DOC-01（2026-10-28T11:08:16+08:00）：用户 UI/UX V1.0 原件按字节归档至 docs/design，建立职责分工、版本维护与后续验收入口，并接入 AGENTS/README。保留适老化字号与现有业务约束。仅文档；未安装 Skills，未实现或验收全局 UI/九主题/AI 生图。验证与远端结果见 UI-DOC-01_DESIGN_BASELINE.md，当前 commit/push/SHA/CI 提交后核验。
+
+UI-DOC-01 归档修正（2026-10-28，Asia/Hong_Kong）：28075c5 已远端核验；补充原件 Git 属性以保留 CRLF 与 Markdown 换行空格，首轮暂存检查失败保留记录；修正后核验 Git blob 与附件，CI 以实际终态为准。
