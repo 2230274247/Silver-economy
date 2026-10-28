@@ -66,3 +66,5 @@ CHAT-05（2026-10-27T16:23:08+08:00）：移除共用聊天强制JSON模式；�
 DEV-01（2026-10-27T16:51:56+08:00）：PyCharm共享Mock/Live API和Mock Worker配置、脱敏聊天阶段日志与断点手册；35专项及XML/临时8001实际Mock聊天持久/幂等通过，0付费调用，无迁移。未验证IDE实际断点，保留现有.idea及当前服务；详见DEV-01_PYCHARM.md，当前提交SHA/CI事后核验。
 
 DEV-02（2026-10-28T10:47:51+08:00）：根main.py一键启动API/H5/Worker及浏览器，API同进程支持断点，Windows Job强制停止后业务子进程全退出；MySQL持久保留。10单元（含-S）/实际正常及强停/前端类型Lint构建/Ruff安全通过，0付费。GBrowser指引已核对，IDE插件实际操作未验收；详见DEV-02_ONE_CLICK.md。当前SHA/push/CI事后核验。
+
+UI-DOC-01（2026-10-28T11:08:16+08:00）：用户 UI/UX V1.0 原件按字节归档至 docs/design，建立职责分工、版本维护与后续验收入口，并接入 AGENTS/README。保留适老化字号与现有业务约束。仅文档；未安装 Skills，未实现或验收全局 UI/九主题/AI 生图。验证与远端结果见 UI-DOC-01_DESIGN_BASELINE.md，当前 commit/push/SHA/CI 提交后核验。

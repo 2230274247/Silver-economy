@@ -1,5 +1,11 @@
 # 变更记录
 
+## UI-DOC-01 — 2026-10-28（Asia/Hong_Kong）
+
+- 保真归档 AI 回忆录 App 全局 UI/UX V1.0，记录 SHA-256，作为长期设计基线。
+- AGENTS 与 README 接入强制阅读入口：App 规范决定产品视觉与回忆功能，第三方 Skills 提供交互方法；保留适老化设置，后续改版需验收。
+- 仅文档规则接入；未安装 Skills，未改 UI、业务、依赖或数据库，功能实现与真实设备验收仍待后续阶段。
+
 ## DEV-02 — 2026-10-28（Asia/Hong_Kong）
 
 - 新增根main.py：Run/Debug一键启动API、H5、Worker、复用独立MySQL，就绪后自动打开网站。

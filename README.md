@@ -1,7 +1,11 @@
 # Silver-economy · 银发记忆 V0.1
 
 有长期记忆的AI生活助理。当前为**会议室初步演示可用，正式最终验收未完成**。
-保留米白/浅绿Muse式H5布局；不重建工程或改写Git历史。
+现有 Muse 式 H5 布局渐进演进，后续视觉与交互遵循下述长期设计规范；不重建工程或改写 Git 历史。
+
+## 长期 UI/UX 设计规范
+
+[AI 回忆录 App 设计约束与执行入口](docs/design/README.md) · [全局规范 V1.0 原件](docs/design/AI_MEMOIR_UI_UX_V1.0.source.md)。所有现有页面和后续功能共用组件、主题和交互规则；App 规范决定产品视觉与回忆功能，`emilkowalski/skills` 提供设计方法。当前完成规范归档与规则接入，UI 升级和 Skills 安装状态见设计入口。
 
 ## PyCharm一键启动
 
