@@ -1,0 +1,109 @@
+{
+  "time_hk": "2026-10-26 23:53:33 +0800",
+  "synthetic_only": true,
+  "task_requests": [
+    {
+      "request_id": "a29ece9b-d720-4f3a-9d33-0495a98828eb",
+      "model": "deepseek-flash",
+      "status": "completed",
+      "input_tokens": 496,
+      "output_tokens": 48,
+      "latency_ms": 1500,
+      "reserved_tokens": 2713,
+      "recorded_estimated_usd": "0.00020640",
+      "conservative_estimated_usd": "0.0002064",
+      "error": null
+    },
+    {
+      "request_id": "904e0338-d6a5-4e2a-9078-c7acfc880482",
+      "model": "deepseek-flash",
+      "status": "completed_rejected",
+      "input_tokens": 492,
+      "output_tokens": 48,
+      "latency_ms": 1531,
+      "reserved_tokens": 2718,
+      "recorded_estimated_usd": null,
+      "conservative_estimated_usd": "0.0002052",
+      "error": "MEMORY_CONSENT_CHANGED"
+    },
+    {
+      "request_id": "c82ea5cd-a261-4687-ab9c-10e303a66d80",
+      "model": "deepseek-flash",
+      "status": "completed",
+      "input_tokens": 492,
+      "output_tokens": 49,
+      "latency_ms": 1389,
+      "reserved_tokens": 2718,
+      "recorded_estimated_usd": "0.00020640",
+      "conservative_estimated_usd": "0.0002064",
+      "error": null
+    }
+  ],
+  "task_estimated_usd": "0.0006180",
+  "project_totals": {
+    "requests": 6,
+    "input_tokens": 2291,
+    "output_tokens": 261,
+    "conservative_estimated_usd": "0.0010005"
+  },
+  "phases": [
+    {
+      "status": "failed_no_retry",
+      "phase": "recovery",
+      "synthetic_test": true,
+      "time": "2026-10-26T15:36:39.396Z",
+      "request_id": "a29ece9b-d720-4f3a-9d33-0495a98828eb",
+      "message_id": "ff10b7c7-7173-4c73-98e7-1fef42508c1f",
+      "conversation_id": "02393fcf-2d74-49ba-b82a-cc4fafd4b475",
+      "live_requests": 1,
+      "repair_status": "passed",
+      "repair_method": "deterministic_explicit_state_from_saved_original_no_model_call",
+      "memory_id": "bae8fbf3-f880-4321-bb5c-9dd0e0b3cd3d",
+      "previous_memory_id": "996b1095-5a7e-4779-ad33-08ad71b095fa",
+      "previous_status": "historical",
+      "source_verified": true,
+      "synthetic_annotated": true
+    },
+    {
+      "status": "failed_no_retry",
+      "phase": "recall",
+      "synthetic_test": true,
+      "time": "2026-10-26T15:42:26.894Z",
+      "request_id": "904e0338-d6a5-4e2a-9078-c7acfc880482",
+      "message_id": "f3cee141-5d6c-4cda-b92d-6f6c3c525610",
+      "conversation_id": "77e8e044-21d1-40e2-a02c-b54b1247d15a",
+      "live_requests": 1
+    },
+    {
+      "status": "passed",
+      "phase": "recall-isolated",
+      "synthetic_test": true,
+      "time": "2026-10-26T15:51:48.267Z",
+      "request_id": "c82ea5cd-a261-4687-ab9c-10e303a66d80",
+      "message_id": "be92c1ea-245a-4d23-add6-1e55414d3030",
+      "conversation_id": "c9869c63-9e66-4611-8eca-5587f2e35c64",
+      "live_requests": 1,
+      "memory_id": "bae8fbf3-f880-4321-bb5c-9dd0e0b3cd3d",
+      "reference_verified": true,
+      "prior_injury_not_retrieved": true,
+      "refresh_persisted": true
+    }
+  ],
+  "state_checks": [
+    {
+      "memory_id": "996b1095-5a7e-4779-ad33-08ad71b095fa",
+      "status": "historical",
+      "revision": 2,
+      "synthetic": true,
+      "extractor_version": "chat-memory/v1"
+    },
+    {
+      "memory_id": "bae8fbf3-f880-4321-bb5c-9dd0e0b3cd3d",
+      "status": "candidate",
+      "revision": 1,
+      "synthetic": true,
+      "extractor_version": "chat-memory/v3+state-rule/v1"
+    }
+  ],
+  "pricing_note": "Conservative peak cache-miss estimate, not an invoice. One rejected pre-fix receipt had null stored estimate; report recomputes from its known tokens without rewriting the receipt."
+}

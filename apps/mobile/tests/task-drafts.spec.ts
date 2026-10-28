@@ -1,0 +1,107 @@
+import { test, expect, type Page } from '@playwright/test';
+import path from 'node:path';
+import { freshChat, login, logout } from './helpers';
+
+async function send(page: Page, text: string) {
+  await page.getByLabel('想对小忆说的话', { exact: true }).fill(text);
+  const response = page.waitForResponse(r => r.request().method() === 'POST' && /\/messages$/.test(new URL(r.url()).pathname));
+  await page.getByRole('button', { name: '发送消息', exact: true }).click();
+  const result = await (await response).json();
+  expect(result.provider).toBe('mock');
+  expect(result.assistant_message.status).toBe('completed');
+  return result;
+}
+
+test('trip clarification, editable information confirmation and refresh are persisted without a scheduled promise', async ({ page }, info) => {
+  await login(page); await freshChat(page);
+  const first = await send(page, '明天上午十点去张阿姨家做客，记得提醒我。');
+  expect(first.assistant_message.task_drafts).toHaveLength(1);
+  expect(first.assistant_message.task_drafts[0].missing_fields).toEqual(['到达还是出发', '出发地', '交通方式']);
+  const card = page.locator('.task-card');
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText('Mock'); await expect(card).toContainText('尚未调度');
+  await expect(card.getByRole('button', { name: '确认信息', exact: true })).toBeDisabled();
+  const followup = await send(page, '十点到，打车，从合成公园出发');
+  expect(followup.assistant_message.task_drafts[0].id).toBe(first.assistant_message.task_drafts[0].id);
+  await expect(card).toHaveCount(1);
+  await card.getByRole('button', { name: '补充或修改信息', exact: true }).click();
+  await card.getByLabel('事项', { exact: true }).fill('Synthetic 可编辑做客安排');
+  await card.getByLabel('出发地', { exact: true }).fill('合成广场南门');
+  await card.getByLabel('提前分钟数', { exact: true }).fill('30');
+  const saved = page.waitForResponse(r => r.request().method() === 'POST' && /\/task-drafts\/[^/]+\/edit$/.test(new URL(r.url()).pathname));
+  await card.getByRole('button', { name: '保存修改', exact: true }).click();
+  const updated = await (await saved).json();
+  expect(updated.title).toBe('Synthetic 可编辑做客安排');
+  expect(updated.origin).toBe('合成广场南门'); expect(updated.lead_minutes).toBe(30);
+  await expect(card.getByRole('button', { name: '保存修改', exact: true })).toHaveAttribute('aria-busy', 'false');
+  const confirmed = page.waitForResponse(r => /\/task-drafts\/[^/]+\/actions$/.test(new URL(r.url()).pathname));
+  await card.getByRole('button', { name: '确认信息', exact: true }).click();
+  const result = await (await confirmed).json();
+  expect(result.status).toBe('confirmed'); expect(result.scheduling_status).toBe('not_scheduled');
+  await expect(card).toContainText('信息已确认');
+  await page.reload(); await expect(card).toContainText('信息已确认');
+  await expect(card).toContainText('Synthetic 可编辑做客安排');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
+  await card.getByText('信息已确认 · 尚未调度', { exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.resolve(`../../.cache/ui-regression/T11A-confirmed-${info.project.name}.png`) });
+});
+
+test('draft validation, save error, preserved input, duplicate guard and defer use real API state', async ({ page }) => {
+  await login(page); await freshChat(page);
+  const created = await send(page, '明天十点去合成书屋，提醒我');
+  const id = created.assistant_message.task_drafts[0].id;
+  const card = page.locator('.task-card');
+  await card.getByRole('button', { name: '补充或修改信息', exact: true }).click();
+  await card.getByLabel('日期和时间', { exact: true }).fill('明天上午十点');
+  await card.getByLabel('出发地', { exact: true }).fill('合成起点东门');
+  await card.getByRole('button', { name: '到达时间', exact: true }).click();
+  await card.getByRole('button', { name: '打车', exact: true }).click();
+  await expect(card.getByRole('button', { name: '到达时间', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await card.getByLabel('提前分钟数', { exact: true }).fill('-1');
+  await card.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(card.getByRole('alert')).toContainText('提前分钟数');
+  const editUrl = `**/api/v1/task-drafts/${id}/edit`;
+  await page.route(editUrl, route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { code: 'SYNTHETIC_FAILURE', message: '合成暂时不可用' } }) }), { times: 1 });
+  // Correct and save in the same event loop: do not hide uni-app's 100ms input throttle with a test sleep.
+  await card.evaluate(node => {
+    const input = node.querySelector<HTMLInputElement>('input[aria-label="提前分钟数"]')!;
+    input.value = '-1'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.value = '30'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    const save = Array.from(node.querySelectorAll<HTMLElement>('[role="button"]')).find(button => button.textContent?.trim() === '保存修改');
+    if (!save) throw new Error('Save button missing');
+    save.click();
+  });
+  await expect(card.getByRole('alert')).toContainText('合成暂时不可用');
+  await expect(card.getByLabel('出发地', { exact: true })).toHaveValue('合成起点东门');
+  let release = () => {};
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  let writes = 0;
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith(`/task-drafts/${id}/edit`)) writes++; });
+  await page.route(editUrl, async route => { await gate; await route.continue(); }, { times: 1 });
+  const began = page.waitForRequest(r => r.url().endsWith(`/task-drafts/${id}/edit`));
+  const saved = page.waitForResponse(r => r.url().endsWith(`/task-drafts/${id}/edit`));
+  const button = card.getByRole('button', { name: '保存修改', exact: true });
+  await button.click(); await began;
+  await expect(button).toHaveAttribute('aria-busy', 'true');
+  await button.dispatchEvent('click'); release();
+  expect((await saved).status()).toBe(200);
+  await expect(button).toHaveAttribute('aria-busy', 'false');
+  expect(writes).toBe(1);
+  await card.getByRole('button', { name: '暂不安排', exact: true }).click();
+  await expect(card).toContainText('已暂不安排');
+  expect((await (await page.request.get(`/api/v1/task-drafts/${id}`)).json()).status).toBe('deferred');
+});
+
+test('multiple arrangements stay separate and another user cannot see their messages or drafts', async ({ page }) => {
+  await login(page); await freshChat(page);
+  const result = await send(page, '明天上午十点去合成花园，提醒我；后天下午三点去合成博物馆，提醒我');
+  const drafts = result.assistant_message.task_drafts;
+  expect(drafts).toHaveLength(2);
+  expect(drafts[0].target_at).not.toBe(drafts[1].target_at);
+  await expect(page.locator('.task-card')).toHaveCount(2);
+  await page.getByRole('button', { name: '打开个人设置', exact: true }).click();
+  await logout(page); await login(page, 1); await freshChat(page);
+  await expect(page.locator('.task-card')).toHaveCount(0);
+  for (const draft of drafts) expect((await page.request.get(`/api/v1/task-drafts/${draft.id}`)).status()).toBe(404);
+  expect((await page.request.get(`/api/v1/conversations/${drafts[0].conversation_id}/messages`)).status()).toBe(404);
+});

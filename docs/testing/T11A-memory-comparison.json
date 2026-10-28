@@ -1,0 +1,65 @@
+{
+  "suite_sha256": "a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4",
+  "suite_unchanged": true,
+  "provider": "mock",
+  "benchmark_real_calls": 0,
+  "previous_report": "rules-v3-verified.json",
+  "current_report": "t11a-v1-verified.json",
+  "scale_results": [
+    {
+      "scale": 100,
+      "cases": 310,
+      "quality_metrics_unchanged": true,
+      "previous_p95_ms": 127.911,
+      "current_p95_ms": 213.109,
+      "all_gates_pass": true,
+      "per_user_memory_counts": {
+        "A": 50,
+        "B": 50
+      }
+    },
+    {
+      "scale": 1000,
+      "cases": 310,
+      "quality_metrics_unchanged": true,
+      "previous_p95_ms": 94.514,
+      "current_p95_ms": 158.113,
+      "all_gates_pass": true,
+      "per_user_memory_counts": {
+        "A": 501,
+        "B": 499
+      }
+    },
+    {
+      "scale": 10000,
+      "cases": 310,
+      "quality_metrics_unchanged": true,
+      "previous_p95_ms": 187.656,
+      "current_p95_ms": 217.044,
+      "all_gates_pass": true,
+      "per_user_memory_counts": {
+        "A": 5001,
+        "B": 4999
+      }
+    },
+    {
+      "scale": 20000,
+      "cases": 310,
+      "quality_metrics_unchanged": true,
+      "previous_p95_ms": 277.841,
+      "current_p95_ms": 503.028,
+      "all_gates_pass": true,
+      "per_user_memory_counts": {
+        "A": 10001,
+        "B": 9999
+      }
+    }
+  ],
+  "code_sha256_utf8_lf": {
+    "prompts/task-intent-v1.txt": "e49c545aef25e32225a33752294028329728308a916c7f97535a6fdc004bca99",
+    "services/api/app/tasks/intent.py": "0a015336420bbed2d2ffef4386436e309ee875d2689e3a464b7bb22b42ff5635",
+    "services/api/app/tasks/time_parse.py": "3dea770751b25aaaea3e5e7decbf7fb62e783885490d121d32549330d41251b0",
+    "services/api/app/tasks/repository.py": "b7122cdc72d2c6156b9c674bee529d7adc4889f979e1feaf9558f9b262a344ec"
+  },
+  "limitations": "Fixed Synthetic+Mock suite only. Latency varies with local load; no claim of improvement or real-model general accuracy. One separate live task sample is in T11A-live.json."
+}

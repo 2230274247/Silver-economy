@@ -1,0 +1,68 @@
+{
+  "checked_at_hk": "2026-10-27T13:48:59+08:00",
+  "task": "T12",
+  "status": "LOCAL_PASSED",
+  "database": {
+    "development": "silver_memory_demo_v01",
+    "test": "silver_memory_demo_v01_test",
+    "migration_required": false,
+    "ale_ai_mysql_accessed": false
+  },
+  "commands": {
+    "focused_backend": ".venv\\Scripts\\python.exe -m pytest -q tests\\test_privacy_export.py tests\\test_notifications.py",
+    "focused_ui": "npx playwright test tests/privacy.spec.ts",
+    "full_ui": "npm run test:ui",
+    "full_check": ".venv\\Scripts\\python.exe scripts\\check.py"
+  },
+  "results": {
+    "focused_backend_tests_passed": 6,
+    "focused_ui_tests_passed": 6,
+    "full_ui_tests_passed": 78,
+    "backend_tests_passed": 278,
+    "warnings": 1,
+    "full_check_passed": true,
+    "security_scan": "pass",
+    "workflow_check": "pass",
+    "ruff": "pass",
+    "format_check": "pass",
+    "typescript": "pass",
+    "eslint": "pass",
+    "h5_build": "pass",
+    "diff_check": "pass"
+  },
+  "viewports": [
+    "360x800",
+    "390x844",
+    "430x932"
+  ],
+  "artifacts": [
+    {
+      "path": "docs/demos/T12-privacy-360.png",
+      "sha256": "16580965119C175FF23A1071F3546D2EF587945EEF19FCF4DEB0F25F2400DB86"
+    },
+    {
+      "path": "docs/demos/T12-privacy-390.png",
+      "sha256": "9AE5CCD53E4AFB7477BC688AC998C10C4065E29BCD0EE74DED19361AA6B7E1FE"
+    },
+    {
+      "path": "docs/demos/T12-privacy-430.png",
+      "sha256": "2887328116E22683697E8BCD83F0BE6199252BB3372B68DD9674957A3701DA71"
+    }
+  ],
+  "verified_contract": {
+    "authenticated_owner_only": true,
+    "supplied_foreign_user_id_ignored": true,
+    "private_no_store_headers": true,
+    "sensitive_fields_excluded": true,
+    "notification_device_revocation_owner_only": true,
+    "memory_management_navigation_real": true,
+    "native_export_platform_adapter_present": true
+  },
+  "external_calls": {
+    "deepseek_new_calls": 0,
+    "amap_live_calls": 0,
+    "unipush_live_calls": 0,
+    "android_delivery_verified": false
+  },
+  "remaining_boundary": "CR-AC10 remains BLOCKED_PROVIDER_CONFIGURATION; H5 notification is not Android background delivery proof."
+}

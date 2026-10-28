@@ -1,0 +1,42 @@
+{
+  "migration": "t09_update -> t11a_draft",
+  "existing_tables_unchanged": true,
+  "before": {
+    "messages": {
+      "rows": 804,
+      "sha256": "a3d250a396842aafc2806ee14592a7543da9abcf3b02221fdde9555da18be2c9"
+    },
+    "memory_facts": {
+      "rows": 144,
+      "sha256": "abb8beb23198f0fc8d0dd9c542b16bafec5d83ce920d86a267e75ec39cef7d72"
+    },
+    "model_usage": {
+      "rows": 380,
+      "sha256": "fe1271a97a44a76122a3f557f3a17e9cea7dab732fb4d48eebf5476da5c25e4a"
+    },
+    "conversations": {
+      "rows": 402,
+      "sha256": "8469546b95f3ce871b9b334bc2e28d1b0ffc033a5c4ac9a91430badfea4326ff"
+    }
+  },
+  "after": {
+    "messages": {
+      "rows": 804,
+      "sha256": "a3d250a396842aafc2806ee14592a7543da9abcf3b02221fdde9555da18be2c9"
+    },
+    "memory_facts": {
+      "rows": 144,
+      "sha256": "abb8beb23198f0fc8d0dd9c542b16bafec5d83ce920d86a267e75ec39cef7d72"
+    },
+    "model_usage": {
+      "rows": 380,
+      "sha256": "fe1271a97a44a76122a3f557f3a17e9cea7dab732fb4d48eebf5476da5c25e4a"
+    },
+    "conversations": {
+      "rows": 402,
+      "sha256": "8469546b95f3ce871b9b334bc2e28d1b0ffc033a5c4ac9a91430badfea4326ff"
+    }
+  },
+  "new_table": "task_drafts",
+  "real_model_calls": 0
+}

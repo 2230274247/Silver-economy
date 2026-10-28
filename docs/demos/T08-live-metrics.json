@@ -1,0 +1,20 @@
+{
+  "live_requests_this_task": 1,
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "prompt_version": "chat-memory/v2",
+  "status": "completed",
+  "input_tokens": 421,
+  "output_tokens": 40,
+  "latency_ms": 1453,
+  "latency_scope": "generation_pipeline",
+  "estimated_usd_peak_cache_miss": "0.00017430",
+  "reserved_tokens": 2373,
+  "source_verified": true,
+  "refresh_persisted": true,
+  "new_login_and_conversation": true,
+  "synthetic_test": true,
+  "total_real_requests": 3,
+  "global_reserved_requests": 3,
+  "total_estimated_usd_peak_cache_miss": "0.00038250"
+}

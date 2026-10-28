@@ -1,0 +1,12 @@
+{
+  "checked_at_hk": "2026-10-27T11:38:59+08:00",
+  "maps_provider": "mock",
+  "amap_key_configured": false,
+  "amap_live_verified": false,
+  "new_model_calls_in_guarded_h5_preview": 0,
+  "persisted_deepseek_calls": 7,
+  "previous_T11A_call_count": 7,
+  "persisted_real_map_request_receipts": 0,
+  "source": "read-only own development schema; model POST denied by preview script",
+  "cost": "No actual map requests; no new model requests performed by this task. No vendor price fabricated."
+}

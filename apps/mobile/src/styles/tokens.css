@@ -1,0 +1,16 @@
+:root, page {
+  --color-bg: #f7f8f5;
+  --color-surface: #ffffff;
+  --color-primary: #347f70;
+  --color-primary-dark: #286557;
+  --color-text: #24312d;
+  --color-muted: #586761;
+  --color-line: #dbe3dd;
+  --color-soft: #eaf0eb;
+  --color-bubble: #deebe5;
+  --color-accent: #a7774e;
+  --color-error: #a13333;
+  --font-body: 18px;
+  --radius-card: 22px;
+  --motion-duration: 180ms;
+}

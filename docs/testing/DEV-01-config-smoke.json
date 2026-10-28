@@ -1,0 +1,20 @@
+{
+  "config": "Silver API - Mock",
+  "port_override_for_noninterference": 8001,
+  "ide_debug_ui_verified": false,
+  "real_model_calls": 0,
+  "checks": {
+    "ready": 200,
+    "mock_chat_completed": true,
+    "persisted": true,
+    "replay_idempotent": true,
+    "stages": {
+      "context_ready": true,
+      "request_persisted": true,
+      "model_call_started": true,
+      "model_call_returned": true,
+      "reply_persisted": true
+    },
+    "no_message_body_logged": true
+  }
+}

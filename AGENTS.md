@@ -1,0 +1,35 @@
+# 银发记忆 V0.1 开发约束
+
+进入仓库先阅读 docs/progress/TASK_STATUS.md，再阅读当前任务记录。
+当前执行模式：用户最新指令已恢复无人值守推进，撤销中途提出的逐任务人工确认/验收门槛。
+在既定范围内自行实施、运行、测试、commit/push/SHA/CI 核验；不因任务结束而等待人工确认。
+无人值守不允许伪造真实 API/设备验证、绕过权限或提交密钥；未满足的外部准入须如实标记。
+任务书：用户提供的《银发记忆 Demo V0.1 Codex 开发任务书》。已在 T00 读取，原下载路径在 T01 不再可读，未伪造原件副本；执行要点保存在本文件和任务记录中。
+
+- 严格 T00 → T14，每次只实施当前任务；先定义完成检查再写代码。
+- 代码、依赖、文档、日志和产物限于本项目目录。禁止使用或修改 ALE_AI_MySQL。
+- 只在 dev/v0.1 自动提交和推送；origin 必须是 https://github.com/2230274247/Silver-economy.git。
+- 每任务：实际测试 → 安全扫描 → 更新 CHANGELOG/任务状态/记录 → 精确 git add 路径 → git diff --cached --check → commit → push → ls-remote SHA 对比 → 检查 CI → 用户报告。
+- 不把 commit 成功当 push 成功；CI 失败标 PUSHED_CI_FAILED，修复另建提交，不重写历史。
+- 当次提交的 SHA、远端与 CI 确认结果通过下一任务或单独状态同步提交固化，不能预先写 DONE_PUSHED。
+- 禁止 force push、reset --hard、git clean、覆盖未知修改、直接推 main、擅自合并/发布。
+- 权限拒绝或归属不清先暂停；不得绕过分支保护或索取聊天中的密钥。
+- 只使用合成测试数据；禁止提交 .env、凭据、数据库、照片和真实私密对话。
+- H5 首先运行，uni-app/Vue3/TypeScript + FastAPI + 独立 MySQL/Alembic；平台能力封装，不在业务代码直接使用浏览器全局。
+- Mock 必须可见标注；未真实验证的模型/提醒/跨端能力不得报告成功。
+- 阅读 docs/changes/CR-001.source.md、CR-001-impact.md 与 ADR-003：主动出行助理并列 P0，T11 拆成 A–E 独立任务。最终必须 Android 真机后台通知，浏览器只是中间验证；覆盖 ADR-002 的 PC-only 旧决定。高德/推送凭据只在本机服务端配置，缺配置可 Mock，但不能冒充 live/真机通过。
+- GitHub 日志必须详实：每次提交正文记录香港时间、完成的功能、修复的问题、实际测试命令/结果、未完成项与下一步；更新 CHANGELOG、专项记录及 docs/progress/COMMIT_LOG.md。已推送历史不 amend/重写，失败与修复分别保留。
+- CR-001 原件副本和冻结基线不得改写；后续调整另建变更或 ADR。
+- 只做当前范围内必要改动；不引入微服务、向量库或多 Agent。
+- 正式最终验收目标已保真归档 docs/changes/V01-final-goal.source.md，差距审计见 docs/progress/V01_FINAL_AUDIT.md。T10 后追加 T10E1/E2：可配置 Synthetic 生成/导入 100/1000/10000、固定至少 200 题、客观指标/HTML+JSON/并发与资源报告；不能用入库条数替代记忆有效性。
+- 所有真实 DeepSeek 请求必须经过共享 MySQL 日预算/幂等登记；自动测试强制 Mock 且禁真实 HTTP。首次 live 已用一条短请求验证，重复测试不再扣费；未知/超时不自动重试。未来抽取/意图同样计入总预算。
+- 冻结 V1.0 基线原件不得改写；未提供时记录缺失。
+
+常规检查：python scripts/check.py；只测试后端时进入 services/api 使用项目 .venv 的 pytest/ruff。
+
+## AI 回忆录 App 长期 UI/UX 约束
+
+- 涉及界面、主题、组件、交互或新增用户功能前，必读 [长期设计约束](docs/design/README.md) 和 [UI/UX 规范 V1.0 原件](docs/design/AI_MEMOIR_UI_UX_V1.0.source.md)。适用于全部现有页面及后续功能，不是一次性页面改造。
+- 本 App 规范决定色彩、排版尺寸、品牌气质、组件与九主题以及回忆/AI 生图规则；emilkowalski/skills 提供设计与交互方法，其通用默认值不得覆盖产品规范。使用前阅读实际 SKILL.md，记录来源版本，不把建议安装写成已安装。
+- 复用统一 Token、主题机制、组件和状态反馈；保留现有适老化字号设置、导航与业务功能，渐进应用，不重建项目。变更规范另建版本或决策，不改写归档原件。
+- 按规范第 16–17 节执行适用的全局审查、跨主题/设备/输入方式与无障碍验收；如实列出未验证项，规范归档不代表全局 UI 或 AI 生图已交付。

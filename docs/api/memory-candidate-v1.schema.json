@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "enum": [
+        "health",
+        "relationship",
+        "work",
+        "habit",
+        "interest",
+        "travel",
+        "date",
+        "event",
+        "place"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "key": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Key",
+      "type": "string"
+    },
+    "value": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Value",
+      "type": "string"
+    },
+    "source_excerpt": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Source Excerpt",
+      "type": "string"
+    },
+    "time_expression": {
+      "default": "",
+      "maxLength": 120,
+      "title": "Time Expression",
+      "type": "string"
+    },
+    "state_text": {
+      "default": "",
+      "maxLength": 80,
+      "title": "State Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "key",
+    "value",
+    "source_excerpt"
+  ],
+  "title": "MemoryCandidate",
+  "type": "object"
+}

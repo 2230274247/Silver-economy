@@ -1,0 +1,19 @@
+{
+  "name": "时光有声",
+  "appid": "",
+  "description": "银发记忆内部演示版",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "vueVersion": "3",
+  "uniStatistics": { "enable": false },
+  "h5": { "router": { "mode": "hash" } },
+  "app-plus": {
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\"/>"
+        ]
+      }
+    }
+  }
+}

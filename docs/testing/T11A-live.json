@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "synthetic": true,
+  "started_at": "2026-10-27T02:37:27.610Z",
+  "real_model_calls": 1,
+  "request_id": "35491616-9f21-4e78-a178-58dce410efec",
+  "conversation_id": "426ab748-227e-4b73-b660-6df33cfc58b2",
+  "error_code": null,
+  "draft_id": "d25d6d89-3005-437f-b18b-e9496a612181",
+  "initial_missing_fields": [
+    "到达还是出发",
+    "出发地",
+    "交通方式"
+  ],
+  "refresh_persisted": true,
+  "scheduling_status": "not_scheduled",
+  "target_at": "2026-10-28T02:00:00Z",
+  "timezone": "Asia/Hong_Kong",
+  "followup_model_calls": 0,
+  "finished_at": "2026-10-27T02:37:34.025Z"
+}

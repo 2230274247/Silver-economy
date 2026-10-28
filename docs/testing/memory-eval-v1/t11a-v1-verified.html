@@ -1,0 +1,110 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>记忆评估 · t11a-v1-verified</title>
+    <style>:root{color-scheme:light;--ink:#213b34;--muted:#52675f;--green:#367365;--cream:#f5f7f1;--line:#d7e2d9}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,'Microsoft YaHei',sans-serif;line-height:1.65}main{max-width:1360px;margin:auto;padding:36px 28px}header{padding-bottom:24px}h1{font-size:clamp(28px,4vw,46px);line-height:1.25;margin:10px 0}h2{margin-top:0}h3{margin-top:0}.tag{display:inline-block;padding:5px 12px;border-radius:99px;background:#e0ece2;color:#254c3e;font-weight:650}p{max-width:100ch}.note,small{color:var(--muted)}small{display:block;font-weight:400}.card,section{background:white;border:1px solid var(--line);border-radius:18px;padding:24px;margin:18px 0}section{margin-top:32px}section .card{margin:12px 0;background:#f8faf6}.columns{display:grid;grid-template-columns:1fr 1fr;gap:20px}.pass{color:#246442;font-weight:700}.fail{color:#9b362b;font-weight:700}.gates{list-style:none;margin:0;padding:0;columns:2}.gates li{margin:6px 0;break-inside:avoid}.table-scroll{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left;font-size:15px}th,td{padding:12px 10px;vertical-align:top;border-bottom:1px solid var(--line)}thead{background:#edf3ed}.summary{min-width:1100px}.cases{min-width:1200px;table-layout:fixed}.cases th:first-child{width:130px}.cases td{overflow-wrap:anywhere}select{font:inherit;background:white;color:var(--ink);border:1px solid #9bb5a6;border-radius:10px;padding:10px 14px;margin-left:10px;min-height:46px}summary{cursor:pointer;padding:12px 0;font-weight:650}dl{display:grid;grid-template-columns:1fr 2fr;gap:10px}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}code{overflow-wrap:anywhere}footer{margin:30px 0;color:var(--muted)}@media(max-width:750px){main{padding:22px 16px}.columns{grid-template-columns:1fr}section,.card{padding:18px}.gates{columns:1}dl{grid-template-columns:1fr}dd{margin-bottom:8px}}</style></head>
+    <body><main><header><span class="tag">Synthetic · Mock · 真实模型调用 0</span><h1>长期记忆质量与性能评估</h1><p>运行：t11a-v1-verified · 2026-10-27T10:34:44+08:00 · 状态：measured</p>
+    <p>固定 310 个用例、246 种不同问法。真实 MySQL、登录/新会话/持久化与刷新链路；答案由独立闭合标准及来源ID计分，未用LLM自评。</p>
+    <p class="note">“无依据回答率”是未知问题未明确承认不确定的保守 Mock 代理指标，不能当作真实 DeepSeek 的通用幻觉率。进程内存包含准备阶段，Python分配峰值仅覆盖评估。这里的检索延迟与导入耗时不同。</p>
+    <p><strong>题集 SHA-256</strong><br><code>a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4</code></p></header>
+    <div class="card table-scroll"><table class="summary"><thead><tr><th>事实数</th><th>Recall@5</th><th>Top-1</th><th>回答正确率<br>Mock</th><th>冲突正确率<br>Mock</th><th>无依据回答率<br>Mock代理</th><th>检索P95</th><th>泄漏/删除召回</th><th>门禁</th></tr></thead><tbody><tr><th scope="row">100<small>A 50 / B 50</small></th>
+        <td>100.0%</td><td>100.0%</td>
+        <td>100.0%</td><td>100.0%</td>
+        <td>0.0%</td><td>213.1 ms</td>
+        <td>0 / 0</td>
+        <td class="pass">通过门禁</td></tr><tr><th scope="row">1,000<small>A 501 / B 499</small></th>
+        <td>100.0%</td><td>100.0%</td>
+        <td>100.0%</td><td>100.0%</td>
+        <td>0.0%</td><td>158.1 ms</td>
+        <td>0 / 0</td>
+        <td class="pass">通过门禁</td></tr><tr><th scope="row">10,000<small>A 5,001 / B 4,999</small></th>
+        <td>100.0%</td><td>100.0%</td>
+        <td>100.0%</td><td>100.0%</td>
+        <td>0.0%</td><td>217.0 ms</td>
+        <td>0 / 0</td>
+        <td class="pass">通过门禁</td></tr><tr><th scope="row">20,000<small>A 10,001 / B 9,999</small></th>
+        <td>100.0%</td><td>100.0%</td>
+        <td>100.0%</td><td>100.0%</td>
+        <td>0.0%</td><td>503.0 ms</td>
+        <td>0 / 0</td>
+        <td class="pass">通过门禁</td></tr></tbody></table></div>
+    <label for="scale">查看规模<select id="scale"><option value="all">全部规模</option><option value="100">100 条</option><option value="1000">1,000 条</option><option value="10000">10,000 条</option><option value="20000">20,000 条</option></select></label><section class="scale" data-scale="100"><h2>100 条结构化记忆</h2>
+        <p>固定问题 310 · 干扰与受控事实均在独立测试库 · 准备 3.71 秒</p><p class="note">与 rules-v3-verified 比较：固定题集
+                一致；初始事实快照
+                一致。
+                Recall@5 100.0% → 100.0%；
+                Top-1 100.0% → 100.0%。</p>
+        <div class="columns"><div class="card"><h3>门禁</h3><ul class="gates"><li><span class="pass">通过</span> recall</li><li><span class="pass">通过</span> top1</li><li><span class="pass">通过</span> conflict</li><li><span class="pass">通过</span> isolation</li><li><span class="pass">通过</span> deleted</li><li><span class="pass">通过</span> unknown_policy</li><li><span class="pass">通过</span> latency</li><li><span class="pass">通过</span> no_bulk_paid_calls</li><li><span class="pass">通过</span> context_bound</li><li><span class="pass">通过</span> no_data_drift</li><li><span class="pass">通过</span> complete_suite</li><li><span class="pass">通过</span> no_errors</li></ul></div>
+        <div class="card"><h3>分组回答正确率（Mock）</h3><table><thead><tr><th>分组</th><th>题数</th><th>正确率</th></tr></thead><tbody><tr><th scope="row">conflict</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">cross_session</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">deleted</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">exact</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">isolation</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">performance</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">semantic</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">state_filter</th><td>10</td><td>100.0%</td></tr><tr><th scope="row">unknown</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">unknown_details</th><td>60</td><td>100.0%</td></tr></tbody></table></div></div>
+        <div class="card"><h3>性能与资源</h3><dl>
+        <dt>检索 P50 / P95</dt><dd>76.66 / 213.109 ms</dd>
+        <dt>实际聊天接口 P95（Mock）</dt><dd>399.894 ms</dd>
+        <dt>检索 SQL 次数 / 累计执行时间</dt><dd>1,624 / 7475.6 ms</dd>
+        <dt>并发稳定性</dt><dd>4 workers · 80 次 · P95 297.729 ms · 泄漏 0</dd>
+        <dt>Python 分配峰值（评估增量）</dt><dd>21.23 MiB</dd>
+        <dt>进程生命周期最高工作集</dt><dd>204365824 bytes</dd>
+        <dt>CPU / 评估墙钟时间</dt><dd>134.22 / 171.19 秒</dd>
+        <dt>最大上下文 / 证据条数</dt><dd>3,216 UTF-8 bytes / 5</dd>
+        <dt>真实模型调用 / 接口错误</dt><dd>0 / 0</dd>
+        <dt>初始 / 最终事实数</dt><dd>100 / 100</dd>
+        </dl></div>
+        <details><summary>未正确回答的用例（0）</summary><div class="table-scroll"><table class="cases"><thead><tr><th>编号</th><th>问题</th><th>标准来源</th><th>实际检索</th><th>完整或前500字回复</th><th>错误</th></tr></thead><tbody></tbody></table></div></details></section><section class="scale" data-scale="1000"><h2>1,000 条结构化记忆</h2>
+        <p>固定问题 310 · 干扰与受控事实均在独立测试库 · 准备 7.72 秒</p><p class="note">与 rules-v3-verified 比较：固定题集
+                一致；初始事实快照
+                一致。
+                Recall@5 100.0% → 100.0%；
+                Top-1 100.0% → 100.0%。</p>
+        <div class="columns"><div class="card"><h3>门禁</h3><ul class="gates"><li><span class="pass">通过</span> recall</li><li><span class="pass">通过</span> top1</li><li><span class="pass">通过</span> conflict</li><li><span class="pass">通过</span> isolation</li><li><span class="pass">通过</span> deleted</li><li><span class="pass">通过</span> unknown_policy</li><li><span class="pass">通过</span> latency</li><li><span class="pass">通过</span> no_bulk_paid_calls</li><li><span class="pass">通过</span> context_bound</li><li><span class="pass">通过</span> no_data_drift</li><li><span class="pass">通过</span> complete_suite</li><li><span class="pass">通过</span> no_errors</li></ul></div>
+        <div class="card"><h3>分组回答正确率（Mock）</h3><table><thead><tr><th>分组</th><th>题数</th><th>正确率</th></tr></thead><tbody><tr><th scope="row">conflict</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">cross_session</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">deleted</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">exact</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">isolation</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">performance</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">semantic</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">state_filter</th><td>10</td><td>100.0%</td></tr><tr><th scope="row">unknown</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">unknown_details</th><td>60</td><td>100.0%</td></tr></tbody></table></div></div>
+        <div class="card"><h3>性能与资源</h3><dl>
+        <dt>检索 P50 / P95</dt><dd>58.38 / 158.113 ms</dd>
+        <dt>实际聊天接口 P95（Mock）</dt><dd>446.764 ms</dd>
+        <dt>检索 SQL 次数 / 累计执行时间</dt><dd>1,832 / 10285.4 ms</dd>
+        <dt>并发稳定性</dt><dd>4 workers · 80 次 · P95 336.96 ms · 泄漏 0</dd>
+        <dt>Python 分配峰值（评估增量）</dt><dd>4.21 MiB</dd>
+        <dt>进程生命周期最高工作集</dt><dd>212934656 bytes</dd>
+        <dt>CPU / 评估墙钟时间</dt><dd>122.28 / 163.32 秒</dd>
+        <dt>最大上下文 / 证据条数</dt><dd>3,344 UTF-8 bytes / 5</dd>
+        <dt>真实模型调用 / 接口错误</dt><dd>0 / 0</dd>
+        <dt>初始 / 最终事实数</dt><dd>1,000 / 1,000</dd>
+        </dl></div>
+        <details><summary>未正确回答的用例（0）</summary><div class="table-scroll"><table class="cases"><thead><tr><th>编号</th><th>问题</th><th>标准来源</th><th>实际检索</th><th>完整或前500字回复</th><th>错误</th></tr></thead><tbody></tbody></table></div></details></section><section class="scale" data-scale="10000"><h2>10,000 条结构化记忆</h2>
+        <p>固定问题 310 · 干扰与受控事实均在独立测试库 · 准备 32.84 秒</p><p class="note">与 rules-v3-verified 比较：固定题集
+                一致；初始事实快照
+                一致。
+                Recall@5 100.0% → 100.0%；
+                Top-1 100.0% → 100.0%。</p>
+        <div class="columns"><div class="card"><h3>门禁</h3><ul class="gates"><li><span class="pass">通过</span> recall</li><li><span class="pass">通过</span> top1</li><li><span class="pass">通过</span> conflict</li><li><span class="pass">通过</span> isolation</li><li><span class="pass">通过</span> deleted</li><li><span class="pass">通过</span> unknown_policy</li><li><span class="pass">通过</span> latency</li><li><span class="pass">通过</span> no_bulk_paid_calls</li><li><span class="pass">通过</span> context_bound</li><li><span class="pass">通过</span> no_data_drift</li><li><span class="pass">通过</span> complete_suite</li><li><span class="pass">通过</span> no_errors</li></ul></div>
+        <div class="card"><h3>分组回答正确率（Mock）</h3><table><thead><tr><th>分组</th><th>题数</th><th>正确率</th></tr></thead><tbody><tr><th scope="row">conflict</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">cross_session</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">deleted</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">exact</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">isolation</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">performance</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">semantic</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">state_filter</th><td>10</td><td>100.0%</td></tr><tr><th scope="row">unknown</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">unknown_details</th><td>60</td><td>100.0%</td></tr></tbody></table></div></div>
+        <div class="card"><h3>性能与资源</h3><dl>
+        <dt>检索 P50 / P95</dt><dd>120.79 / 217.044 ms</dd>
+        <dt>实际聊天接口 P95（Mock）</dt><dd>418.281 ms</dd>
+        <dt>检索 SQL 次数 / 累计执行时间</dt><dd>1,832 / 30283.3 ms</dd>
+        <dt>并发稳定性</dt><dd>4 workers · 80 次 · P95 316.916 ms · 泄漏 0</dd>
+        <dt>Python 分配峰值（评估增量）</dt><dd>3.38 MiB</dd>
+        <dt>进程生命周期最高工作集</dt><dd>228786176 bytes</dd>
+        <dt>CPU / 评估墙钟时间</dt><dd>104.95 / 177.51 秒</dd>
+        <dt>最大上下文 / 证据条数</dt><dd>3,345 UTF-8 bytes / 5</dd>
+        <dt>真实模型调用 / 接口错误</dt><dd>0 / 0</dd>
+        <dt>初始 / 最终事实数</dt><dd>10,000 / 10,000</dd>
+        </dl></div>
+        <details><summary>未正确回答的用例（0）</summary><div class="table-scroll"><table class="cases"><thead><tr><th>编号</th><th>问题</th><th>标准来源</th><th>实际检索</th><th>完整或前500字回复</th><th>错误</th></tr></thead><tbody></tbody></table></div></details></section><section class="scale" data-scale="20000"><h2>20,000 条结构化记忆</h2>
+        <p>固定问题 310 · 干扰与受控事实均在独立测试库 · 准备 56.74 秒</p><p class="note">与 rules-v3-verified 比较：固定题集
+                一致；初始事实快照
+                一致。
+                Recall@5 100.0% → 100.0%；
+                Top-1 100.0% → 100.0%。</p>
+        <div class="columns"><div class="card"><h3>门禁</h3><ul class="gates"><li><span class="pass">通过</span> recall</li><li><span class="pass">通过</span> top1</li><li><span class="pass">通过</span> conflict</li><li><span class="pass">通过</span> isolation</li><li><span class="pass">通过</span> deleted</li><li><span class="pass">通过</span> unknown_policy</li><li><span class="pass">通过</span> latency</li><li><span class="pass">通过</span> no_bulk_paid_calls</li><li><span class="pass">通过</span> context_bound</li><li><span class="pass">通过</span> no_data_drift</li><li><span class="pass">通过</span> complete_suite</li><li><span class="pass">通过</span> no_errors</li></ul></div>
+        <div class="card"><h3>分组回答正确率（Mock）</h3><table><thead><tr><th>分组</th><th>题数</th><th>正确率</th></tr></thead><tbody><tr><th scope="row">conflict</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">cross_session</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">deleted</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">exact</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">isolation</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">performance</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">semantic</th><td>40</td><td>100.0%</td></tr><tr><th scope="row">state_filter</th><td>10</td><td>100.0%</td></tr><tr><th scope="row">unknown</th><td>20</td><td>100.0%</td></tr><tr><th scope="row">unknown_details</th><td>60</td><td>100.0%</td></tr></tbody></table></div></div>
+        <div class="card"><h3>性能与资源</h3><dl>
+        <dt>检索 P50 / P95</dt><dd>202.803 / 503.028 ms</dd>
+        <dt>实际聊天接口 P95（Mock）</dt><dd>917.181 ms</dd>
+        <dt>检索 SQL 次数 / 累计执行时间</dt><dd>1,834 / 60652.1 ms</dd>
+        <dt>并发稳定性</dt><dd>4 workers · 80 次 · P95 1112.595 ms · 泄漏 0</dd>
+        <dt>Python 分配峰值（评估增量）</dt><dd>3.75 MiB</dd>
+        <dt>进程生命周期最高工作集</dt><dd>242221056 bytes</dd>
+        <dt>CPU / 评估墙钟时间</dt><dd>114.09 / 273.74 秒</dd>
+        <dt>最大上下文 / 证据条数</dt><dd>3,389 UTF-8 bytes / 5</dd>
+        <dt>真实模型调用 / 接口错误</dt><dd>0 / 0</dd>
+        <dt>初始 / 最终事实数</dt><dd>20,000 / 20,000</dd>
+        </dl></div>
+        <details><summary>未正确回答的用例（0）</summary><div class="table-scroll"><table class="cases"><thead><tr><th>编号</th><th>问题</th><th>标准来源</th><th>实际检索</th><th>完整或前500字回复</th><th>错误</th></tr></thead><tbody></tbody></table></div></details></section>
+    <footer>所有人物与生活事实均为合成。Mock结果与真实模型样本分开；未达指标的原始结果保留。完整指标和逐题来源见同名JSON文件。</footer></main>
+    <script>document.getElementById('scale').addEventListener('change',function(){document.querySelectorAll('.scale').forEach(s=>s.hidden=this.value!=='all'&&s.dataset.scale!==this.value)})</script></body></html>

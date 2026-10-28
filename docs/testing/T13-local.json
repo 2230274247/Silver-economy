@@ -1,0 +1,42 @@
+{
+  "task": "T13",
+  "checked_at_hk": "2026-10-27T14:36:08+08:00",
+  "status": "ENGINEERING_LOCAL_PASSED_ACCEPTANCE_GAPS_RECORDED",
+  "backend_tests_passed": 294,
+  "full_ui_tests_passed_before_location_followup": 78,
+  "final_scheduling_ui_tests_passed": 12,
+  "focused_backend_tests_passed": 28,
+  "full_check_passed": true,
+  "migration": "t13_proactive_updates",
+  "alembic_check": "No new upgrade operations detected",
+  "warnings": [
+    "Existing Starlette/httpx deprecation warning"
+  ],
+  "external_new_calls": {
+    "deepseek": 0,
+    "amap": 0,
+    "unipush": 0
+  },
+  "ale_ai_mysql_accessed": false,
+  "artifacts": [
+    {
+      "path": "docs/demos/T13-acceptance-390.png",
+      "sha256": "4167195e419372241721b2117a02f50a2cbcab673b058341a7f5588ec5cedab2"
+    },
+    {
+      "path": "docs/demos/T13-location-390.png",
+      "sha256": "fc85d2b9285827b7a06e741d6732d87c93086001576f44a26d82781fa02cfa55"
+    }
+  ],
+  "gaps": [
+    "Original AC-01 through AC-18 text unavailable",
+    "Real AMap not configured",
+    "Android background delivery and native permission flow not verified"
+  ],
+  "commands": [
+    ".venv/Scripts/python.exe scripts/check.py",
+    "npm run test:ui",
+    "npm run test:ui -- tests/scheduling.spec.ts",
+    "pytest -q tests/test_scheduling.py tests/test_notifications.py tests/test_timezones.py"
+  ]
+}

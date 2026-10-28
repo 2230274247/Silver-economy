@@ -1,0 +1,23 @@
+{
+  "report": "rules-v3-verified",
+  "results": [
+    {
+      "width": 1440,
+      "errors": [],
+      "external_requests": 0,
+      "body_overflow": false,
+      "scale_selector": "passed",
+      "initial_scale_sections": 4,
+      "screenshot": "docs/demos/T10E2-rules-v3-verified-1440.png"
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "external_requests": 0,
+      "body_overflow": false,
+      "scale_selector": "passed",
+      "initial_scale_sections": 4,
+      "screenshot": "docs/demos/T10E2-rules-v3-verified-390.png"
+    }
+  ]
+}

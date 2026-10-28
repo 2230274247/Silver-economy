@@ -1,0 +1,36 @@
+{
+  "checked_at_hk": "2026-10-27T16:21:41+08:00",
+  "real_chat_calls": 2,
+  "real_search_calls": 0,
+  "automatic_retries": 0,
+  "calls": [
+    {
+      "kind": "ordinary_with_memory",
+      "receipt_status": "completed_rejected",
+      "input_tokens": 484,
+      "output_tokens": 99,
+      "latency_ms": 1875,
+      "estimated_usd": "0.00026400",
+      "error_code": "MEMORY_UNSUPPORTED_REFERENCE"
+    },
+    {
+      "kind": "relative_reminder",
+      "receipt_status": "completed",
+      "input_tokens": 925,
+      "output_tokens": 112,
+      "latency_ms": 2110,
+      "estimated_usd": "0.00041190",
+      "error_code": null
+    }
+  ],
+  "saved_output_offline_recheck": {
+    "reply_nonempty": true,
+    "references_have_no_supplied_source": true,
+    "context_fact_count": 0,
+    "original_raw_sha256": "ecedb348b52895b4e3e9d8bccc2307f6b985692aa84dfb5c4199e9a74ada5605",
+    "receipt_unchanged": true,
+    "repair_not_applied": true,
+    "new_paid_calls": 0
+  },
+  "estimated_usd_total": "0.0006759"
+}

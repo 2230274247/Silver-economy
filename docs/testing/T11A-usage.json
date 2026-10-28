@@ -1,0 +1,25 @@
+{
+  "checked_at_hk": "2026-10-27T10:37:53+08:00",
+  "source": "read-only own development-schema SQL",
+  "current_task": {
+    "requests": 1,
+    "model": "deepseek-flash",
+    "purpose": "chat_task",
+    "prompt_version": "chat-task/v1",
+    "input_tokens": 927,
+    "output_tokens": 115,
+    "reserved_tokens": 4892,
+    "latency_ms": 1827,
+    "estimated_cost_usd": "0.00041610",
+    "is_vendor_bill": false
+  },
+  "all_persisted_deepseek": {
+    "requests": 7,
+    "input_tokens": 3218,
+    "output_tokens": 376
+  },
+  "confirmed_info_draft": true,
+  "reminder_rows_for_live_test_user": 0,
+  "new_scheduler_jobs": 0,
+  "later_provider_requests": 0
+}

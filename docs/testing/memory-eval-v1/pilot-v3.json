@@ -1,0 +1,28 @@
+{
+  "version": "memory-eval/1",
+  "label": "pilot-v3",
+  "synthetic": true,
+  "provider": "mock",
+  "real_model_calls": 0,
+  "created_at_hk": "2026-10-27T05:47:24+08:00",
+  "suite_sha256": "a15c8558b7416f6985aa0afa4301ee3788fe05cc15a9a945bdb70cf9747193c4",
+  "suite_questions": 310,
+  "unique_question_texts": 246,
+  "pilot_limit": 12,
+  "status": "running",
+  "parent_commit": "423ff6cf37cc12a82eb7027c939b487874d7a5d4",
+  "code_sha256_utf8_lf": {
+    "services/api/app/memory/retriever.py": "279dcd4b04208b75808cb89512caa38913276fc5a963e171d093efab42afdc04",
+    "services/api/app/memory/context.py": "20381d12259346da625c46cc1e99d797c22f87743249ffb58daaa210e26453fe",
+    "services/api/app/services/model_chat.py": "4bb0304a9f16ac0c113bf3688b0461ae5b68cfcdc16f3bafc98aee392eb6e1bc"
+  },
+  "definitions": {
+    "recall": "All required source memories must occur in top 5; denominator is positive cases only.",
+    "top1": "First retrieved source must be one of the independently expected sources.",
+    "answer": "Closed answer groups plus persisted source references; unknown questions require explicit uncertainty.",
+    "hallucination_proxy": "Unknown/unsupported questions answered without explicit uncertainty; conservative Mock proxy, not LLM semantic grading.",
+    "resources": "Python allocation peak is incremental evaluation allocation. RSS/peak RSS covers process lifetime, including preparation.",
+    "live": "This batch performs no real DeepSeek calls. Earlier live samples are separate evidence."
+  },
+  "scales": []
+}

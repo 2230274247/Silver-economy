@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "checked_at": "2026-10-27T03:39:32.907Z",
+  "synthetic": true,
+  "maps_provider": "mock",
+  "live_amap_verified": false,
+  "new_real_model_calls": 0,
+  "real_map_calls": 0,
+  "conversation_id": "426ab748-227e-4b73-b660-6df33cfc58b2",
+  "draft_id": "d25d6d89-3005-437f-b18b-e9496a612181",
+  "persisted_after_reload": true,
+  "scheduling_status": "not_scheduled"
+}
