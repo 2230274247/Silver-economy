@@ -98,3 +98,5 @@ CHAT-04本地核验（2026-10-27T16:05:57+08:00）：聊天辅助校验按项降
 CHAT-05本地记录（2026-10-27T16:23:08+08:00）：共用DeepSeek改用text传输，JSON由Prompt指导和本地校验；自然语言辅助失败保留reply，错误记忆引用仅取消引用，所有提供的记忆在显示前重检。160专项及最终引用保护10专项、Ruff/安全、实际H5刷新通过。第1次真实调用揭示M1误拦截，失败回执保留并离线复现；第2次真实提醒成功，半小时精确1800秒、1草案未调度。共1409输入/211输出，估算USD0.00067590，0搜索/自动重试；日志命令、截图和JSON见CHAT-05_EMPTY_RESPONSE.md。无迁移、不删真实数据；真实高德/Android仍未验收。CHAT-04两CI全部success；本次SHA/push/CI事后记录。
 
 DEV-01（2026-10-27T16:51:56+08:00）：新增3个共享PyCharm运行配置、脱敏阶段日志、PYCHARM_DEBUG手册与IDE本机忽略保护。35相关pytest、Ruff、安全和临时8001 XML启动/Mock聊天保存/幂等/日志隐私实测通过；命令及证据见DEV-01_PYCHARM.md。0真实调用，不改数据库结构及既有IDE设置。真实IDE断点未验证，不改写其为通过；CHAT-05两CI均success，本次SHA/push/CI事后核验。
+
+DEV-02（2026-10-28T10:47:51+08:00）：新增root main.py、受控H5/Worker/Compose子进程及Windows Job强停清理，自动开网页和Mock参数；H5开发断点等待10分钟（生产45秒不变），共享main配置与GBrowser指引。10标准库测试及-S兼容、正常8成员/强停10进程真实退出、API同PID trace/Mock保存幂等、前端TS/Lint/H5/Ruff安全通过，0付费；详情命令及证据DEV-02_ONE_CLICK.md。MySQL保留无迁移，不碰其他项目；未声称实际IDE插件点击验收。DEV-01两CI均success；本次commit/push/SHA/CI事后核验。

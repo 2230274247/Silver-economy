@@ -1,0 +1,9 @@
+{
+  "mode": "hard_stop_equivalent_to_ide_terminate",
+  "paid_model_calls": 0,
+  "tracked_process_count": 10,
+  "all_owned_processes_exited": true,
+  "port_8000_closed": true,
+  "port_5173_closed": true,
+  "mysql_preserved": true
+}

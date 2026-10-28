@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: DEV-01 PyCharm运行与聊天调试支持；T14开放项保留
+- Current task: DEV-02 main.py一键启停与IDE调试；T14开放项保留
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: CHAT-05 `fe4942e2a7663e4346a18c48f1521a463be754df`
-- Last verified CI: PASS（run 40473225092/40473233834；api/security/mobile全部success）
-- 最后核验时间：2026-10-27T14:43:37+08:00。
+- Last remote-confirmed SHA: DEV-01 `b1f3b4febf1c0a9c13e677d805340bb428db0780`
+- Last verified CI: PASS（run 40476567242/40476574513；api/security/mobile全部success）
+- 最后核验时间：2026-10-28T10:47:51+08:00。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -64,3 +64,5 @@ CHAT-04（2026-10-27T16:05:57+08:00）：144专项通过；聊天保留与辅助
 CHAT-05（2026-10-27T16:23:08+08:00）：移除共用聊天强制JSON模式；自然语言降级与无效引用不再清空reply；真实记忆撤回/证据版本保护保留。160相关回归通过，最终引用保护另10项复核；真实两次（一失败促成引用修复、一提醒通过），1409/211 tokens，估算USD0.00067590，0自动重试。详见CHAT-05_EMPTY_RESPONSE.md；未宣称第三方永不故障或全V0.1完成，当前SHA/push/CI事后核验。
 
 DEV-01（2026-10-27T16:51:56+08:00）：PyCharm共享Mock/Live API和Mock Worker配置、脱敏聊天阶段日志与断点手册；35专项及XML/临时8001实际Mock聊天持久/幂等通过，0付费调用，无迁移。未验证IDE实际断点，保留现有.idea及当前服务；详见DEV-01_PYCHARM.md，当前提交SHA/CI事后核验。
+
+DEV-02（2026-10-28T10:47:51+08:00）：根main.py一键启动API/H5/Worker及浏览器，API同进程支持断点，Windows Job强制停止后业务子进程全退出；MySQL持久保留。10单元（含-S）/实际正常及强停/前端类型Lint构建/Ruff安全通过，0付费。GBrowser指引已核对，IDE插件实际操作未验收；详见DEV-02_ONE_CLICK.md。当前SHA/push/CI事后核验。

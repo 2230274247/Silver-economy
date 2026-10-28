@@ -30,8 +30,8 @@ jobs:
       - run: pip install -r services/api/requirements.lock
       - run: python scripts/init-dev-db.py
       - run: python scripts/validate_workflow.py
-      - run: ruff check services/api/app services/api/tests services/api/alembic scripts
-      - run: ruff format --check services/api/app services/api/tests services/api/alembic scripts
+      - run: ruff check services/api/app services/api/tests services/api/alembic scripts main.py
+      - run: ruff format --check services/api/app services/api/tests services/api/alembic scripts main.py
       - run: pytest -q
         working-directory: services/api
       - if: always()

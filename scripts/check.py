@@ -33,8 +33,8 @@ def main() -> None:
         [PYTHON, "-m", "ruff", "format", "--check", "app", "tests", "alembic"],
         ROOT / "services/api",
     )
-    run([PYTHON, "-m", "ruff", "check", "scripts"])
-    run([PYTHON, "-m", "ruff", "format", "--check", "scripts"])
+    run([PYTHON, "-m", "ruff", "check", "scripts", "main.py"])
+    run([PYTHON, "-m", "ruff", "format", "--check", "scripts", "main.py"])
     run([PYTHON, "-m", "pytest", "-q"], ROOT / "services/api")
     for task in ["typecheck", "lint", "build:h5"]:
         run([NPM, "run", task], ROOT / "apps/mobile")

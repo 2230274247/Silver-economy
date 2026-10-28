@@ -1,0 +1,17 @@
+{
+  "mode": "normal_shutdown",
+  "paid_model_calls": 0,
+  "browser_urls": [
+    "http://127.0.0.1:5173/#/"
+  ],
+  "main_pid": 9564,
+  "chat_breakpoint_process_pid": 9564,
+  "mock_chat_persisted_and_replay_safe": true,
+  "all_owned_job_members_exited": true,
+  "job_member_count": 8,
+  "exit_code": 0,
+  "port_8000_closed": true,
+  "port_5173_closed": true,
+  "mysql_preserved": true,
+  "errors": []
+}

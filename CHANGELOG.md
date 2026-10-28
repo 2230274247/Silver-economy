@@ -1,5 +1,12 @@
 # 变更记录
 
+## DEV-02 — 2026-10-28（Asia/Hong_Kong）
+
+- 新增根main.py：Run/Debug一键启动API、H5、Worker、复用独立MySQL，就绪后自动打开网站。
+- API保持主进程以支持断点；Windows Job托管本次业务后代，正常与强制停止均释放8000/5173，持久MySQL保留。
+- 新增main共享Mock/默认配置，GBrowser侧边栏指引；一键DEV请求可等待10分钟，正式构建保留45秒。
+- 10单元与Windows双生命周期/同PID断点trace/Mock消息实测通过，前端TS/Lint/构建及安全通过，0付费调用；实际IDE插件操作未验收。
+
 ## DEV-01 — 2026-10-27（Asia/Hong_Kong）
 
 - 新增PyCharm共享API Mock/Live和Worker Mock模块运行配置，使用现有项目虚拟环境。

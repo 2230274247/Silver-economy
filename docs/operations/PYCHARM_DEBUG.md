@@ -1,5 +1,7 @@
 # PyCharm Run / Debug 消息处理
 
+2026-10-28新增推荐入口：根目录main.py一次Run/Debug启动API、H5、Worker并自动开网页；停止时托管子进程同步退出。详见[一键启动与侧边浏览器](ONE_CLICK_PYCHARM.md)。以下分项配置继续保留，单独调试时可用；一键入口的H5开发请求等待为10分钟，分项默认45秒。
+
 直接打开Silver-economy根目录。共享配置在.run/，沿用.venv/Scripts/python.exe（本机实际Python3.12），不使用新建的其他解释器。保留已有.idea文件，.idea仅本机使用不提交。PyCharm支持共享项目运行配置：https://www.jetbrains.com/help/pycharm/run-debug-configuration.html 。
 
 ## 操作

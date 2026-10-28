@@ -3,6 +3,10 @@
 有长期记忆的AI生活助理。当前为**会议室初步演示可用，正式最终验收未完成**。
 保留米白/浅绿Muse式H5布局；不重建工程或改写Git历史。
 
+## PyCharm一键启动
+
+打开根目录`main.py`，选择项目`.venv/Scripts/python.exe`后Run/Debug，即可启动API、H5、Worker并自动打开网页；Stop同步结束本次业务进程。Docker Desktop需已启动，MySQL和数据保留。使用`--mock`可免模型费用，`--no-browser`适合GBrowser侧边栏。详见[一键启动与调试手册](docs/operations/ONE_CLICK_PYCHARM.md)。
+
 ## 立即演示
 
 本机：http://127.0.0.1:5173/#/ 。API文档：http://127.0.0.1:8000/docs 。
