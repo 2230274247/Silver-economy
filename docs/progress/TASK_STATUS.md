@@ -2,11 +2,11 @@
 
 - Repo: 2230274247/Silver-economy（Private）
 - Default dev branch: dev/v0.1
-- Current task: DEV-02 main.py一键启停与IDE调试；T14开放项保留
+- Current task: UI-P0-01 第一阶段无障碍修复；T14开放项保留
 - 当前执行模式：用户最新指令恢复无人值守，取消人工逐任务确认门槛。
-- Last remote-confirmed SHA: DEV-01 `b1f3b4febf1c0a9c13e677d805340bb428db0780`
-- Last verified CI: PASS（run 40476567242/40476574513；api/security/mobile全部success）
-- 最后核验时间：2026-10-28T10:47:51+08:00。
+- Last remote-confirmed SHA: UI-DOC-01 `68d63a3139c8f26b93d4ed5f0b0673b9f2523642`
+- Last verified CI: PASS（run 40625222710/40625228373；api/security/mobile全部success）
+- 最后核验日期：2026-10-28（UI-P0-01 基线核验，Asia/Hong_Kong）。
 - 时间口径：Asia/Hong_Kong（UTC+08:00），具体提交时间见 COMMIT_LOG.md。
 
 | ID | 状态 | 本地测试 | GitHub commit SHA | 推送验证 | CI | 备注 |
@@ -70,3 +70,7 @@ DEV-02（2026-10-28T10:47:51+08:00）：根main.py一键启动API/H5/Worker及�
 UI-DOC-01（2026-10-28T11:08:16+08:00）：用户 UI/UX V1.0 原件按字节归档至 docs/design，建立职责分工、版本维护与后续验收入口，并接入 AGENTS/README。保留适老化字号与现有业务约束。仅文档；未安装 Skills，未实现或验收全局 UI/九主题/AI 生图。验证与远端结果见 UI-DOC-01_DESIGN_BASELINE.md，当前 commit/push/SHA/CI 提交后核验。
 
 UI-DOC-01 归档修正（2026-10-28，Asia/Hong_Kong）：28075c5 已远端核验；补充原件 Git 属性以保留 CRLF 与 Markdown 换行空格，首轮暂存检查失败保留记录；修正后核验 Git blob 与附件，CI 以实际终态为准。
+
+UI-P0-01（2026-10-28，Asia/Hong_Kong）：两项旧实现失败已先复现；仅修复 H5 确认弹窗和行程六字段标签，保留原生调用与业务/字号。基线 68d63a3 两项 CI success；本次验证、提交与远端状态见 UI-P0-01_ACCESSIBILITY.md，未预填已推送。
+
+UI-P0-01 本地验收：相关三视口 63 passed；补充断言并修正同名按钮定位后专项 12 passed；typecheck/lint/build:h5、安全与差异检查通过；APP-PLUS 预处理与系统弹窗委托检查通过。原生真机/系统读屏未验收；0新增真实付费调用。工作区排除回归自动重生成的历史演示截图。当前提交及远端/CI待实际核验。

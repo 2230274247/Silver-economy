@@ -207,7 +207,7 @@ test('trip detail supports source inspection, time edit, navigation entry, feedb
   }
 
   await detail.getByRole('button', { name: '修改行程', exact: true }).click();
-  await detail.getByLabel('行程名称', { exact: true }).locator('input')
+  await detail.getByRole('textbox', { name: '行程名称', exact: true })
     .fill(`修改后的合成行程 ${info.project.name}`);
   const nextTarget = new Date(task.target_at);
   nextTarget.setUTCDate(nextTarget.getUTCDate() + 1);
@@ -218,7 +218,7 @@ test('trip detail supports source inspection, time edit, navigation entry, feedb
   }).formatToParts(nextTarget);
   const inputValue = (type: string) => nextParts.find(part => part.type === type)?.value ?? '';
   const targetInput = `${inputValue('year')}-${inputValue('month')}-${inputValue('day')}T${inputValue('hour')}:${inputValue('minute')}`;
-  await detail.getByLabel('新的到达或出发时间', { exact: true }).locator('input')
+  await detail.getByRole('textbox', { name: '新的时间（北京时间）', exact: true })
     .fill(targetInput);
   const modifiedResponse = page.waitForResponse(r => r.request().method() === 'PATCH'
     && new URL(r.url()).pathname.endsWith(`/outing-tasks/${task.id}`));

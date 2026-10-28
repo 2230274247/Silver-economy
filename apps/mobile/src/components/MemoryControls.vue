@@ -5,6 +5,7 @@ import { request } from '../platform/network';
 import { requestId } from '../platform/ids';
 import { bindComposer } from '../platform/composer';
 import { labelTextControl } from '../platform/accessibility';
+import { confirmAction } from '../platform/confirmation';
 import type { Memory } from '../stores/memory';
 const props = defineProps<{ memory: Memory }>();
 const emit = defineEmits<{ updated: [Memory]; deleted: [string] }>();
@@ -47,7 +48,7 @@ async function mutate(action: string, extra: Record<string, unknown> = {}) {
 }
 async function remove() {
   if (busy.value) return;
-  const result = await uni.showModal({ title: '删除这条长期记忆？', content: '删除后不再用于跨会话回忆。原始聊天和既有回复仍保留；修改审计保留在本机数据库，不再参与检索。', confirmText: '删除记忆', cancelText: '保留' });
+  const result = await confirmAction({ title: '删除这条长期记忆？', content: '删除后不再用于跨会话回忆。原始聊天和既有回复仍保留；修改审计保留在本机数据库，不再参与检索。', confirmText: '删除记忆', cancelText: '保留' });
   if (result.confirm) await mutate('delete');
 }
 async function history(more = false) {

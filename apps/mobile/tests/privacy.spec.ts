@@ -78,7 +78,7 @@ test('revoking a notification device calls the owner-only device endpoint', asyn
   await expect(page.getByText('Synthetic Android', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '撤回', exact: true }).click();
   await expect(page.getByText('撤回这台设备', { exact: true })).toBeVisible();
-  await page.locator('.uni-modal__btn_primary').click();
+  await page.getByRole('dialog', { name: '撤回这台设备' }).getByRole('button', { name: '撤回', exact: true }).click();
   await expect(page.getByRole('button', { name: '已撤回', exact: true })).toBeDisabled();
   expect(deleteCalled).toBe(true);
 });

@@ -104,3 +104,7 @@ DEV-02（2026-10-28T10:47:51+08:00）：新增root main.py、受控H5/Worker/Com
 UI-DOC-01（2026-10-28T11:08:16+08:00）：用户 UI/UX V1.0 原件按字节归档至 docs/design，建立职责分工、版本维护与后续验收入口，并接入 AGENTS/README。保留适老化字号与现有业务约束。仅文档；未安装 Skills，未实现或验收全局 UI/九主题/AI 生图。验证与远端结果见 UI-DOC-01_DESIGN_BASELINE.md，当前 commit/push/SHA/CI 提交后核验。
 
 UI-DOC-01 归档修正（2026-10-28，Asia/Hong_Kong）：28075c5 已远端核验；补充原件 Git 属性以保留 CRLF 与 Markdown 换行空格，首轮暂存检查失败保留记录；修正后核验 Git blob 与附件，CI 以实际终态为准。
+
+UI-P0-01（2026-10-28，Asia/Hong_Kong）：新增四项无障碍测试先复现两处旧实现失败；平台 H5 原生 dialog、原生 uni.showModal 分支保持、六字段可见标签绑定；不改业务/数据库/字号。390px 四项通过，三尺寸相关回归和最终检查执行中，详见 UI-P0-01_ACCESSIBILITY.md；本次 commit/push/SHA/CI 实际提交后核验。
+
+UI-P0-01 本地验收：相关三视口 63 passed；补充断言并修正同名按钮定位后专项 12 passed；typecheck/lint/build:h5、安全与差异检查通过；APP-PLUS 预处理与系统弹窗委托检查通过。原生真机/系统读屏未验收；0新增真实付费调用。工作区排除回归自动重生成的历史演示截图。当前提交及远端/CI待实际核验。

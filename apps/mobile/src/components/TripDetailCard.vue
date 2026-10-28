@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import AccessibleButton from './AccessibleButton.vue';
+import { labelTextControl } from '../platform/accessibility';
 import { openExternalMap } from '../platform/navigation';
 import {
   sendTaskFeedback,
@@ -33,6 +34,15 @@ const form = reactive({
 });
 
 const active = computed(() => ['scheduled', 'departed'].includes(props.task.status));
+
+function controlId(field: string) { return `trip-${props.task.id}-${field}`; }
+watch([open, editing, () => props.task.kind, () => props.task.status, () => props.task.time_semantics], async () => {
+  await nextTick();
+  for (const [field, label] of [
+    ['threshold', '车程变化通知阈值分钟数'], ['title', '行程名称'], ['time', '新的到达或出发时间'],
+    ['access', '修改后的接驳缓冲分钟数'], ['contingency', '修改后的弹性缓冲分钟数'], ['lead', '修改后的提前提醒分钟数'],
+  ]) labelTextControl(controlId(field), label, controlId(`${field}-label`));
+});
 
 function displayTime(value: string | null) {
   if (!value) return '暂无';
@@ -255,8 +265,9 @@ async function setProactive(enabled: boolean) {
           {{ task.proactive_updates_enabled ? '已开启：出发前只复核一次，超过阈值才通知。' : '已关闭：普通提醒仍会按原时间保留。' }}
         </text>
         <label class="field-label">
-          <text>车程变化通知阈值（分钟）</text>
+          <text :id="controlId('threshold-label')">车程变化通知阈值（分钟）</text>
           <input
+            :id="controlId('threshold')"
             v-model.number="proactiveThreshold"
             aria-label="车程变化通知阈值分钟数"
             type="number"
@@ -297,16 +308,18 @@ async function setProactive(enabled: boolean) {
           class="edit-form"
         >
           <label class="field-label">
-            <text>行程名称</text>
+            <text :id="controlId('title-label')">行程名称</text>
             <input
+              :id="controlId('title')"
               v-model="form.title"
               aria-label="行程名称"
               maxlength="160"
             >
           </label>
           <label class="field-label">
-            <text>新的时间（北京时间）</text>
+            <text :id="controlId('time-label')">新的时间（北京时间）</text>
             <input
+              :id="controlId('time')"
               v-model="form.target_at"
               aria-label="新的到达或出发时间"
               type="datetime-local"
@@ -316,8 +329,9 @@ async function setProactive(enabled: boolean) {
             v-if="task.kind === 'outing' && task.time_semantics === 'arrival'"
             class="field-label"
           >
-            <text>接驳缓冲（分钟）</text>
+            <text :id="controlId('access-label')">接驳缓冲（分钟）</text>
             <input
+              :id="controlId('access')"
               v-model.number="form.access_buffer_minutes"
               aria-label="修改后的接驳缓冲分钟数"
               type="number"
@@ -329,8 +343,9 @@ async function setProactive(enabled: boolean) {
             v-if="task.kind === 'outing' && task.time_semantics === 'arrival'"
             class="field-label"
           >
-            <text>弹性缓冲（分钟）</text>
+            <text :id="controlId('contingency-label')">弹性缓冲（分钟）</text>
             <input
+              :id="controlId('contingency')"
               v-model.number="form.contingency_buffer_minutes"
               aria-label="修改后的弹性缓冲分钟数"
               type="number"
@@ -339,8 +354,9 @@ async function setProactive(enabled: boolean) {
             >
           </label>
           <label class="field-label">
-            <text>提前提醒（分钟）</text>
+            <text :id="controlId('lead-label')">提前提醒（分钟）</text>
             <input
+              :id="controlId('lead')"
               v-model.number="form.lead_minutes"
               aria-label="修改后的提前提醒分钟数"
               type="number"

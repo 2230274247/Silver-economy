@@ -11,6 +11,7 @@ import { currentUser, logout, sessionError } from '../../stores/session';
 import { onShow } from '@dcloudio/uni-app';
 import { request } from '../../platform/network';
 import { downloadAccountExport } from '../../platform/data-export';
+import { confirmAction } from '../../platform/confirmation';
 const busy = ref(false);
 const accountError = ref('');
 const memoryEnabled = ref(false);
@@ -67,7 +68,7 @@ async function toggleMemory() {
   memoryBusy.value = true; memoryError.value = '';
   try {
     if (!memoryEnabled.value) {
-      const choice = await uni.showModal({ title: '开启长期记忆', content: '允许从聊天提取有原文依据的候选记忆，并在后续会话检索使用。候选未经本人确认，回复会提供来源供核对。可以随时关闭；关闭不会删除聊天或已有记忆。', confirmText: '允许', cancelText: '暂不' });
+      const choice = await confirmAction({ title: '开启长期记忆', content: '允许从聊天提取有原文依据的候选记忆，并在后续会话检索使用。候选未经本人确认，回复会提供来源供核对。可以随时关闭；关闭不会删除聊天或已有记忆。', confirmText: '允许', cancelText: '暂不' });
       if (!choice.confirm) return;
     }
     memoryEnabled.value = (await request<{ enabled: boolean }>('/memory-consent', 'POST', { enabled: !memoryEnabled.value })).enabled;
@@ -80,7 +81,7 @@ function openMemories() { uni.redirectTo({ url: '/pages/timeline/index' }); }
 function openChat() { uni.redirectTo({ url: '/pages/index/index' }); }
 async function revoke(device: NotificationDevice) {
   if (revokingDevice.value || device.revoked_at) return;
-  const choice = await uni.showModal({
+  const choice = await confirmAction({
     title: '撤回这台设备',
     content: '撤回后，未来提醒将不再尝试发送到这台设备。',
     confirmText: '撤回',
